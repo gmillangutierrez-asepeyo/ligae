@@ -35,7 +35,9 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   }
 
   const result = await response.json();
-  return `https://storage.googleapis.com/${BUCKET_NAME}/${result.name}`;
+  // The mediaLink is an authenticated URL to download the object's data.
+  // It requires an 'Authorization: Bearer <token>' header for access.
+  return result.mediaLink;
 }
 
 export async function saveToFirestore(data: any, token: string) {

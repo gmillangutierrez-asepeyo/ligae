@@ -32,6 +32,98 @@ interface Receipt {
   fileName: { stringValue: string };
 }
 
+// Component to render a single receipt card, handling image fetching internally
+function ReceiptCard({ receipt, token, onDelete }: { receipt: Receipt; token: string | null; onDelete: (receipt: Receipt) => Promise<void> }) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchImage = async () => {
+      if (!token || !receipt.photoUrl.stringValue) return;
+      try {
+        const res = await fetch(receipt.photoUrl.stringValue, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch image');
+        const blob = await res.blob();
+        if (isMounted) {
+          setImageUrl(URL.createObjectURL(blob));
+        }
+      } catch (error) {
+        console.error('Error fetching receipt image:', error);
+      }
+    };
+    fetchImage();
+
+    return () => {
+      isMounted = false;
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [receipt.photoUrl.stringValue, token, imageUrl]);
+
+  const handleDeleteClick = async () => {
+    setIsDeleting(true);
+    await onDelete(receipt);
+    // No need to setIsDeleting(false) as the component will unmount
+  };
+
+  return (
+    <Card className="overflow-hidden group">
+      <CardHeader className="p-0">
+        <div className="relative aspect-square">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={`Receipt for ${receipt.sector.stringValue}`}
+              layout="fill"
+              objectFit="cover"
+              className="transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-secondary flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
+        <CardTitle className="text-lg font-headline capitalize">{receipt.sector.stringValue}</CardTitle>
+        <p className="font-bold text-primary text-xl">€{receipt.importe.doubleValue.toFixed(2)}</p>
+        <p className="text-sm text-muted-foreground">{receipt.fecha.stringValue}</p>
+      </CardContent>
+      <CardFooter className="p-4 pt-0">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+             <Button variant="destructive" className="w-full" disabled={isDeleting}>
+               {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                Delete
+             </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the receipt
+                and remove its data from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteClick}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardFooter>
+    </Card>
+  )
+}
+
+
 function GalleryPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -115,48 +207,7 @@ function GalleryPage() {
           {!loading && !error && receipts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {receipts.map((receipt) => (
-                <Card key={receipt.id} className="overflow-hidden group">
-                  <CardHeader className="p-0">
-                    <div className="relative aspect-square">
-                      <Image
-                        src={receipt.photoUrl.stringValue}
-                        alt={`Receipt for ${receipt.sector.stringValue}`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <CardTitle className="text-lg font-headline capitalize">{receipt.sector.stringValue}</CardTitle>
-                    <p className="font-bold text-primary text-xl">€{receipt.importe.doubleValue.toFixed(2)}</p>
-                    <p className="text-sm text-muted-foreground">{receipt.fecha.stringValue}</p>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                         <Button variant="destructive" className="w-full">
-                           <Trash2 className="mr-2 h-4 w-4" /> Delete
-                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the receipt
-                            and remove its data from our servers.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(receipt)}>
-                            Continue
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </CardFooter>
-                </Card>
+                <ReceiptCard key={receipt.id} receipt={receipt} token={token} onDelete={handleDelete} />
               ))}
             </div>
           )}
