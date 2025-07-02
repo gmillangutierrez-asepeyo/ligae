@@ -2,12 +2,12 @@ import { initializeApp, getApps, getApp, FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyA_NjfA7m2Lu0ATwgZs5E1d32Eujw08mf8",
+  authDomain: "receipt-snap-e3z1z.firebaseapp.com",
+  projectId: "receipt-snap-e3z1z",
+  storageBucket: "receipt-snap-e3z1z.firebasestorage.app",
+  messagingSenderId: "95809932023",
+  appId: "1:95809932023:web:095cc4dd47075bf1ea21f2"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();

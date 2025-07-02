@@ -1,7 +1,7 @@
 'use client';
 
-const PROJECT_ID = 'ligae-asepeyo-463510';
-const DATABASE_ID = 'ticketsligae';
+const PROJECT_ID = 'receipt-snap-e3z1z';
+const DATABASE_ID = '(default)';
 const BUCKET_NAME = 'ticketimages';
 
 // Helper to convert data URI to Blob
