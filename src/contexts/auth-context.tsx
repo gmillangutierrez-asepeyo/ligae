@@ -15,8 +15,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ALLOWED_DOMAIN = 'asepeyo.es';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,26 +22,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        if (currentUser.email && currentUser.email.endsWith(`@${ALLOWED_DOMAIN}`)) {
-          setUser(currentUser);
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Access Denied",
-            description: `Only users with @${ALLOWED_DOMAIN} email are allowed.`,
-          });
-          signOut(auth);
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
+      setUser(currentUser);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [toast]);
+  }, []);
 
   const signIn = async () => {
     setLoading(true);
