@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Camera, Loader, HardHat } from 'lucide-react';
+import { Loader2, LogIn, Camera, Loader, Receipt } from 'lucide-react';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReceiptStore } from '@/lib/store';
@@ -17,9 +17,9 @@ function LoginView() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10">
-            <HardHat className="h-10 w-10 text-primary" />
+            <Receipt className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="font-headline text-2xl">Asepeyo Expenses</CardTitle>
+          <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
           <CardDescription>Sign in to manage your receipts.</CardDescription>
         </CardHeader>
         <CardContent>

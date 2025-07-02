@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HardHat, Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
+import { Receipt, Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <HardHat className="h-7 w-7 text-primary" />
+          <Receipt className="h-7 w-7 text-primary" />
           <span className="font-headline text-xl font-bold hidden sm:inline-block">
-            Asepeyo Expenses
+            LIGAE
           </span>
         </Link>
 
