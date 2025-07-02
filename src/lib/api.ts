@@ -1,7 +1,7 @@
 'use client';
 
-const PROJECT_ID = 'ligae-asepeyo-463510';
-const BUCKET_NAME = 'ticketimages';
+const PROJECT_ID = 'receipt-snap-e3z1z';
+const BUCKET_NAME = 'receipt-snap-e3z1z.appspot.com';
 
 // Helper to convert data URI to Blob
 function dataURIToBlob(dataURI: string) {
