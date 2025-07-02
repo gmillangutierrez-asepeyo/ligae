@@ -23,7 +23,7 @@ export type ExtractReceiptDataInput = z.infer<typeof ExtractReceiptDataInputSche
 const ExtractReceiptDataOutputSchema = z.object({
   sector: z.string().describe('The type of expense (e.g., \"food\", \"transportation\").'),
   importe: z.number().describe('The total cost in euros (€), as a numerical value.'),
-  usuario: z.string().email().describe('The email of the user who has logged in.'),
+  usuario: z.string().describe('The email of the user who has logged in.'),
   fecha: z.string().describe('The date on the receipt.'),
 });
 export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSchema>;
