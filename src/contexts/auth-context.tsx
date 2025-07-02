@@ -22,12 +22,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+      if (currentUser && currentUser.email && !currentUser.email.endsWith('@asepeyo.es')) {
+        signOut(auth);
+        toast({
+          variant: 'destructive',
+          title: 'Acceso Denegado',
+          description: 'Solo se permiten cuentas de @asepeyo.es.',
+        });
+        setUser(null);
+        setLoading(false);
+      } else {
+        setUser(currentUser);
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
 
   const signIn = async () => {
     setLoading(true);
