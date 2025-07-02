@@ -1,7 +1,8 @@
 'use client';
 
-const PROJECT_ID = 'receipt-snap-e3z1z';
-const BUCKET_NAME = 'receipt-snap-e3z1z.appspot.com';
+const PROJECT_ID = 'ligae-asepeyo-463510';
+const DATABASE_ID = 'ticketsligae';
+const BUCKET_NAME = 'ticketimages';
 
 // Helper to convert data URI to Blob
 function dataURIToBlob(dataURI: string) {
@@ -38,7 +39,7 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
 }
 
 export async function saveToFirestore(data: any, token: string) {
-  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/tickets`;
+  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents/tickets`;
 
   const firestoreData = {
     fields: {
@@ -69,7 +70,7 @@ export async function saveToFirestore(data: any, token: string) {
 }
 
 export async function fetchTickets(userEmail: string, token: string) {
-    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents:runQuery`;
     
     const query = {
       structuredQuery: {
@@ -123,7 +124,7 @@ export async function deleteFromStorage(fileName: string, token: string) {
 }
 
 export async function deleteFromFirestore(docId: string, token: string) {
-    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/tickets/${docId}`;
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents/tickets/${docId}`;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: {
