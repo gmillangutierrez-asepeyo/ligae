@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth, Impersonated } from 'google-auth-library';
 
 const TARGET_SERVICE_ACCOUNT = 'ligae-web-client@ligae-asepeyo-463510.iam.gserviceaccount.com';
-const SCOPES = [
+const TARGET_SCOPES = [
     'https://www.googleapis.com/auth/cloud-platform',
     'https://www.googleapis.com/auth/firebase.database',
     'https://www.googleapis.com/auth/userinfo.email'
@@ -24,7 +24,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'ID token is required' }, { status: 400 });
         }
         
-        const auth = new GoogleAuth({ scopes: SCOPES });
+        // The source client (the App Hosting service account) only needs permissions
+        // to call the IAM Credentials API to impersonate another service account.
+        // We initialize it with the minimal required scope to avoid permission errors.
+        const auth = new GoogleAuth({
+            scopes: 'https://www.googleapis.com/auth/iam',
+        });
         const sourceClient = await auth.getClient();
 
         const impersonated = new Impersonated({
@@ -32,7 +37,7 @@ export async function POST(req: NextRequest) {
             targetPrincipal: TARGET_SERVICE_ACCOUNT,
             lifetime: 3600,
             delegates: [],
-            targetScopes: SCOPES,
+            targetScopes: TARGET_SCOPES, // These are the scopes for the *final* token.
         });
 
         const tokenResponse = await impersonated.getAccessToken();
