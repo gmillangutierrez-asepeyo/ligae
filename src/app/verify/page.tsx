@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
@@ -18,7 +19,6 @@ import { useReceiptStore } from '@/lib/store';
 import { uploadToStorage, saveToFirestore } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 
 
 const FormSchema = z.object({
@@ -37,7 +37,7 @@ const generateUniqueId = (userEmail: string) => `${userEmail.split('@')[0]}-${Da
 function VerifyPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { photoDataUri, extractedData, clearReceiptData } = useReceiptStore();
+  const { croppedPhotoDataUri, extractedData, clearReceiptData } = useReceiptStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
@@ -45,21 +45,30 @@ function VerifyPage() {
     control,
     handleSubmit,
     formState: { errors },
+    reset
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    values: {
-      sector: extractedData?.sector || '',
-      importe: extractedData?.importe || 0,
-      usuario: extractedData?.usuario || '',
-      fecha: extractedData?.fecha || '',
+    defaultValues: {
+      sector: '',
+      importe: 0,
+      usuario: '',
+      fecha: '',
     },
   });
 
   useEffect(() => {
-    if (!photoDataUri || !extractedData) {
+    if (!croppedPhotoDataUri || !extractedData) {
       router.replace('/');
+      return;
     }
     
+    reset({
+      sector: extractedData.sector || '',
+      importe: extractedData.importe || 0,
+      usuario: extractedData.usuario || '',
+      fecha: extractedData.fecha || '',
+    })
+
     const storedToken = localStorage.getItem('oauth_token');
     if (!storedToken) {
        toast({
@@ -71,10 +80,10 @@ function VerifyPage() {
     } else {
       setToken(storedToken);
     }
-  }, [photoDataUri, extractedData, router, toast]);
+  }, [croppedPhotoDataUri, extractedData, router, toast, reset]);
 
   const onSubmit = async (data: FormData) => {
-    if (!photoDataUri) return;
+    if (!croppedPhotoDataUri) return;
     if (!token) {
       toast({ variant: 'destructive', title: 'Error', description: 'OAuth token is missing.' });
       return;
@@ -83,7 +92,7 @@ function VerifyPage() {
     setIsSubmitting(true);
     try {
       const fileName = `${generateUniqueId(data.usuario)}.jpg`;
-      const photoUrl = await uploadToStorage(photoDataUri, fileName, token);
+      const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName, token);
 
       await saveToFirestore({ ...data, photoUrl, fileName }, token);
 
@@ -101,7 +110,7 @@ function VerifyPage() {
     }
   };
 
-  if (!photoDataUri) {
+  if (!croppedPhotoDataUri || !extractedData) {
     return null; // or a loading/redirecting state
   }
 
@@ -122,7 +131,7 @@ function VerifyPage() {
               <CardContent>
                 <div className="relative aspect-[9/16] w-full max-w-sm mx-auto rounded-lg overflow-hidden border">
                   <Image
-                    src={photoDataUri}
+                    src={croppedPhotoDataUri}
                     alt="Captured receipt"
                     layout="fill"
                     objectFit="contain"

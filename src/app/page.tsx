@@ -3,13 +3,10 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Camera, Loader, Receipt } from 'lucide-react';
+import { Loader2, LogIn, Camera } from 'lucide-react';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useReceiptStore } from '@/lib/store';
-import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
-import { cropReceiptImage } from '@/ai/flows/crop-receipt-image';
 import Header from '@/components/header';
 
 function LoginView() {
@@ -19,7 +16,7 @@ function LoginView() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto flex items-center justify-center mb-2">
-            <Receipt className="h-10 w-10 text-primary" />
+            <Camera className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
           <p className="text-muted-foreground font-headline">ASEPEYO</p>
@@ -37,13 +34,10 @@ function LoginView() {
 }
 
 function CaptureView() {
-  const { user } = useAuth();
   const router = useRouter();
-  const setReceiptData = useReceiptStore((state) => state.setReceiptData);
+  const setOriginalPhoto = useReceiptStore((state) => state.setOriginalPhoto);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const startCamera = useCallback(async () => {
@@ -70,9 +64,8 @@ function CaptureView() {
     };
   }, [startCamera]);
 
-  const handleCapture = useCallback(async () => {
+  const handleCapture = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
-    setIsLoading(true);
     setError(null);
 
     const video = videoRef.current;
@@ -83,27 +76,10 @@ function CaptureView() {
     if (context) {
       context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       const originalPhotoDataUri = canvas.toDataURL('image/jpeg');
-      
-      try {
-        if (!user?.email) throw new Error("User email not found.");
-
-        setLoadingMessage('Cropping receipt...');
-        const { croppedPhotoDataUri } = await cropReceiptImage({ photoDataUri: originalPhotoDataUri });
-        
-        setLoadingMessage('Analyzing receipt...');
-        const extractedData = await extractReceiptData({ photoDataUri: croppedPhotoDataUri, usuario: user.email });
-        
-        // Use the cropped photo for verification and storage
-        setReceiptData({ photoDataUri: croppedPhotoDataUri, extractedData });
-        router.push('/verify');
-      } catch (e) {
-        console.error("Error processing receipt:", e);
-        setError("Failed to process receipt. Please try again.");
-        setIsLoading(false);
-        setLoadingMessage('');
-      }
+      setOriginalPhoto(originalPhotoDataUri);
+      router.push('/crop');
     }
-  }, [router, setReceiptData, user?.email]);
+  }, [router, setOriginalPhoto]);
 
   return (
     <div className="flex flex-col h-screen w-full bg-background">
@@ -125,17 +101,11 @@ function CaptureView() {
           </div>
 
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-            <Button onClick={handleCapture} disabled={isLoading} size="lg" className="rounded-full w-20 h-20 bg-accent hover:bg-accent/90 shadow-2xl">
+            <Button onClick={handleCapture} size="lg" className="rounded-full w-20 h-20 bg-accent hover:bg-accent/90 shadow-2xl">
               <Camera className="h-10 w-10 text-accent-foreground" />
             </Button>
           </div>
 
-          {isLoading && (
-            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-              <Loader className="h-12 w-12 animate-spin mb-4" />
-              <p className="font-headline">{loadingMessage || 'Processing...'}</p>
-            </div>
-          )}
         </div>
         {error && <p className="text-destructive text-center">{error}</p>}
         <canvas ref={canvasRef} className="hidden" />

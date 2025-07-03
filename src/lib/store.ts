@@ -2,15 +2,30 @@ import { create } from 'zustand';
 import type { ExtractReceiptDataOutput } from '@/ai/flows/extract-receipt-data';
 
 interface ReceiptState {
-  photoDataUri: string | null;
+  originalPhotoDataUri: string | null;
+  croppedPhotoDataUri: string | null;
   extractedData: ExtractReceiptDataOutput | null;
-  setReceiptData: (data: { photoDataUri: string; extractedData: ExtractReceiptDataOutput }) => void;
+  setOriginalPhoto: (uri: string) => void;
+  setCroppedPhotoAndData: (data: { croppedPhotoDataUri: string; extractedData: ExtractReceiptDataOutput }) => void;
   clearReceiptData: () => void;
 }
 
 export const useReceiptStore = create<ReceiptState>((set) => ({
-  photoDataUri: null,
+  originalPhotoDataUri: null,
+  croppedPhotoDataUri: null,
   extractedData: null,
-  setReceiptData: (data) => set({ photoDataUri: data.photoDataUri, extractedData: data.extractedData }),
-  clearReceiptData: () => set({ photoDataUri: null, extractedData: null }),
+  setOriginalPhoto: (uri) => set({ 
+    originalPhotoDataUri: uri, 
+    croppedPhotoDataUri: null, 
+    extractedData: null 
+  }),
+  setCroppedPhotoAndData: (data) => set({ 
+    croppedPhotoDataUri: data.croppedPhotoDataUri, 
+    extractedData: data.extractedData 
+  }),
+  clearReceiptData: () => set({ 
+    originalPhotoDataUri: null, 
+    croppedPhotoDataUri: null, 
+    extractedData: null 
+  }),
 }));

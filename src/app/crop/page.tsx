@@ -1,0 +1,183 @@
+'use client';
+
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+
+import { useReceiptStore } from '@/lib/store';
+import { useAuth } from '@/contexts/auth-context';
+import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
+
+import Header from '@/components/header';
+import { Button } from '@/components/ui/button';
+import { Loader, Scissors } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+function getCroppedImg(
+  image: HTMLImageElement,
+  crop: Crop,
+  canvas: HTMLCanvasElement
+) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('No 2d context');
+  }
+
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  
+  const pixelRatio = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
+  canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
+
+  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  ctx.imageSmoothingQuality = 'high';
+
+  const cropX = crop.x * scaleX;
+  const cropY = crop.y * scaleY;
+
+  ctx.drawImage(
+    image,
+    cropX,
+    cropY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width * scaleX,
+    crop.height * scaleY
+  );
+}
+
+
+function CropPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { originalPhotoDataUri, setCroppedPhotoAndData } = useReceiptStore();
+
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<Crop>();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const imgRef = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!originalPhotoDataUri) {
+      router.replace('/');
+    }
+  }, [originalPhotoDataUri, router]);
+
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const { width, height } = e.currentTarget;
+    const newCrop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        height / width,
+        width,
+        height
+      ),
+      width,
+      height
+    );
+    setCrop(newCrop);
+  }
+
+  const handleConfirmCrop = useCallback(async () => {
+    if (!completedCrop || !imgRef.current || !canvasRef.current || !user?.email) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not process crop. Please try again.',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      getCroppedImg(imgRef.current, completedCrop, canvasRef.current);
+      const croppedPhotoDataUri = canvasRef.current.toDataURL('image/jpeg');
+
+      const extractedData = await extractReceiptData({
+        photoDataUri: croppedPhotoDataUri,
+        usuario: user.email,
+      });
+
+      setCroppedPhotoAndData({
+        croppedPhotoDataUri,
+        extractedData,
+      });
+
+      router.push('/verify');
+    } catch (e: any) {
+      console.error("Error processing receipt:", e);
+      toast({
+        variant: 'destructive',
+        title: 'Processing Failed',
+        description: e.message || 'Failed to analyze receipt. Please try again.',
+      });
+      setIsLoading(false);
+    }
+  }, [completedCrop, router, setCroppedPhotoAndData, user?.email, toast]);
+
+  if (!originalPhotoDataUri) {
+    return null; // or a loading spinner
+  }
+
+  return (
+    <div className="flex flex-col h-screen w-full bg-background">
+      <Header />
+      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+        <h1 className="font-headline text-2xl text-center">Crop Receipt</h1>
+        <p className="text-muted-foreground text-center mb-4">
+          Adjust the frame to fit the receipt, then confirm.
+        </p>
+        <div className="relative w-full max-w-md">
+          <ReactCrop
+            crop={crop}
+            onChange={(_, percentCrop) => setCrop(percentCrop)}
+            onComplete={(c) => setCompletedCrop(c)}
+            aspect={undefined} // Free crop
+          >
+            <Image
+              ref={imgRef}
+              alt="Receipt to crop"
+              src={originalPhotoDataUri}
+              width={500}
+              height={888} // approx 9/16 aspect ratio
+              onLoad={onImageLoad}
+              className="w-full h-auto"
+            />
+          </ReactCrop>
+        </div>
+
+        <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg">
+          {isLoading ? (
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Scissors className="mr-2 h-4 w-4" />
+          )}
+          Confirm and Analyze
+        </Button>
+
+        {isLoading && (
+          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
+            <Loader className="h-12 w-12 animate-spin mb-4" />
+            <p className="font-headline">Analyzing receipt...</p>
+          </div>
+        )}
+
+        <canvas ref={canvasRef} className="hidden" />
+      </main>
+    </div>
+  );
+}
+
+export default CropPage;
