@@ -45,28 +45,21 @@ function VerifyPage() {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      sector: '',
-      importe: 0,
-      usuario: '',
-      fecha: '',
+    values: {
+      sector: extractedData?.sector || '',
+      importe: extractedData?.importe || 0,
+      usuario: extractedData?.usuario || '',
+      fecha: extractedData?.fecha || '',
     },
   });
 
   useEffect(() => {
     if (!photoDataUri || !extractedData) {
       router.replace('/');
-    } else {
-      reset({
-        sector: extractedData.sector,
-        importe: extractedData.importe,
-        usuario: extractedData.usuario,
-        fecha: extractedData.fecha,
-      });
     }
+    
     const storedToken = localStorage.getItem('oauth_token');
     if (!storedToken) {
        toast({
@@ -78,7 +71,7 @@ function VerifyPage() {
     } else {
       setToken(storedToken);
     }
-  }, [photoDataUri, extractedData, router, reset, toast]);
+  }, [photoDataUri, extractedData, router, toast]);
 
   const onSubmit = async (data: FormData) => {
     if (!photoDataUri) return;
