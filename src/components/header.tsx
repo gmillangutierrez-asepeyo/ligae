@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
+import { Camera, GalleryHorizontal, Settings, LogOut, Receipt } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-3">
+          <Receipt className="h-8 w-8 text-primary" />
           <div className="flex flex-col">
             <span className="font-headline text-lg font-bold">LIGAE</span>
             <span className="text-xs text-muted-foreground">ASEPEYO</span>

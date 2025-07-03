@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Camera, Loader } from 'lucide-react';
+import { Loader2, LogIn, Camera, Loader, Receipt } from 'lucide-react';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -17,6 +17,9 @@ function LoginView() {
     <div className="flex h-screen w-full items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
+          <div className="mx-auto flex items-center justify-center mb-2">
+            <Receipt className="h-10 w-10 text-primary" />
+          </div>
           <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
           <p className="text-muted-foreground font-headline">ASEPEYO</p>
           <CardDescription className="pt-2">Sign in to manage your receipts.</CardDescription>
