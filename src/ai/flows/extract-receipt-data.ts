@@ -17,16 +17,20 @@ const ExtractReceiptDataInputSchema = z.object({
     .describe(
       "A photo of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  usuario: z.string().email().describe("The email of the user submitting the receipt."),
 });
 export type ExtractReceiptDataInput = z.infer<typeof ExtractReceiptDataInputSchema>;
 
 const ExtractReceiptDataOutputSchema = z.object({
-  sector: z.string().describe('The type of expense (e.g., \"food\", \"transportation\").'),
+  sector: z.string().describe('The type of expense. Must be one of: "comida", "transporte", or "otros".'),
   importe: z.number().describe('The total cost in euros (€), as a numerical value.'),
   usuario: z.string().describe('The email of the user who has logged in.'),
   fecha: z.string().describe('The date on the receipt.'),
 });
 export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSchema>;
+
+// This is the internal schema for what we expect from the AI model
+const ModelOutputSchema = ExtractReceiptDataOutputSchema.omit({ usuario: true });
 
 export async function extractReceiptData(input: ExtractReceiptDataInput): Promise<ExtractReceiptDataOutput> {
   return extractReceiptDataFlow(input);
@@ -34,11 +38,13 @@ export async function extractReceiptData(input: ExtractReceiptDataInput): Promis
 
 const extractReceiptDataPrompt = ai.definePrompt({
   name: 'extractReceiptDataPrompt',
-  input: {schema: ExtractReceiptDataInputSchema},
-  output: {schema: ExtractReceiptDataOutputSchema},
+  input: {schema: ExtractReceiptDataInputSchema.pick({ photoDataUri: true })},
+  output: {schema: ModelOutputSchema},
   prompt: `You are an expert accountant specializing in extracting data from receipts.
 
-You will use this information to extract key information from the receipt, such as the sector, the total amount, the date, and the user.
+You will use this information to extract key information from the receipt.
+- Analyze the receipt to determine the expense category. It must be one of the following: "comida", "transporte", or "otros".
+- Extract the total amount and the date.
 
 Use the following as the primary source of information about the receipt.
 
@@ -48,7 +54,6 @@ Output the data in JSON format. Here's the schema:
 {
   "sector": "string",
   "importe": number,
-  "usuario": "email",
   "fecha": "string"
 }
 `,
@@ -60,8 +65,16 @@ const extractReceiptDataFlow = ai.defineFlow(
     inputSchema: ExtractReceiptDataInputSchema,
     outputSchema: ExtractReceiptDataOutputSchema,
   },
-  async input => {
-    const {output} = await extractReceiptDataPrompt(input);
-    return output!;
+  async (input) => {
+    const {output: modelOutput} = await extractReceiptDataPrompt({ photoDataUri: input.photoDataUri });
+
+    if (!modelOutput) {
+        throw new Error("Failed to get a valid response from the AI model.");
+    }
+    
+    return {
+      ...modelOutput,
+      usuario: input.usuario,
+    };
   }
 );

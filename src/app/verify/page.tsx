@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useReceiptStore } from '@/lib/store';
 import { uploadToStorage, saveToFirestore } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -148,7 +149,18 @@ function VerifyPage() {
                     <Controller
                       name="sector"
                       control={control}
-                      render={({ field }) => <Input id="sector" {...field} />}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                          <SelectTrigger id="sector">
+                            <SelectValue placeholder="Select a sector" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="comida">Comida</SelectItem>
+                            <SelectItem value="transporte">Transporte</SelectItem>
+                            <SelectItem value="otros">Otros</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                     />
                     {errors.sector && <p className="text-destructive text-sm mt-1">{errors.sector.message}</p>}
                   </div>

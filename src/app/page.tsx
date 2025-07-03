@@ -85,8 +85,8 @@ function CaptureView() {
       try {
         if (!user?.email) throw new Error("User email not found.");
         
-        const extractedData = await extractReceiptData({ photoDataUri });
-        setReceiptData({ photoDataUri, extractedData: { ...extractedData, usuario: user.email }});
+        const extractedData = await extractReceiptData({ photoDataUri, usuario: user.email });
+        setReceiptData({ photoDataUri, extractedData });
         router.push('/verify');
       } catch (e) {
         console.error("Error processing receipt:", e);
