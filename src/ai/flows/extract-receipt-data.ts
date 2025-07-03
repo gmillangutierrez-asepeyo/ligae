@@ -79,48 +79,38 @@ const extractReceiptDataFlow = ai.defineFlow(
     outputSchema: ExtractReceiptDataOutputSchema,
   },
   async (input) => {
+    // Start with default values to ensure a valid object is always returned.
+    const finalOutput: ExtractReceiptDataOutput = {
+      sector: 'otros',
+      importe: 0,
+      usuario: input.usuario,
+      fecha: getSafeDateString(),
+    };
+
     try {
       const {output: modelOutput} = await extractReceiptDataPrompt({ photoDataUri: input.photoDataUri });
 
-      // If model fails, returns nothing, or not an object, fallback to default values.
-      // This can happen if Zod parsing of the model output fails (e.g., invalid sector).
-      if (!modelOutput || typeof modelOutput !== 'object') {
-        console.warn("AI model did not return valid structured data. Falling back to defaults.");
-        return {
-          sector: 'otros',
-          importe: 0,
-          usuario: input.usuario,
-          fecha: getSafeDateString(),
-        };
-      }
-      
-      // Since ModelOutputSchema now uses the enum, `modelOutput.sector` is guaranteed to be valid if we reach this point.
-      const finalSector = modelOutput.sector;
+      // If the model provides a valid output, overwrite the defaults.
+      // Genkit's Zod parsing guarantees that if modelOutput is not null/undefined, it matches ModelOutputSchema.
+      if (modelOutput) {
+        finalOutput.sector = modelOutput.sector; // This is guaranteed to be a valid enum value.
+        finalOutput.fecha = modelOutput.fecha || getSafeDateString();
 
-      let importeAsNumber = 0;
-      if (modelOutput.importe) {
-        const importeAsString = String(modelOutput.importe).replace(',', '.');
-        const parsedImporte = parseFloat(importeAsString);
-        if (!isNaN(parsedImporte)) {
-          importeAsNumber = parsedImporte;
+        if (modelOutput.importe) {
+          const importeAsString = String(modelOutput.importe).replace(',', '.');
+          const parsedImporte = parseFloat(importeAsString);
+          if (!isNaN(parsedImporte)) {
+            finalOutput.importe = parsedImporte;
+          }
         }
+      } else {
+        console.warn("AI model did not return valid structured data. Using default values.");
       }
-
-      return {
-        sector: finalSector,
-        importe: importeAsNumber,
-        usuario: input.usuario,
-        fecha: modelOutput.fecha || getSafeDateString(),
-      };
     } catch (error) {
-      console.error("An unexpected error occurred in extractReceiptDataFlow, falling back to defaults:", error);
-      // Fallback in case of any exception during the prompt call (e.g., safety filters).
-      return {
-        sector: 'otros',
-        importe: 0,
-        usuario: input.usuario,
-        fecha: getSafeDateString(),
-      };
+      console.error("An error occurred in extractReceiptDataFlow, using default values:", error);
+      // In case of any error (e.g., API failure, safety filters), the default finalOutput is used.
     }
+
+    return finalOutput;
   }
 );
