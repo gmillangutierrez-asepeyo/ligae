@@ -19,10 +19,10 @@ const ReceiptEuroIcon = React.forwardRef<
     className={cn(className)}
     {...props}
   >
-    <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1Z" />
-    <path d="M8 6h8" />
-    <path d="M8 10h8" />
-    <path d="M8 14h4" />
+    <path d="M3 2v20l3-1.5 3 1.5 3-1.5 3 1.5 3-1.5 3 1.5V2H3z" />
+    <path d="M8 7h8" />
+    <path d="M8 11h8" />
+    <path d="M8 15h5" />
   </svg>
 ))
 

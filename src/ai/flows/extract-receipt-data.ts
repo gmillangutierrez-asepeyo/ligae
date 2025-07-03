@@ -92,7 +92,9 @@ const extractReceiptDataFlow = ai.defineFlow(
         };
       }
       
-      const parsedSector = validSectors.safeParse(modelOutput.sector);
+      // Safely parse the sector, defaulting to 'otros' if missing or invalid.
+      const sectorFromModel = modelOutput.sector || 'otros';
+      const parsedSector = validSectors.safeParse(sectorFromModel.trim().toLowerCase());
       const finalSector = parsedSector.success ? parsedSector.data : 'otros';
 
       let importeAsNumber = 0;

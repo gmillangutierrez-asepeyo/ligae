@@ -154,7 +154,7 @@ function VerifyPage() {
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger id="sector">
-                            <SelectValue placeholder="Select a sector" />
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="comida">Comida</SelectItem>
