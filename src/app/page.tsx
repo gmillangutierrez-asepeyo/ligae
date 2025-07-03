@@ -17,14 +17,8 @@ function LoginView() {
     <div className="flex h-screen w-full items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <Image
-            src="/asepeyo-logo.png"
-            alt="Asepeyo Logo"
-            width={180}
-            height={60}
-            className="object-contain mx-auto mb-6"
-          />
-          <CardTitle className="font-headline text-2xl">Expenses Tracker</CardTitle>
+          <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
+          <p className="text-muted-foreground font-headline">ASEPEYO</p>
           <CardDescription className="pt-2">Sign in to manage your receipts.</CardDescription>
         </CardHeader>
         <CardContent>

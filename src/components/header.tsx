@@ -32,13 +32,10 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/asepeyo-logo.png"
-            alt="Asepeyo Logo"
-            width={120}
-            height={40}
-            className="object-contain"
-          />
+          <div className="flex flex-col">
+            <span className="font-headline text-lg font-bold">LIGAE</span>
+            <span className="text-xs text-muted-foreground">ASEPEYO</span>
+          </div>
         </Link>
 
         <nav className="hidden md:flex items-center gap-2">

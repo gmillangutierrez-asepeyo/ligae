@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Asepeyo Expenses Tracker',
+  title: 'LIGAE | ASEPEYO',
   description: 'Manage your expense receipts easily.',
 };
 
