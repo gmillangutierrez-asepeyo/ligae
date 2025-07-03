@@ -26,6 +26,6 @@ const ReceiptEuroIcon = React.forwardRef<
   </svg>
 ))
 
-ReceiptEuroIcon.displayName = "ReceiptTextIcon"
+ReceiptEuroIcon.displayName = "ReceiptEuroIcon"
 
 export default ReceiptEuroIcon;
