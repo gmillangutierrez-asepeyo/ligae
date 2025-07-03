@@ -20,6 +20,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const fetchAndStoreToken = async (currentUser: User) => {
+    try {
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch('/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to fetch OAuth token.');
+      }
+
+      const { accessToken } = await response.json();
+      if (accessToken) {
+        localStorage.setItem('oauth_token', accessToken);
+      } else {
+        throw new Error('Received an empty access token.');
+      }
+    } catch (error: any) {
+      console.error("Token generation failed:", error.message);
+      localStorage.removeItem('oauth_token');
+      toast({
+        variant: 'destructive',
+        title: 'Fallo al generar el Token',
+        description: 'No se pudo obtener el token de acceso. Por favor, configúralo manualmente en Ajustes.',
+      });
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser && currentUser.email && !currentUser.email.endsWith('@asepeyo.es')) {
@@ -30,11 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: 'Solo se permiten cuentas de @asepeyo.es.',
         });
         setUser(null);
-        setLoading(false);
+        localStorage.removeItem('oauth_token');
       } else {
         setUser(currentUser);
-        setLoading(false);
+        if (currentUser) {
+          fetchAndStoreToken(currentUser);
+        } else {
+          localStorage.removeItem('oauth_token');
+        }
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -45,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      // onAuthStateChanged will handle setting the user
+      // onAuthStateChanged will handle setting the user and fetching the token
     } catch (error) {
       console.error("Sign in error", error);
       toast({
