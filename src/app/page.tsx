@@ -19,8 +19,11 @@ function LoginView() {
           <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10">
             <Receipt className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="font-headline text-2xl">LIGAE | ASEPEYO</CardTitle>
-          <CardDescription>Sign in to manage your receipts.</CardDescription>
+          <div>
+            <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
+            <p className="text-sm font-medium text-primary">ASEPEYO</p>
+          </div>
+          <CardDescription className="pt-2">Sign in to manage your receipts.</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={signIn} disabled={loading} className="w-full">

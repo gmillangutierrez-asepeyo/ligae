@@ -32,9 +32,14 @@ export default function Header() {
       <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
           <Receipt className="h-7 w-7 text-primary" />
-          <span className="font-headline text-xl font-bold hidden sm:inline-block">
-            LIGAE | ASEPEYO
-          </span>
+          <div className="flex flex-col">
+            <span className="font-headline text-xl font-bold leading-tight">
+              LIGAE
+            </span>
+            <span className="text-xs font-medium text-muted-foreground leading-tight hidden sm:block">
+              ASEPEYO
+            </span>
+          </div>
         </Link>
 
         <nav className="hidden md:flex items-center gap-2">
