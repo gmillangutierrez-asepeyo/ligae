@@ -72,9 +72,8 @@ const extractReceiptDataFlow = ai.defineFlow(
     try {
       const {output: modelOutput} = await extractReceiptDataPrompt({ photoDataUri: input.photoDataUri });
 
-      // If model fails or returns nothing, fallback to default values.
-      // This allows the user to fill the form manually instead of seeing an error.
-      if (!modelOutput) {
+      // If model fails, returns nothing, or not an object, fallback to default values.
+      if (!modelOutput || typeof modelOutput !== 'object') {
         console.warn("AI model did not return structured data. Falling back to defaults.");
         return {
           sector: 'otros',

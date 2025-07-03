@@ -20,12 +20,12 @@ const ReceiptEuroIcon = React.forwardRef<
     {...props}
   >
     <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1Z" />
-    <path d="M15.32 12.21A4.05 4.05 0 1 1 9.68 6.57" />
-    <path d="M10 12h4" />
-    <path d="M10 16h4" />
+    <path d="M8 6h8" />
+    <path d="M8 10h8" />
+    <path d="M8 14h4" />
   </svg>
 ))
 
-ReceiptEuroIcon.displayName = "ReceiptEuroIcon"
+ReceiptEuroIcon.displayName = "ReceiptTextIcon"
 
 export default ReceiptEuroIcon;

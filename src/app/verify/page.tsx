@@ -42,11 +42,11 @@ function VerifyPage() {
   const {
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
+    // Use `values` to make the form reactive to external data from the store
+    values: extractedData || {
       sector: '',
       importe: 0,
       usuario: '',
@@ -55,15 +55,13 @@ function VerifyPage() {
   });
 
   useEffect(() => {
-    if (!croppedPhotoDataUri || !extractedData) {
+    // Redirect if there's no photo data to verify
+    if (!croppedPhotoDataUri) {
       router.replace('/');
       return;
     }
 
-    if (extractedData) {
-      reset(extractedData);
-    }
-    
+    // Check for the OAuth token and redirect to settings if it's missing
     const storedToken = localStorage.getItem('oauth_token');
     if (!storedToken) {
        toast({
@@ -75,7 +73,7 @@ function VerifyPage() {
     } else {
       setToken(storedToken);
     }
-  }, [croppedPhotoDataUri, extractedData, router, toast, reset]);
+  }, [croppedPhotoDataUri, router, toast]);
 
   const onSubmit = async (data: FormData) => {
     if (!croppedPhotoDataUri) return;
