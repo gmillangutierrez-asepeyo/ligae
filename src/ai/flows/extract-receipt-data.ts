@@ -11,6 +11,15 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+// Helper function to get date in YYYY-MM-DD format, robust for server environments.
+function getSafeDateString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const ExtractReceiptDataInputSchema = z.object({
   photoDataUri: z
     .string()
@@ -79,7 +88,7 @@ const extractReceiptDataFlow = ai.defineFlow(
           sector: 'otros',
           importe: 0,
           usuario: input.usuario,
-          fecha: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format
+          fecha: getSafeDateString(),
         };
       }
       
@@ -99,7 +108,7 @@ const extractReceiptDataFlow = ai.defineFlow(
         sector: finalSector,
         importe: importeAsNumber,
         usuario: input.usuario,
-        fecha: modelOutput.fecha || new Date().toLocaleDateString('en-CA'),
+        fecha: modelOutput.fecha || getSafeDateString(),
       };
     } catch (error) {
       console.error("An unexpected error occurred in extractReceiptDataFlow, falling back to defaults:", error);
@@ -108,7 +117,7 @@ const extractReceiptDataFlow = ai.defineFlow(
         sector: 'otros',
         importe: 0,
         usuario: input.usuario,
-        fecha: new Date().toLocaleDateString('en-CA'),
+        fecha: getSafeDateString(),
       };
     }
   }

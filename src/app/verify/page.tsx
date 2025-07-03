@@ -43,16 +43,23 @@ function VerifyPage() {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    // Use `values` to make the form reactive to external data from the store
-    values: extractedData || {
+    defaultValues: {
       sector: '',
       importe: 0,
       usuario: '',
       fecha: '',
     },
   });
+
+  useEffect(() => {
+    // When extractedData is available, reset the form with these new values
+    if (extractedData) {
+      reset(extractedData);
+    }
+  }, [extractedData, reset]);
 
   useEffect(() => {
     // Redirect if there's no photo data to verify
