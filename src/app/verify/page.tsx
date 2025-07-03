@@ -47,7 +47,7 @@ function VerifyPage() {
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      sector: '',
+      sector: 'otros',
       importe: 0,
       usuario: '',
       fecha: '',

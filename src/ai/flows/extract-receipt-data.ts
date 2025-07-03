@@ -41,9 +41,10 @@ const ExtractReceiptDataOutputSchema = z.object({
 export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSchema>;
 
 // This is the internal schema for what we expect from the AI model.
-// We'll allow any string for sector and a string or number for importe from the model, and then validate/coerce them.
+// Use the enum for sector to enforce the correct output from the model.
+// Allow string or number for importe to handle variations from the model.
 const ModelOutputSchema = z.object({
-  sector: z.string().describe('The type of expense. Must be one of: "comida", "transporte", or "otros".'),
+  sector: validSectors.describe('The type of expense. It MUST be one of: "comida", "transporte", or "otros". If unsure, you MUST default to "otros".'),
   importe: z.union([z.string(), z.number()]).optional().describe('The total cost in euros (€), as a numerical value or a string representing one.'),
   fecha: z.string().optional().describe('The date on the receipt.'),
 });
@@ -82,8 +83,9 @@ const extractReceiptDataFlow = ai.defineFlow(
       const {output: modelOutput} = await extractReceiptDataPrompt({ photoDataUri: input.photoDataUri });
 
       // If model fails, returns nothing, or not an object, fallback to default values.
+      // This can happen if Zod parsing of the model output fails (e.g., invalid sector).
       if (!modelOutput || typeof modelOutput !== 'object') {
-        console.warn("AI model did not return structured data. Falling back to defaults.");
+        console.warn("AI model did not return valid structured data. Falling back to defaults.");
         return {
           sector: 'otros',
           importe: 0,
@@ -92,10 +94,8 @@ const extractReceiptDataFlow = ai.defineFlow(
         };
       }
       
-      // Safely parse the sector, defaulting to 'otros' if missing or invalid.
-      const sectorFromModel = modelOutput.sector || 'otros';
-      const parsedSector = validSectors.safeParse(sectorFromModel.trim().toLowerCase());
-      const finalSector = parsedSector.success ? parsedSector.data : 'otros';
+      // Since ModelOutputSchema now uses the enum, `modelOutput.sector` is guaranteed to be valid if we reach this point.
+      const finalSector = modelOutput.sector;
 
       let importeAsNumber = 0;
       if (modelOutput.importe) {
