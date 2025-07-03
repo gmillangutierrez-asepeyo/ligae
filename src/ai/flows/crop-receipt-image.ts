@@ -40,7 +40,7 @@ const cropReceiptImageFlow = ai.defineFlow(
           model: 'googleai/gemini-2.0-flash-preview-image-generation',
           prompt: [
               { media: { url: input.photoDataUri } },
-              { text: 'Analyze the provided image. Identify the receipt within the image. Return a new image that is tightly cropped to show only the receipt, removing any surrounding background. The receipt should be straightened and oriented correctly if it is skewed. Do not add any text or other artifacts to the image.' },
+              { text: 'Analyze the provided image. Identify the receipt within the image. Return a new image that is tightly cropped to show only the receipt, removing any surrounding background. Do not straighten, rotate, or otherwise alter the content of the receipt.' },
           ],
           config: {
               responseModalities: ['TEXT', 'IMAGE'],

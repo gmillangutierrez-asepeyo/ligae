@@ -4,6 +4,18 @@ const PROJECT_ID = 'ligae-asepeyo-463510';
 const DATABASE_ID = 'ticketsligae';
 const BUCKET_NAME = 'ticketimages';
 
+// Helper to safely parse error responses from API calls
+async function getErrorMessage(response: Response, context: string): Promise<string> {
+  const errorText = await response.text();
+  try {
+    const errorJson = JSON.parse(errorText);
+    return errorJson.error?.message || errorText;
+  } catch (e) {
+    return errorText;
+  }
+}
+
+
 // Helper to convert data URI to Blob
 function dataURIToBlob(dataURI: string) {
   const byteString = atob(dataURI.split(',')[1]);
@@ -30,8 +42,8 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`Storage upload failed: ${error.error.message}`);
+    const errorMessage = await getErrorMessage(response, 'Storage upload');
+    throw new Error(`Storage upload failed: ${errorMessage}`);
   }
 
   const result = await response.json();
@@ -64,8 +76,8 @@ export async function saveToFirestore(data: any, token: string) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`Firestore save failed: ${error.error.message}`);
+    const errorMessage = await getErrorMessage(response, 'Firestore save');
+    throw new Error(`Firestore save failed: ${errorMessage}`);
   }
 
   return await response.json();
@@ -97,8 +109,8 @@ export async function fetchTickets(userEmail: string, token: string) {
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`Firestore fetch failed: ${error.error?.message || 'Unknown error'}`);
+        const errorMessage = await getErrorMessage(response, 'Firestore fetch');
+        throw new Error(`Firestore fetch failed: ${errorMessage}`);
     }
 
     const data = await response.json();
@@ -120,8 +132,8 @@ export async function deleteFromStorage(fileName: string, token: string) {
     });
 
     if (!response.ok && response.status !== 404) {
-        const error = await response.json();
-        throw new Error(`Storage delete failed: ${error.error.message}`);
+        const errorMessage = await getErrorMessage(response, 'Storage delete');
+        throw new Error(`Storage delete failed: ${errorMessage}`);
     }
 }
 
@@ -135,7 +147,7 @@ export async function deleteFromFirestore(docId: string, token: string) {
     });
 
     if (!response.ok && response.status !== 404) {
-        const error = await response.json();
-        throw new Error(`Firestore delete failed: ${error.error.message}`);
+        const errorMessage = await getErrorMessage(response, 'Firestore delete');
+        throw new Error(`Firestore delete failed: ${errorMessage}`);
     }
 }
