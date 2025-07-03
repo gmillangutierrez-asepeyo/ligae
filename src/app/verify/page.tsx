@@ -37,11 +37,9 @@ const generateUniqueId = (userEmail: string) => `${userEmail.split('@')[0]}-${Da
 function VerifyForm({
   initialData,
   croppedPhotoDataUri,
-  token,
 }: {
   initialData: FormData;
   croppedPhotoDataUri: string;
-  token: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -62,9 +60,9 @@ function VerifyForm({
     setIsSubmitting(true);
     try {
       const fileName = `${generateUniqueId(data.usuario)}.jpg`;
-      const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName, token);
-
-      await saveToFirestore({ ...data, photoUrl, fileName }, token);
+      const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName);
+      
+      await saveToFirestore({ ...data, photoUrl, fileName });
 
       toast({ title: 'Success!', description: 'Your receipt has been saved.' });
       clearReceiptData();
@@ -168,33 +166,17 @@ function VerifyForm({
 
 function VerifyPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const { croppedPhotoDataUri, extractedData } = useReceiptStore();
-  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     // Redirect if there's no photo data to verify
     if (!croppedPhotoDataUri) {
       router.replace('/');
-      return;
     }
-
-    // Check for the OAuth token and redirect to settings if it's missing
-    const storedToken = localStorage.getItem('oauth_token');
-    if (!storedToken) {
-       toast({
-        variant: 'destructive',
-        title: 'Token missing',
-        description: 'OAuth token not found. Please add it in Settings.',
-      });
-      router.push('/settings');
-    } else {
-      setToken(storedToken);
-    }
-  }, [croppedPhotoDataUri, router, toast]);
+  }, [croppedPhotoDataUri, router]);
 
   // Render a loading state or nothing until all required data is available
-  if (!croppedPhotoDataUri || !extractedData || !token) {
+  if (!croppedPhotoDataUri || !extractedData) {
     return (
         <AuthGuard>
              <div className="flex flex-col min-h-screen bg-background">
@@ -219,7 +201,6 @@ function VerifyPage() {
           <VerifyForm 
             initialData={extractedData} 
             croppedPhotoDataUri={croppedPhotoDataUri}
-            token={token}
           />
         </main>
       </div>

@@ -20,27 +20,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchAndStoreToken = useCallback(async () => {
-    try {
-      const response = await fetch('/api/token', { method: 'POST' });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Unknown error occurred');
-      }
-
-      localStorage.setItem('oauth_token', data.token);
-    } catch (error: any) {
-      console.error("Token generation failed:", error.message);
-      localStorage.removeItem('oauth_token');
-      toast({
-        variant: 'destructive',
-        title: 'Token Generation Failed',
-        description: 'Could not automatically get an API access token. Features like uploading may not work. Please try signing out and in again.',
-      });
-    }
-  }, [toast]);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser && currentUser.email && !currentUser.email.endsWith('@asepeyo.es')) {
@@ -51,18 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: 'Solo se permiten cuentas de @asepeyo.es.',
         });
         setUser(null);
-        setLoading(false);
       } else {
         setUser(currentUser);
-        if (currentUser) {
-          fetchAndStoreToken();
-        }
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [toast, fetchAndStoreToken]);
+  }, [toast]);
 
   const signIn = async () => {
     setLoading(true);
@@ -83,8 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSignOut = async () => {
     setLoading(true);
-    // Remove the automatically-generated or manually-set token on sign out
-    localStorage.removeItem('oauth_token');
     await signOut(auth);
     // onAuthStateChanged will set user to null and loading to false
   };

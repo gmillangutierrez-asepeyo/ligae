@@ -32,37 +32,9 @@ interface Receipt {
   fileName: { stringValue: string };
 }
 
-// Component to render a single receipt card, handling image fetching internally
-function ReceiptCard({ receipt, token, onDelete }: { receipt: Receipt; token: string | null; onDelete: (receipt: Receipt) => Promise<void> }) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+// Component to render a single receipt card
+function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void> }) {
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchImage = async () => {
-      if (!token || !receipt.photoUrl.stringValue) return;
-      try {
-        const res = await fetch(receipt.photoUrl.stringValue, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch image');
-        const blob = await res.blob();
-        if (isMounted) {
-          setImageUrl(URL.createObjectURL(blob));
-        }
-      } catch (error) {
-        console.error('Error fetching receipt image:', error);
-      }
-    };
-    fetchImage();
-
-    return () => {
-      isMounted = false;
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
-      }
-    };
-  }, [receipt.photoUrl.stringValue, token, imageUrl]);
 
   const handleDeleteClick = async () => {
     setIsDeleting(true);
@@ -74,19 +46,13 @@ function ReceiptCard({ receipt, token, onDelete }: { receipt: Receipt; token: st
     <Card className="overflow-hidden group">
       <CardHeader className="p-0">
         <div className="relative aspect-square">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={`Receipt for ${receipt.sector.stringValue}`}
-              layout="fill"
-              objectFit="cover"
-              className="transition-transform duration-300 group-hover:scale-105"
-            />
-          ) : (
-            <div className="w-full h-full bg-secondary flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          )}
+          <Image
+            src={receipt.photoUrl.stringValue}
+            alt={`Receipt for ${receipt.sector.stringValue}`}
+            layout="fill"
+            objectFit="cover"
+            className="transition-transform duration-300 group-hover:scale-105"
+          />
         </div>
       </CardHeader>
       <CardContent className="p-4">
@@ -130,14 +96,13 @@ function GalleryPage() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
 
-  const loadReceipts = useCallback(async (authToken: string) => {
+  const loadReceipts = useCallback(async () => {
     if (!user?.email) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchTickets(user.email, authToken);
+      const data = await fetchTickets(user.email);
       setReceipts(data);
     } catch (e: any) {
       setError(e.message || "Failed to load receipts.");
@@ -147,24 +112,13 @@ function GalleryPage() {
   }, [user?.email]);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('oauth_token');
-    if (storedToken) {
-      setToken(storedToken);
-      loadReceipts(storedToken);
-    } else {
-      setError("OAuth token not found. Please set it in Settings.");
-      setLoading(false);
-    }
+    loadReceipts();
   }, [loadReceipts]);
 
   const handleDelete = async (receipt: Receipt) => {
-    if (!token) {
-      toast({ variant: 'destructive', title: 'Error', description: 'OAuth token not found.' });
-      return;
-    }
     try {
-      await deleteFromStorage(receipt.fileName.stringValue, token);
-      await deleteFromFirestore(receipt.id, token);
+      await deleteFromStorage(receipt.fileName.stringValue);
+      await deleteFromFirestore(receipt.id);
       setReceipts(prev => prev.filter(r => r.id !== receipt.id));
       toast({ title: 'Success', description: 'Receipt deleted successfully.' });
     } catch (e: any) {
@@ -207,7 +161,7 @@ function GalleryPage() {
           {!loading && !error && receipts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {receipts.map((receipt) => (
-                <ReceiptCard key={receipt.id} receipt={receipt} token={token} onDelete={handleDelete} />
+                <ReceiptCard key={receipt.id} receipt={receipt} onDelete={handleDelete} />
               ))}
             </div>
           )}
