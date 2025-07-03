@@ -1,61 +1,89 @@
-'use server';
+// IMPORTANT: This file contains client-side logic.
 
-import { Firestore } from '@google-cloud/firestore';
-import { Storage } from '@google-cloud/storage';
-
-// These environment variables are automatically available in Firebase App Hosting.
-const PROJECT_ID = process.env.GCLOUD_PROJECT || 'receipt-snap-e3z1z';
+const PROJECT_ID = 'receipt-snap-e3z1z';
 const BUCKET_NAME = `${PROJECT_ID}.appspot.com`;
 
-// Initialize clients. They will automatically use the service account credentials
-// from the environment when deployed to App Hosting.
-const firestore = new Firestore({ projectId: PROJECT_ID });
-const storage = new Storage({ projectId: PROJECT_ID });
-const bucket = storage.bucket(BUCKET_NAME);
-
-// Helper to convert data URI to Buffer
-function dataURIToBuffer(dataURI: string) {
-  return Buffer.from(dataURI.split(',')[1], 'base64');
+function getAuthToken(): string {
+  if (typeof window === 'undefined') {
+    // This function should not be called on the server.
+    return '';
+  }
+  const token = localStorage.getItem('oauth_token');
+  if (!token) {
+    throw new Error('OAuth token not found. Please set it on the Settings page.');
+  }
+  return token;
 }
 
-export async function uploadToStorage(photoDataUri: string, fileName: string) {
-  try {
-    const buffer = dataURIToBuffer(photoDataUri);
-    const file = bucket.file(fileName);
-    
-    // Determine the content type from the data URI
-    const mimeString = photoDataUri.split(',')[0].split(':')[1].split(';')[0];
-
-    await file.save(buffer, {
-      metadata: {
-        contentType: mimeString,
-      },
-    });
-
-    // The gallery page will use signed URLs for secure access.
-    return `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`;
-  } catch (error) {
-    console.error('Storage upload failed:', error);
-    throw new Error('Storage upload failed.');
+function dataURIToBuffer(dataURI: string): ArrayBuffer {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
   }
+  return ab;
 }
 
-export async function saveToFirestore(data: any) {
-  try {
-    const collectionRef = firestore.collection('tickets');
-    const docRef = await collectionRef.add({
-      sector: data.sector,
-      importe: Number(data.importe),
-      usuario: data.usuario,
-      fecha: data.fecha,
-      photoUrl: data.photoUrl,
-      fileName: data.fileName,
-    });
-    return { id: docRef.id };
-  } catch (error) {
-    console.error('Firestore save failed:', error);
-    throw new Error('Firestore save failed.');
+export async function uploadToStorage(photoDataUri: string, fileName: string): Promise<string> {
+  const token = getAuthToken();
+  const buffer = dataURIToBuffer(photoDataUri);
+  const mimeType = photoDataUri.substring(photoDataUri.indexOf(':') + 1, photoDataUri.indexOf(';'));
+
+  const response = await fetch(`https://storage.googleapis.com/upload/storage/v1/b/${BUCKET_NAME}/o?uploadType=media&name=${encodeURIComponent(fileName)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': mimeType,
+      'Content-Length': buffer.byteLength.toString(),
+    },
+    body: buffer,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error('Storage upload failed:', errorData);
+    throw new Error(`Storage upload failed: ${errorData.error.message}`);
   }
+  
+  // The public URL for the object
+  return `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`;
+}
+
+export async function saveToFirestore(data: any): Promise<{ id: string }> {
+    const token = getAuthToken();
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/tickets`;
+
+    const firestoreData = {
+        fields: {
+            sector: { stringValue: data.sector },
+            importe: { doubleValue: Number(data.importe) },
+            usuario: { stringValue: data.usuario },
+            fecha: { stringValue: data.fecha },
+            photoUrl: { stringValue: data.photoUrl },
+            fileName: { stringValue: data.fileName },
+        }
+    };
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(firestoreData),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Firestore save failed:', errorData);
+        throw new Error(`Firestore save failed: ${errorData.error.message}`);
+    }
+
+    const result = await response.json();
+    const docId = result.name.split('/').pop();
+    return { id: docId };
 }
 
 export interface CleanReceipt {
@@ -63,70 +91,98 @@ export interface CleanReceipt {
   sector: string;
   importe: number;
   fecha: string;
-  photoUrl: string; // This will be a signed URL
+  photoUrl: string;
   fileName: string;
 }
 
+// Helper to parse Firestore's specific object format
+const parseFirestoreDoc = (doc: any): CleanReceipt => {
+    const fields = doc.document.fields;
+    return {
+        id: doc.document.name.split('/').pop(),
+        sector: fields.sector?.stringValue || 'otros',
+        importe: fields.importe?.doubleValue || fields.importe?.integerValue || 0,
+        fecha: fields.fecha?.stringValue || '',
+        photoUrl: fields.photoUrl?.stringValue || '',
+        fileName: fields.fileName?.stringValue || '',
+    };
+};
+
+
 export async function fetchTickets(userEmail: string): Promise<CleanReceipt[]> {
-  try {
-    const ticketsRef = firestore.collection('tickets');
-    const snapshot = await ticketsRef.where('usuario', '==', userEmail).get();
+    const token = getAuthToken();
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
+
+    const body = {
+        structuredQuery: {
+            from: [{ collectionId: 'tickets' }],
+            where: {
+                fieldFilter: {
+                    field: { fieldPath: 'usuario' },
+                    op: 'EQUAL',
+                    value: { stringValue: userEmail },
+                },
+            },
+        },
+    };
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Firestore fetch failed:', errorData);
+        throw new Error(`Firestore fetch failed: ${errorData.error.message}`);
+    }
     
-    if (snapshot.empty) {
-      return [];
+    const results = await response.json();
+    if (!results || results.length === 0 || !results[0].document) {
+        return []; // No documents found
     }
-
-    // Generate signed URLs for each image for secure, temporary access
-    const receipts = await Promise.all(snapshot.docs.map(async (doc): Promise<CleanReceipt> => {
-      const data = doc.data();
-      let signedUrl = '';
-      if (data.fileName) {
-          try {
-              const [url] = await bucket.file(data.fileName).getSignedUrl({
-                  action: 'read',
-                  expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-              });
-              signedUrl = url;
-          } catch(e) {
-              console.error(`Failed to get signed URL for ${data.fileName}:`, e)
-              signedUrl = `https://placehold.co/400x400.png` // Fallback URL
-          }
-      }
-
-      return {
-        id: doc.id,
-        sector: data.sector,
-        importe: data.importe,
-        fecha: data.fecha,
-        photoUrl: signedUrl, 
-        fileName: data.fileName,
-      };
-    }));
-
-    return receipts;
-  } catch (error) {
-    console.error('Firestore fetch failed:', error);
-    throw new Error('Firestore fetch failed.');
-  }
+    
+    return results.map(parseFirestoreDoc);
 }
 
-export async function deleteFromStorage(fileName: string) {
-  try {
-    await bucket.file(fileName).delete();
-  } catch (error: any) {
-    // It's okay if the file doesn't exist (e.g., already deleted)
-    if (error.code !== 404) {
-      console.error('Storage delete failed:', error);
-      throw new Error('Storage delete failed.');
+
+export async function deleteFromStorage(fileName: string): Promise<void> {
+    const token = getAuthToken();
+    const url = `https://storage.googleapis.com/storage/v1/b/${BUCKET_NAME}/o/${encodeURIComponent(fileName)}`;
+    
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    // It's okay if the file doesn't exist (404)
+    if (!response.ok && response.status !== 404) {
+        const errorData = await response.json();
+        console.error('Storage delete failed:', errorData);
+        throw new Error(`Storage delete failed: ${errorData.error.message}`);
     }
-  }
 }
 
-export async function deleteFromFirestore(docId: string) {
-  try {
-    await firestore.collection('tickets').doc(docId).delete();
-  } catch (error) {
-    console.error('Firestore delete failed:', error);
-    throw new Error('Firestore delete failed.');
-  }
+export async function deleteFromFirestore(docId: string): Promise<void> {
+    const token = getAuthToken();
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/tickets/${docId}`;
+    
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok && response.status !== 404) {
+        const errorData = await response.json();
+        console.error('Firestore delete failed:', errorData);
+        throw new Error(`Firestore delete failed: ${errorData.error.message}`);
+    }
 }

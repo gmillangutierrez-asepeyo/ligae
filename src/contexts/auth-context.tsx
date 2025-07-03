@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -44,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      // onAuthStateChanged will handle setting the user and updating loading state
     } catch (error) {
       console.error("Sign in error", error);
       toast({
@@ -58,8 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSignOut = async () => {
     setLoading(true);
-    await signOut(auth);
-    // onAuthStateChanged will set user to null and loading to false
+    try {
+      await signOut(auth);
+      // For security, clear the manual token on sign out
+      localStorage.removeItem('oauth_token');
+    } catch (error) {
+      console.error("Sign out error", error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-Out Failed',
+        description: 'Could not sign out. Please try again.',
+      });
+    } finally {
+        setLoading(false);
+    }
   };
 
   const value = {
@@ -71,13 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <div className="flex h-screen w-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 }
