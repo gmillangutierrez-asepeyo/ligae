@@ -3,9 +3,10 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Camera, Loader, Receipt } from 'lucide-react';
+import { Loader2, LogIn, Camera, Loader } from 'lucide-react';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useReceiptStore } from '@/lib/store';
 import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
 import Header from '@/components/header';
@@ -16,13 +17,14 @@ function LoginView() {
     <div className="flex h-screen w-full items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10">
-            <Receipt className="h-10 w-10 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
-            <p className="text-sm font-medium text-primary">ASEPEYO</p>
-          </div>
+          <Image
+            src="/asepeyo-logo.png"
+            alt="Asepeyo Logo"
+            width={180}
+            height={60}
+            className="object-contain mx-auto mb-6"
+          />
+          <CardTitle className="font-headline text-2xl">Expenses Tracker</CardTitle>
           <CardDescription className="pt-2">Sign in to manage your receipts.</CardDescription>
         </CardHeader>
         <CardContent>

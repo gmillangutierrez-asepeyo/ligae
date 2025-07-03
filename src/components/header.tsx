@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Receipt, Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
+import { Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -29,17 +30,15 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <Receipt className="h-7 w-7 text-primary" />
-          <div className="flex flex-col">
-            <span className="font-headline text-xl font-bold leading-tight">
-              LIGAE
-            </span>
-            <span className="text-xs font-medium text-muted-foreground leading-tight hidden sm:block">
-              ASEPEYO
-            </span>
-          </div>
+          <Image
+            src="/asepeyo-logo.png"
+            alt="Asepeyo Logo"
+            width={120}
+            height={40}
+            className="object-contain"
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-2">
