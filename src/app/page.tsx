@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Camera } from 'lucide-react';
+import { Loader2, LogIn, Camera, Upload, ArrowLeft } from 'lucide-react';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReceiptStore } from '@/lib/store';
@@ -34,7 +34,62 @@ function LoginView() {
   );
 }
 
-function CaptureView() {
+function SelectionView({ setMode }: { setMode: (mode: 'camera' | 'selection') => void }) {
+  const router = useRouter();
+  const setOriginalPhoto = useReceiptStore((state) => state.setOriginalPhoto);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUri = e.target?.result as string;
+        setOriginalPhoto(dataUri);
+        router.push('/crop');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <div className="flex flex-col h-screen w-full bg-background">
+      <Header />
+      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
+        <div className="text-center">
+            <h1 className="font-headline text-3xl">Submit a Receipt</h1>
+            <p className="text-muted-foreground mt-2">Choose how to provide your receipt.</p>
+        </div>
+        <div className="w-full max-w-md grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setMode('camera')}>
+                <Camera className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="font-headline text-xl">Take Photo</CardTitle>
+                <CardDescription>Use your device's camera.</CardDescription>
+            </Card>
+             <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={handleUploadClick}>
+                <Upload className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="font-headline text-xl">Upload Image</CardTitle>
+                <CardDescription>Select a file from your device.</CardDescription>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/*"
+                />
+            </Card>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+
+function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => void }) {
   const router = useRouter();
   const setOriginalPhoto = useReceiptStore((state) => state.setOriginalPhoto);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -85,7 +140,10 @@ function CaptureView() {
   return (
     <div className="flex flex-col h-screen w-full bg-background">
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative">
+         <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 md:left-8">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
         <h1 className="font-headline text-2xl text-center">Capture Receipt</h1>
         <p className="text-muted-foreground text-center mb-4">
           Center the receipt within the frame and take a photo.
@@ -117,6 +175,7 @@ function CaptureView() {
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const [mode, setMode] = useState<'selection' | 'camera'>('selection');
 
   if (loading) {
     return (
@@ -125,6 +184,14 @@ export default function HomePage() {
       </div>
     );
   }
+  
+  if (!user) {
+      return <LoginView />;
+  }
 
-  return user ? <CaptureView /> : <LoginView />;
+  if (mode === 'selection') {
+    return <SelectionView setMode={setMode} />;
+  }
+
+  return <CameraView setMode={setMode} />;
 }
