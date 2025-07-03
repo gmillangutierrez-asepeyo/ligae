@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Impersonated } from 'google-auth-library';
+import { GoogleAuth, Impersonated } from 'google-auth-library';
 
 const TARGET_SERVICE_ACCOUNT = 'ligae-web-client@ligae-asepeyo-463510.iam.gserviceaccount.com';
 const SCOPES = [
@@ -13,29 +13,30 @@ const SCOPES = [
  * `gcloud auth print-access-token --impersonate-service-account=...`
  * 
  * It uses the Google Auth Library to perform service account impersonation,
- * leveraging the Firebase App Hosting environment's own service account credentials.
+ * leveraging the Firebase App Hosting environment's own service account credentials
+ * via Application Default Credentials (ADC).
  * This is the standard and secure method for server-to-server authentication flows.
  */
 export async function POST(req: NextRequest) {
     try {
-        // In a real-world high-security scenario, you would verify the
-        // incoming idToken to ensure it's from a valid, authenticated user.
-        // For this internal app, we trust calls to this endpoint are legitimate.
         const body = await req.json();
         if (!body.idToken) {
             return NextResponse.json({ error: 'ID token is required' }, { status: 400 });
         }
+        
+        const auth = new GoogleAuth({ scopes: SCOPES });
+        const sourceClient = await auth.getClient();
 
-        // This uses Application Default Credentials of the App Hosting environment
-        // to impersonate the target service account. The environment's service
-        // account must have the "Service Account Token Creator" role on the target.
-        const auth = new Impersonated({
+        const impersonated = new Impersonated({
+            sourceClient,
             targetPrincipal: TARGET_SERVICE_ACCOUNT,
+            lifetime: 3600,
+            delegates: [],
             targetScopes: SCOPES,
-            lifetime: 3600, // Token is valid for 1 hour
         });
 
-        const { token } = await auth.getAccessToken();
+        const tokenResponse = await impersonated.getAccessToken();
+        const token = tokenResponse.token;
 
         if (!token) {
             throw new Error('Failed to generate access token.');
@@ -45,6 +46,11 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error('Error generating impersonated token:', error);
-        return NextResponse.json({ error: 'Failed to generate token', details: error.message }, { status: 500 });
+        
+        const details = error.message.includes('Could not find Application Default Credentials') 
+            ? 'Could not find Application Default Credentials. For local development, please configure them by running `gcloud auth application-default login` in your terminal.'
+            : error.message;
+            
+        return NextResponse.json({ error: 'Failed to generate token', details: details }, { status: 500 });
     }
 }
