@@ -8,6 +8,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReceiptStore } from '@/lib/store';
 import Header from '@/components/header';
+import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
 function LoginView() {
   const { signIn, loading } = useAuth();
@@ -16,7 +17,7 @@ function LoginView() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto flex items-center justify-center mb-2">
-            <Camera className="h-10 w-10 text-primary" />
+            <ReceiptEuroIcon className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
           <p className="text-muted-foreground font-headline">ASEPEYO</p>

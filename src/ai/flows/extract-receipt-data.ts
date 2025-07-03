@@ -69,29 +69,48 @@ const extractReceiptDataFlow = ai.defineFlow(
     outputSchema: ExtractReceiptDataOutputSchema,
   },
   async (input) => {
-    const {output: modelOutput} = await extractReceiptDataPrompt({ photoDataUri: input.photoDataUri });
+    try {
+      const {output: modelOutput} = await extractReceiptDataPrompt({ photoDataUri: input.photoDataUri });
 
-    if (!modelOutput) {
-        throw new Error("Failed to get a valid response from the AI model.");
-    }
-    
-    const parsedSector = validSectors.safeParse(modelOutput.sector);
-    const finalSector = parsedSector.success ? parsedSector.data : 'otros';
-
-    let importeAsNumber = 0;
-    if (modelOutput.importe) {
-      const importeAsString = String(modelOutput.importe).replace(',', '.');
-      const parsedImporte = parseFloat(importeAsString);
-      if (!isNaN(parsedImporte)) {
-        importeAsNumber = parsedImporte;
+      // If model fails or returns nothing, fallback to default values.
+      // This allows the user to fill the form manually instead of seeing an error.
+      if (!modelOutput) {
+        console.warn("AI model did not return structured data. Falling back to defaults.");
+        return {
+          sector: 'otros',
+          importe: 0,
+          usuario: input.usuario,
+          fecha: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format
+        };
       }
-    }
+      
+      const parsedSector = validSectors.safeParse(modelOutput.sector);
+      const finalSector = parsedSector.success ? parsedSector.data : 'otros';
 
-    return {
-      sector: finalSector,
-      importe: importeAsNumber,
-      usuario: input.usuario,
-      fecha: modelOutput.fecha || new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format
-    };
+      let importeAsNumber = 0;
+      if (modelOutput.importe) {
+        const importeAsString = String(modelOutput.importe).replace(',', '.');
+        const parsedImporte = parseFloat(importeAsString);
+        if (!isNaN(parsedImporte)) {
+          importeAsNumber = parsedImporte;
+        }
+      }
+
+      return {
+        sector: finalSector,
+        importe: importeAsNumber,
+        usuario: input.usuario,
+        fecha: modelOutput.fecha || new Date().toLocaleDateString('en-CA'),
+      };
+    } catch (error) {
+      console.error("An unexpected error occurred in extractReceiptDataFlow, falling back to defaults:", error);
+      // Fallback in case of any exception during the prompt call (e.g., safety filters).
+      return {
+        sector: 'otros',
+        importe: 0,
+        usuario: input.usuario,
+        fecha: new Date().toLocaleDateString('en-CA'),
+      };
+    }
   }
 );

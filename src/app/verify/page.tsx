@@ -42,16 +42,15 @@ function VerifyPage() {
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    // Use `values` to make the form controlled by `extractedData`
-    // This ensures the form updates when async data arrives.
-    values: {
-      sector: extractedData?.sector || '',
-      importe: extractedData?.importe || 0,
-      usuario: extractedData?.usuario || '',
-      fecha: extractedData?.fecha || '',
+    defaultValues: {
+      sector: '',
+      importe: 0,
+      usuario: '',
+      fecha: '',
     },
   });
 
@@ -59,6 +58,10 @@ function VerifyPage() {
     if (!croppedPhotoDataUri || !extractedData) {
       router.replace('/');
       return;
+    }
+
+    if (extractedData) {
+      reset(extractedData);
     }
     
     const storedToken = localStorage.getItem('oauth_token');
@@ -72,7 +75,7 @@ function VerifyPage() {
     } else {
       setToken(storedToken);
     }
-  }, [croppedPhotoDataUri, extractedData, router, toast]);
+  }, [croppedPhotoDataUri, extractedData, router, toast, reset]);
 
   const onSubmit = async (data: FormData) => {
     if (!croppedPhotoDataUri) return;
