@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useReceiptStore } from '@/lib/store';
 import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
+import { cropReceiptImage } from '@/ai/flows/crop-receipt-image';
 import Header from '@/components/header';
 
 function LoginView() {
@@ -41,8 +42,8 @@ function CaptureView() {
   const setReceiptData = useReceiptStore((state) => state.setReceiptData);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isCapturing, setIsCapturing] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const startCamera = useCallback(async () => {
@@ -72,6 +73,7 @@ function CaptureView() {
   const handleCapture = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
     setIsLoading(true);
+    setError(null);
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -80,18 +82,24 @@ function CaptureView() {
     const context = canvas.getContext('2d');
     if (context) {
       context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      const photoDataUri = canvas.toDataURL('image/jpeg');
+      const originalPhotoDataUri = canvas.toDataURL('image/jpeg');
       
       try {
         if (!user?.email) throw new Error("User email not found.");
         
-        const extractedData = await extractReceiptData({ photoDataUri, usuario: user.email });
-        setReceiptData({ photoDataUri, extractedData });
+        setLoadingMessage('Cropping receipt...');
+        const { croppedPhotoDataUri } = await cropReceiptImage({ photoDataUri: originalPhotoDataUri });
+
+        setLoadingMessage('Analyzing receipt...');
+        const extractedData = await extractReceiptData({ photoDataUri: croppedPhotoDataUri, usuario: user.email });
+        
+        setReceiptData({ photoDataUri: croppedPhotoDataUri, extractedData });
         router.push('/verify');
       } catch (e) {
         console.error("Error processing receipt:", e);
-        setError("Failed to analyze receipt. Please try again.");
+        setError("Failed to process receipt. Please try again.");
         setIsLoading(false);
+        setLoadingMessage('');
       }
     }
   }, [router, setReceiptData, user?.email]);
@@ -114,17 +122,21 @@ function CaptureView() {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[90%] h-[90%] border-2 border-white/50 rounded-md" />
           </div>
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+            <Button onClick={handleCapture} disabled={isLoading} size="lg" className="rounded-full w-20 h-20 bg-accent hover:bg-accent/90 shadow-2xl">
+              <Camera className="h-10 w-10 text-accent-foreground" />
+            </Button>
+          </div>
+
           {isLoading && (
             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
               <Loader className="h-12 w-12 animate-spin mb-4" />
-              <p className="font-headline">Analyzing receipt...</p>
+              <p className="font-headline">{loadingMessage || 'Processing...'}</p>
             </div>
           )}
         </div>
         {error && <p className="text-destructive text-center">{error}</p>}
-        <Button onClick={handleCapture} disabled={isLoading} size="lg" className="rounded-full w-20 h-20 bg-accent hover:bg-accent/90">
-          <Camera className="h-10 w-10 text-accent-foreground" />
-        </Button>
         <canvas ref={canvasRef} className="hidden" />
       </main>
     </div>
