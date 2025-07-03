@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useReceiptStore } from '@/lib/store';
 import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
-import { cropReceiptImage } from '@/ai/flows/crop-receipt-image';
 import Header from '@/components/header';
 
 function LoginView() {
@@ -82,18 +81,15 @@ function CaptureView() {
     const context = canvas.getContext('2d');
     if (context) {
       context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      const originalPhotoDataUri = canvas.toDataURL('image/jpeg');
+      const photoDataUri = canvas.toDataURL('image/jpeg');
       
       try {
         if (!user?.email) throw new Error("User email not found.");
         
-        setLoadingMessage('Cropping receipt...');
-        const { croppedPhotoDataUri } = await cropReceiptImage({ photoDataUri: originalPhotoDataUri });
-
         setLoadingMessage('Analyzing receipt...');
-        const extractedData = await extractReceiptData({ photoDataUri: croppedPhotoDataUri, usuario: user.email });
+        const extractedData = await extractReceiptData({ photoDataUri: photoDataUri, usuario: user.email });
         
-        setReceiptData({ photoDataUri: croppedPhotoDataUri, extractedData });
+        setReceiptData({ photoDataUri: photoDataUri, extractedData });
         router.push('/verify');
       } catch (e) {
         console.error("Error processing receipt:", e);
