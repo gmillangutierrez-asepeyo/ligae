@@ -3,29 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { Save } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 function SettingsPage() {
-  const [token, setToken] = useState('');
-  const { toast } = useToast();
+  const [tokenStatus, setTokenStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
 
   useEffect(() => {
-    const currentToken = localStorage.getItem('oauth_token') || '';
-    setToken(currentToken);
+    const currentToken = localStorage.getItem('oauth_token');
+    if (currentToken) {
+      setTokenStatus('active');
+    } else {
+      setTokenStatus('inactive');
+    }
   }, []);
-
-  const handleSave = () => {
-    localStorage.setItem('oauth_token', token);
-    toast({
-      title: 'Token Saved',
-      description: 'Your OAuth 2.0 token has been saved successfully.',
-    });
-  };
 
   return (
     <AuthGuard>
@@ -36,28 +28,38 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Settings</CardTitle>
               <CardDescription>
-                Manage your application settings here. The OAuth 2.0 token is required for uploading receipts.
+                Manage your application settings here. The OAuth 2.0 token is now managed automatically.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="token" className="text-lg">OAuth 2.0 Token</Label>
-                <Input
-                  id="token"
-                  type="password"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Paste your token here"
-                  className="mt-2"
-                />
-                 <p className="text-sm text-muted-foreground mt-2">
-                  This token is used to authenticate with Google Cloud Storage and Firestore APIs. It is stored locally in your browser and never sent to our servers except for API calls to Google.
-                </p>
+              <div className="flex items-center space-x-4 p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h3 className="text-lg font-medium">API Access Token</h3>
+                  <p className="text-sm text-muted-foreground">
+                    This token is generated automatically upon login to authenticate with Google Cloud APIs.
+                  </p>
+                </div>
+                {tokenStatus === 'active' && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Active
+                  </Badge>
+                )}
+                {tokenStatus === 'inactive' && (
+                  <Badge variant="destructive">
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Inactive
+                  </Badge>
+                )}
+                 {tokenStatus === 'checking' && (
+                  <Badge variant="outline">
+                    Checking...
+                  </Badge>
+                )}
               </div>
-              <Button onClick={handleSave}>
-                <Save className="mr-2 h-4 w-4" />
-                Save Token
-              </Button>
+               <p className="text-sm text-muted-foreground mt-2">
+                  If the token is inactive, please try signing out and signing back in.
+                </p>
             </CardContent>
           </Card>
         </main>
