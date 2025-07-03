@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Trash2, AlertCircle, Inbox } from 'lucide-react';
-import { fetchTickets, deleteFromFirestore, deleteFromStorage } from '@/lib/api';
+import { fetchTickets, deleteFromFirestore, deleteFromStorage, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -23,14 +23,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-interface Receipt {
-  id: string;
-  sector: { stringValue: string };
-  importe: { doubleValue: number };
-  fecha: { stringValue: string };
-  photoUrl: { stringValue: string };
-  fileName: { stringValue: string };
-}
+// The Receipt type now uses the clean interface from api.ts
+type Receipt = CleanReceipt;
 
 // Component to render a single receipt card
 function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void> }) {
@@ -47,8 +41,8 @@ function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (recei
       <CardHeader className="p-0">
         <div className="relative aspect-square">
           <Image
-            src={receipt.photoUrl.stringValue}
-            alt={`Receipt for ${receipt.sector.stringValue}`}
+            src={receipt.photoUrl}
+            alt={`Receipt for ${receipt.sector}`}
             layout="fill"
             objectFit="cover"
             className="transition-transform duration-300 group-hover:scale-105"
@@ -56,9 +50,9 @@ function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (recei
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        <CardTitle className="text-lg font-headline capitalize">{receipt.sector.stringValue}</CardTitle>
-        <p className="font-bold text-primary text-xl">€{receipt.importe.doubleValue.toFixed(2)}</p>
-        <p className="text-sm text-muted-foreground">{receipt.fecha.stringValue}</p>
+        <CardTitle className="text-lg font-headline capitalize">{receipt.sector}</CardTitle>
+        <p className="font-bold text-primary text-xl">€{receipt.importe.toFixed(2)}</p>
+        <p className="text-sm text-muted-foreground">{receipt.fecha}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <AlertDialog>
@@ -117,7 +111,7 @@ function GalleryPage() {
 
   const handleDelete = async (receipt: Receipt) => {
     try {
-      await deleteFromStorage(receipt.fileName.stringValue);
+      await deleteFromStorage(receipt.fileName);
       await deleteFromFirestore(receipt.id);
       setReceipts(prev => prev.filter(r => r.id !== receipt.id));
       toast({ title: 'Success', description: 'Receipt deleted successfully.' });

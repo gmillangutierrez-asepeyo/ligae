@@ -4,8 +4,8 @@ import { Firestore } from '@google-cloud/firestore';
 import { Storage } from '@google-cloud/storage';
 
 // These environment variables are automatically available in Firebase App Hosting.
-const PROJECT_ID = process.env.GCLOUD_PROJECT || 'ligae-asepeyo-463510';
-const BUCKET_NAME = 'ticketimages';
+const PROJECT_ID = process.env.GCLOUD_PROJECT || 'receipt-snap-e3z1z';
+const BUCKET_NAME = `${PROJECT_ID}.appspot.com`;
 
 // Initialize clients. They will automatically use the service account credentials
 // from the environment when deployed to App Hosting.
@@ -32,9 +32,7 @@ export async function uploadToStorage(photoDataUri: string, fileName: string) {
       },
     });
 
-    // Return the public URL. Note: The bucket must be publicly readable,
-    // or you'd need to generate signed URLs for access.
-    // For simplicity here, we assume public access.
+    // The gallery page will use signed URLs for secure access.
     return `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`;
   } catch (error) {
     console.error('Storage upload failed:', error);
@@ -60,7 +58,16 @@ export async function saveToFirestore(data: any) {
   }
 }
 
-export async function fetchTickets(userEmail: string) {
+export interface CleanReceipt {
+  id: string;
+  sector: string;
+  importe: number;
+  fecha: string;
+  photoUrl: string; // This will be a signed URL
+  fileName: string;
+}
+
+export async function fetchTickets(userEmail: string): Promise<CleanReceipt[]> {
   try {
     const ticketsRef = firestore.collection('tickets');
     const snapshot = await ticketsRef.where('usuario', '==', userEmail).get();
@@ -70,7 +77,7 @@ export async function fetchTickets(userEmail: string) {
     }
 
     // Generate signed URLs for each image for secure, temporary access
-    const receipts = await Promise.all(snapshot.docs.map(async (doc) => {
+    const receipts = await Promise.all(snapshot.docs.map(async (doc): Promise<CleanReceipt> => {
       const data = doc.data();
       let signedUrl = '';
       if (data.fileName) {
@@ -88,12 +95,11 @@ export async function fetchTickets(userEmail: string) {
 
       return {
         id: doc.id,
-        sector: { stringValue: data.sector },
-        importe: { doubleValue: data.importe },
-        fecha: { stringValue: data.fecha },
-        // Instead of the raw photoUrl, we send a temporary signed URL
-        photoUrl: { stringValue: signedUrl }, 
-        fileName: { stringValue: data.fileName },
+        sector: data.sector,
+        importe: data.importe,
+        fecha: data.fecha,
+        photoUrl: signedUrl, 
+        fileName: data.fileName,
       };
     }));
 
