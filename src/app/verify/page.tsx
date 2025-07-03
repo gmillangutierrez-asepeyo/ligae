@@ -30,8 +30,6 @@ const FormSchema = z.object({
 
 type FormData = z.infer<typeof FormSchema>;
 
-// Need to install uuid and its types: npm install uuid && npm install -D @types/uuid
-// Since I can't modify package.json other than dependencies, I'll use a simpler unique ID
 const generateUniqueId = (userEmail: string) => `${userEmail.split('@')[0]}-${Date.now()}`;
 
 function VerifyPage() {
@@ -45,14 +43,15 @@ function VerifyPage() {
     control,
     handleSubmit,
     formState: { errors },
-    reset
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      sector: '',
-      importe: 0,
-      usuario: '',
-      fecha: '',
+    // Use `values` to make the form controlled by `extractedData`
+    // This ensures the form updates when async data arrives.
+    values: {
+      sector: extractedData?.sector || '',
+      importe: extractedData?.importe || 0,
+      usuario: extractedData?.usuario || '',
+      fecha: extractedData?.fecha || '',
     },
   });
 
@@ -62,13 +61,6 @@ function VerifyPage() {
       return;
     }
     
-    reset({
-      sector: extractedData.sector || '',
-      importe: extractedData.importe || 0,
-      usuario: extractedData.usuario || '',
-      fecha: extractedData.fecha || '',
-    })
-
     const storedToken = localStorage.getItem('oauth_token');
     if (!storedToken) {
        toast({
@@ -80,7 +72,7 @@ function VerifyPage() {
     } else {
       setToken(storedToken);
     }
-  }, [croppedPhotoDataUri, extractedData, router, toast, reset]);
+  }, [croppedPhotoDataUri, extractedData, router, toast]);
 
   const onSubmit = async (data: FormData) => {
     if (!croppedPhotoDataUri) return;

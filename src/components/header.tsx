@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Camera, GalleryHorizontal, Settings, LogOut, Receipt } from 'lucide-react';
+import { Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
 const navLinks = [
   { href: '/', label: 'Capture', icon: Camera },
@@ -32,7 +33,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-3">
-          <Receipt className="h-8 w-8 text-primary" />
+          <ReceiptEuroIcon className="h-8 w-8 text-primary" />
           <div className="flex flex-col">
             <span className="font-headline text-lg font-bold">LIGAE</span>
             <span className="text-xs text-muted-foreground">ASEPEYO</span>

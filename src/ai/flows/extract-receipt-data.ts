@@ -35,8 +35,8 @@ export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSc
 // We'll allow any string for sector and a string or number for importe from the model, and then validate/coerce them.
 const ModelOutputSchema = z.object({
   sector: z.string().describe('The type of expense. Must be one of: "comida", "transporte", or "otros".'),
-  importe: z.union([z.string(), z.number()]).describe('The total cost in euros (€), as a numerical value or a string representing one.'),
-  fecha: z.string().describe('The date on the receipt.'),
+  importe: z.union([z.string(), z.number()]).optional().describe('The total cost in euros (€), as a numerical value or a string representing one.'),
+  fecha: z.string().optional().describe('The date on the receipt.'),
 });
 
 
@@ -78,19 +78,20 @@ const extractReceiptDataFlow = ai.defineFlow(
     const parsedSector = validSectors.safeParse(modelOutput.sector);
     const finalSector = parsedSector.success ? parsedSector.data : 'otros';
 
-    // The model might return the amount as a string with a comma decimal separator.
-    const importeAsString = String(modelOutput.importe).replace(',', '.');
-    const importeAsNumber = Number(importeAsString);
-
-    if (isNaN(importeAsNumber)) {
-      throw new Error(`Invalid amount received from AI: ${modelOutput.importe}`);
+    let importeAsNumber = 0;
+    if (modelOutput.importe) {
+      const importeAsString = String(modelOutput.importe).replace(',', '.');
+      const parsedImporte = parseFloat(importeAsString);
+      if (!isNaN(parsedImporte)) {
+        importeAsNumber = parsedImporte;
+      }
     }
 
     return {
-      ...modelOutput,
-      importe: importeAsNumber,
       sector: finalSector,
+      importe: importeAsNumber,
       usuario: input.usuario,
+      fecha: modelOutput.fecha || new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format
     };
   }
 );
