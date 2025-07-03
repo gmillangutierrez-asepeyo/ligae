@@ -8,6 +8,14 @@ const SCOPES = [
     'https://www.googleapis.com/auth/userinfo.email'
 ];
 
+/**
+ * This endpoint is the server-side equivalent of running the command:
+ * `gcloud auth print-access-token --impersonate-service-account=...`
+ * 
+ * It uses the Google Auth Library to perform service account impersonation,
+ * leveraging the Firebase App Hosting environment's own service account credentials.
+ * This is the standard and secure method for server-to-server authentication flows.
+ */
 export async function POST(req: NextRequest) {
     try {
         // In a real-world high-security scenario, you would verify the
