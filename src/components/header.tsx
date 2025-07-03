@@ -29,11 +29,11 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
           <Receipt className="h-7 w-7 text-primary" />
           <span className="font-headline text-xl font-bold hidden sm:inline-block">
-            LIGAE
+            LIGAE | ASEPEYO
           </span>
         </Link>
 
