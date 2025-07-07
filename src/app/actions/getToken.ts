@@ -16,6 +16,9 @@ export async function getAccessToken(): Promise<{ token?: string, error?: string
         let serviceAccountCredentials;
         try {
              serviceAccountCredentials = JSON.parse(serviceAccountJsonString);
+             // The private key from the .env file has its newlines escaped.
+             // We need to un-escape them for the crypto library to parse the PEM key correctly.
+             serviceAccountCredentials.private_key = serviceAccountCredentials.private_key.replace(/\\n/g, '\n');
         } catch (e) {
             console.error("Failed to parse service account JSON.");
             throw new Error('Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON. Please ensure it is a valid JSON string.');
