@@ -27,12 +27,9 @@ import {
 // The Receipt type now uses the clean interface from api.ts
 type Receipt = CleanReceipt;
 
-// Component to render a single receipt card with authenticated images
+// Component to render a single receipt card with public image URLs
 function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void> }) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [imageError, setImageError] = useState(false);
-  const { token } = useToken();
 
   const handleDeleteClick = async () => {
     setIsDeleting(true);
@@ -40,58 +37,13 @@ function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (recei
     // No need to setIsDeleting(false) as the component will unmount
   };
 
-  useEffect(() => {
-    let objectUrl: string | null = null;
-    let isMounted = true;
-
-    const fetchImage = async () => {
-      // The photoUrl field now holds the fileName of the private image in GCS
-      if (!token || !receipt.photoUrl) {
-        if (isMounted) setImageError(true);
-        return;
-      }
-      
-      const getUrl = `https://storage.googleapis.com/storage/v1/b/ticketimages/o/${encodeURIComponent(receipt.photoUrl)}?alt=media`;
-
-      try {
-        const response = await fetch(getUrl, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch image');
-        }
-
-        const blob = await response.blob();
-        objectUrl = URL.createObjectURL(blob);
-        if (isMounted) {
-          setImageUrl(objectUrl);
-          setImageError(false);
-        }
-      } catch (error) {
-        console.error("Error fetching authenticated image:", error);
-        if (isMounted) setImageError(true);
-      }
-    };
-
-    fetchImage();
-
-    return () => {
-      isMounted = false;
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-  }, [receipt.photoUrl, token]);
-
-
   return (
     <Card className="overflow-hidden group">
       <CardHeader className="p-0">
         <div className="relative aspect-square bg-secondary">
-          {imageUrl && !imageError ? (
+          {receipt.photoUrl ? (
             <Image
-              src={imageUrl}
+              src={receipt.photoUrl}
               alt={`Receipt for ${receipt.sector}`}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
@@ -100,14 +52,10 @@ function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (recei
             />
           ) : (
              <div className="flex items-center justify-center h-full">
-                {imageError ? (
-                    <div className="text-center p-2">
-                        <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-                        <p className="text-xs text-destructive mt-1">Error</p>
-                    </div>
-                ) : (
-                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                )}
+                <div className="text-center p-2">
+                    <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+                    <p className="text-xs text-muted-foreground mt-1">No Image</p>
+                </div>
              </div>
           )}
         </div>

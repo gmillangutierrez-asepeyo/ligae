@@ -48,18 +48,34 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   const blob = dataURIToBlob(photoDataUri);
   const uploadUrl = `${STORAGE_UPLOAD_URL}?uploadType=media&name=${fileName}`;
   
-  const response = await fetch(uploadUrl, {
+  const uploadResponse = await fetch(uploadUrl, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}` },
     body: blob,
   });
 
-  if (!response.ok) {
-    await handleResponseError(response, 'upload image');
+  if (!uploadResponse.ok) {
+    await handleResponseError(uploadResponse, 'upload image');
   }
 
-  // The image is now private in GCS. Return the fileName so we can construct an authenticated URL later.
-  return fileName;
+  // After uploading, make the file public so it can be viewed by anyone with the link.
+  const aclUrl = `${STORAGE_BUCKET_URL}/${encodeURIComponent(fileName)}/acl`;
+  const aclResponse = await fetch(aclUrl, {
+      method: 'POST',
+      headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ entity: 'allUsers', role: 'READER' }),
+  });
+
+  if (!aclResponse.ok) {
+      await handleResponseError(aclResponse, 'make image public');
+  }
+
+  // Construct and return the public URL in the desired format.
+  const publicUrl = `https://storage.cloud.google.com/ticketimages/${fileName}`;
+  return publicUrl;
 }
 
 export async function saveToFirestore(data: any, token: string): Promise<{ id: string }> {
@@ -69,8 +85,9 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
       importe: { doubleValue: Number(data.importe) },
       fecha: { stringValue: data.fecha },
       usuario: { stringValue: data.usuario },
-      // The photoUrl now stores the fileName, to be used for authenticated downloads.
+      // The photoUrl now stores the direct public link to the image.
       photoUrl: { stringValue: data.photoUrl },
+      // We still save the fileName for easier reference, e.g., for deletions.
       fileName: { stringValue: data.fileName },
     },
   };
@@ -98,7 +115,7 @@ export interface CleanReceipt {
   sector: string;
   importe: number;
   fecha: string;
-  photoUrl: string; // This now holds the fileName of the private GCS object
+  photoUrl: string; // This now holds the direct public URL to the GCS object
   fileName: string;
   usuario: string;
 }

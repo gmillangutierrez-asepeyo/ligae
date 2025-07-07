@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
         port: '',
         pathname: '/ticketimages/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.cloud.google.com',
+        port: '',
+        pathname: '/ticketimages/**',
       }
     ],
   },
