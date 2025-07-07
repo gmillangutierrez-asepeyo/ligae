@@ -12,7 +12,8 @@ const FIRESTORE_COLLECTION_ID = 'tickets';
 // This is a more robust way to handle multi-line private keys from .env files.
 const credentials = {
   client_email: process.env.GOOGLE_CLIENT_EMAIL,
-  private_key: process.env.GOOGLE_PRIVATE_KEY,
+  // Replace literal '\n' characters with actual newlines for the private key.
+  private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
 };
 
 // Check if credentials are valid, which is a common cause for server errors.
