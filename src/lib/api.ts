@@ -61,6 +61,9 @@ export async function uploadToStorage(photoDataUri: string, fileName: string): P
     },
   });
 
+  // Make the file public so it can be viewed in the browser.
+  await file.makePublic();
+
   return file.publicUrl();
 }
 
