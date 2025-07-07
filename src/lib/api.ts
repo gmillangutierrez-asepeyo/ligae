@@ -1,6 +1,6 @@
 // IMPORTANT: This file contains client-side logic.
 
-const PROJECT_ID = 'receipt-snap-e3z1z';
+const PROJECT_ID = 'ligae-asepeyo-463510';
 const BUCKET_NAME = `${PROJECT_ID}.appspot.com`;
 
 function getAuthToken(): string {

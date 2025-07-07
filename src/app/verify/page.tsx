@@ -59,7 +59,7 @@ function VerifyForm({
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const fileName = `${generateUniqueId(data.usuario)}.jpg`;
+      const fileName = `ticketimages/${generateUniqueId(data.usuario)}.jpg`;
       const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName);
       
       await saveToFirestore({ ...data, photoUrl, fileName });

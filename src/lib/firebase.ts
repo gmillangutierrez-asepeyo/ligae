@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 
 // IMPORTANT: Replace this with your own Firebase project configuration.
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyA_NjfA7m2Lu0ATwgZs5E1d32Eujw08mf8",
-  authDomain: "receipt-snap-e3z1z.firebaseapp.com",
-  projectId: "receipt-snap-e3z1z",
-  storageBucket: "receipt-snap-e3z1z.appspot.com",
-  messagingSenderId: "95809932023",
-  appId: "1:95809932023:web:095cc4dd47075bf1ea21f2"
+  apiKey: "AIzaSyD7GxppTv5E2i2_xCzPti3U4PftEw7vn_A",
+  authDomain: "ligae-asepeyo-463510.firebaseapp.com",
+  projectId: "ligae-asepeyo-463510",
+  storageBucket: "ligae-asepeyo-463510.appspot.com",
+  messagingSenderId: "624538650771",
+  appId: "1:624538650771:web:cc11fec35127108a7aa566"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
