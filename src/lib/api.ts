@@ -60,7 +60,8 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
 
   // The image is uploaded and remains private.
   // Construct the direct-access URL which requires authentication to be fetched.
-  const authenticatedUrl = `https://storage.googleapis.com/ticketimages/${fileName}`;
+  // Use storage.cloud.google.com for the console-like URL format.
+  const authenticatedUrl = `https://storage.cloud.google.com/ticketimages/${fileName}`;
   return authenticatedUrl;
 }
 
