@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// IMPORTANT: Replace this with your own Firebase project configuration.
+// IMPORTANT: This configuration is for the client-side Firebase SDK.
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyD7GxppTv5E2i2_xCzPti3U4PftEw7vn_A",
   authDomain: "ligae-asepeyo-463510.firebaseapp.com",

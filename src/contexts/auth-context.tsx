@@ -59,8 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       await signOut(auth);
-      // For security, clear the manual token on sign out
-      localStorage.removeItem('oauth_token');
     } catch (error) {
       console.error("Sign out error", error);
       toast({

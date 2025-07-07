@@ -1,41 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { Label } from '@/components/ui/label';
+import { ShieldCheck } from 'lucide-react';
 
 function SettingsPage() {
-  const { toast } = useToast();
-  const [token, setToken] = useState('');
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('oauth_token');
-    if (storedToken) {
-      setToken(storedToken);
-    }
-  }, []);
-
-  const handleSaveToken = () => {
-    if (!token.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Token cannot be empty.',
-      });
-      return;
-    }
-    localStorage.setItem('oauth_token', token);
-    toast({
-      title: 'Success',
-      description: 'OAuth token saved successfully.',
-    });
-  };
-
   return (
     <AuthGuard>
       <div className="flex flex-col min-h-screen bg-background">
@@ -48,25 +19,13 @@ function SettingsPage() {
                 Manage your application settings here.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="oauth-token">Google Cloud OAuth2 Token</Label>
+            <CardContent className="space-y-4 text-center">
+                <ShieldCheck className="mx-auto h-16 w-16 text-green-500" />
+                <h3 className="text-lg font-semibold">Authentication is Secure</h3>
                 <p className="text-sm text-muted-foreground">
-                  Generate a token using {' '}
-                  <code className="bg-muted px-1 py-0.5 rounded">
-                    gcloud auth print-access-token
-                  </code>{' '}
-                  and paste it here.
+                    This application is configured to securely access Google Cloud services.
+                    Token management is handled automatically on the server. No action is required from you.
                 </p>
-                <Textarea
-                  id="oauth-token"
-                  placeholder="Paste your token here..."
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  rows={5}
-                />
-              </div>
-              <Button onClick={handleSaveToken}>Save Token</Button>
             </CardContent>
           </Card>
         </main>

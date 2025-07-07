@@ -1,91 +1,69 @@
-// IMPORTANT: This file contains client-side logic.
+'use server';
+
+import { Firestore } from '@google-cloud/firestore';
+import { Storage } from '@google-cloud/storage';
 
 const PROJECT_ID = 'ligae-asepeyo-463510';
-const BUCKET_NAME = `${PROJECT_ID}.appspot.com`;
+const BUCKET_NAME = 'ligae-asepeyo-463510.appspot.com'; 
 
-function getAuthToken(): string {
-  if (typeof window === 'undefined') {
-    // This function should not be called on the server.
-    return '';
+// Initialize Google Cloud clients.
+// The SDKs will automatically use the service account credentials
+// if the GOOGLE_SERVICE_ACCOUNT_KEY_JSON environment variable is set.
+const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY_JSON!);
+
+const db = new Firestore({ projectId: PROJECT_ID, credentials });
+const storage = new Storage({ projectId: PROJECT_ID, credentials });
+const bucket = storage.bucket(BUCKET_NAME);
+
+/**
+ * Converts a data URI string into a Buffer.
+ * @param dataURI The data URI to convert.
+ * @returns A Buffer containing the image data and its mime type.
+ */
+function dataURIToBuffer(dataURI: string): { buffer: Buffer; mimeType: string } {
+  if (!dataURI.includes(',')) {
+    throw new Error('Invalid data URI');
   }
-  const token = localStorage.getItem('oauth_token');
-  if (!token) {
-    throw new Error('OAuth token not found. Please set it on the Settings page.');
-  }
-  return token;
+  const [meta, data] = dataURI.split(',');
+  const mimeType = meta.split(':')[1].split(';')[0];
+  const buffer = Buffer.from(data, 'base64');
+  return { buffer, mimeType };
 }
 
-function dataURIToBuffer(dataURI: string): ArrayBuffer {
-  const byteString = atob(dataURI.split(',')[1]);
-  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-  const ab = new ArrayBuffer(byteString.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i);
-  }
-  return ab;
-}
-
+/**
+ * Uploads a file (from a data URI) to Google Cloud Storage.
+ * @param photoDataUri The photo data as a data URI string.
+ * @param fileName The desired file name in the bucket.
+ * @returns The public URL of the uploaded file.
+ */
 export async function uploadToStorage(photoDataUri: string, fileName: string): Promise<string> {
-  const token = getAuthToken();
-  const buffer = dataURIToBuffer(photoDataUri);
-  const mimeType = photoDataUri.substring(photoDataUri.indexOf(':') + 1, photoDataUri.indexOf(';'));
+  const { buffer, mimeType } = dataURIToBuffer(photoDataUri);
+  const file = bucket.file(fileName);
 
-  const response = await fetch(`https://storage.googleapis.com/upload/storage/v1/b/${BUCKET_NAME}/o?uploadType=media&name=${encodeURIComponent(fileName)}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': mimeType,
-      'Content-Length': buffer.byteLength.toString(),
+  await file.save(buffer, {
+    metadata: {
+      contentType: mimeType,
     },
-    body: buffer,
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error('Storage upload failed:', errorData);
-    throw new Error(`Storage upload failed: ${errorData.error.message}`);
-  }
-  
-  // The public URL for the object
-  return `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`;
+  return file.publicUrl();
 }
 
+/**
+ * Saves a new receipt document to Firestore.
+ * @param data The receipt data to save.
+ * @returns An object containing the ID of the newly created document.
+ */
 export async function saveToFirestore(data: any): Promise<{ id: string }> {
-    const token = getAuthToken();
-    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/tickets`;
-
-    const firestoreData = {
-        fields: {
-            sector: { stringValue: data.sector },
-            importe: { doubleValue: Number(data.importe) },
-            usuario: { stringValue: data.usuario },
-            fecha: { stringValue: data.fecha },
-            photoUrl: { stringValue: data.photoUrl },
-            fileName: { stringValue: data.fileName },
-        }
-    };
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(firestoreData),
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Firestore save failed:', errorData);
-        throw new Error(`Firestore save failed: ${errorData.error.message}`);
-    }
-
-    const result = await response.json();
-    const docId = result.name.split('/').pop();
-    return { id: docId };
+  const docRef = await db.collection('tickets').add({
+    ...data,
+    // Ensure importe is stored as a number
+    importe: Number(data.importe)
+  });
+  return { id: docRef.id };
 }
 
+// Interface for a cleanly formatted receipt object.
 export interface CleanReceipt {
   id: string;
   sector: string;
@@ -93,96 +71,63 @@ export interface CleanReceipt {
   fecha: string;
   photoUrl: string;
   fileName: string;
+  usuario: string; // Add usuario to the interface
 }
 
-// Helper to parse Firestore's specific object format
-const parseFirestoreDoc = (doc: any): CleanReceipt => {
-    const fields = doc.document.fields;
-    return {
-        id: doc.document.name.split('/').pop(),
-        sector: fields.sector?.stringValue || 'otros',
-        importe: fields.importe?.doubleValue || fields.importe?.integerValue || 0,
-        fecha: fields.fecha?.stringValue || '',
-        photoUrl: fields.photoUrl?.stringValue || '',
-        fileName: fields.fileName?.stringValue || '',
-    };
-};
-
-
+/**
+ * Fetches all receipt tickets for a specific user from Firestore.
+ * @param userEmail The email of the user whose receipts to fetch.
+ * @returns An array of receipt objects.
+ */
 export async function fetchTickets(userEmail: string): Promise<CleanReceipt[]> {
-    const token = getAuthToken();
-    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
+  const ticketsCollection = db.collection('tickets');
+  const snapshot = await ticketsCollection.where('usuario', '==', userEmail).get();
 
-    const body = {
-        structuredQuery: {
-            from: [{ collectionId: 'tickets' }],
-            where: {
-                fieldFilter: {
-                    field: { fieldPath: 'usuario' },
-                    op: 'EQUAL',
-                    value: { stringValue: userEmail },
-                },
-            },
-        },
-    };
+  if (snapshot.empty) {
+    return [];
+  }
 
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
+  const receipts: CleanReceipt[] = [];
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    receipts.push({
+      id: doc.id,
+      sector: data.sector || 'otros',
+      importe: data.importe || 0,
+      fecha: data.fecha || '',
+      photoUrl: data.photoUrl || '',
+      fileName: data.fileName || '',
+      usuario: data.usuario || '',
     });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Firestore fetch failed:', errorData);
-        throw new Error(`Firestore fetch failed: ${errorData.error.message}`);
-    }
-    
-    const results = await response.json();
-    if (!results || results.length === 0 || !results[0].document) {
-        return []; // No documents found
-    }
-    
-    return results.map(parseFirestoreDoc);
+  });
+  
+  return receipts;
 }
 
-
+/**
+ * Deletes a file from Google Cloud Storage.
+ * @param fileName The full path of the file to delete.
+ */
 export async function deleteFromStorage(fileName: string): Promise<void> {
-    const token = getAuthToken();
-    const url = `https://storage.googleapis.com/storage/v1/b/${BUCKET_NAME}/o/${encodeURIComponent(fileName)}`;
-    
-    const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-        },
-    });
-
-    // It's okay if the file doesn't exist (404)
-    if (!response.ok && response.status !== 404) {
-        const errorData = await response.json();
-        console.error('Storage delete failed:', errorData);
-        throw new Error(`Storage delete failed: ${errorData.error.message}`);
+  try {
+    // Prevent deleting from unintended paths
+    if (!fileName.startsWith('ticketimages/')) {
+        throw new Error("Invalid file path for deletion.");
     }
+    await bucket.file(fileName).delete();
+  } catch (error: any) {
+    // It's okay if the file doesn't exist (e.g., error code 404).
+    if (error.code !== 404) {
+      console.error('Storage delete failed:', error);
+      throw new Error(`Storage delete failed: ${error.message}`);
+    }
+  }
 }
 
+/**
+ * Deletes a document from the 'tickets' collection in Firestore.
+ * @param docId The ID of the document to delete.
+ */
 export async function deleteFromFirestore(docId: string): Promise<void> {
-    const token = getAuthToken();
-    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/tickets/${docId}`;
-    
-    const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-        },
-    });
-
-    if (!response.ok && response.status !== 404) {
-        const errorData = await response.json();
-        console.error('Firestore delete failed:', errorData);
-        throw new Error(`Firestore delete failed: ${errorData.error.message}`);
-    }
+  await db.collection('tickets').doc(docId).delete();
 }
