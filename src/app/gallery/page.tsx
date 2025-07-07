@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Trash2, AlertCircle, Inbox } from 'lucide-react';
 import { fetchTickets, deleteFromFirestore, deleteFromStorage, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
+import { useToken } from '@/contexts/token-context';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -86,6 +87,7 @@ function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (recei
 
 function GalleryPage() {
   const { user } = useAuth();
+  const { token } = useToken();
   const { toast } = useToast();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,29 +95,40 @@ function GalleryPage() {
 
   const loadReceipts = useCallback(async () => {
     if (!user?.email) return;
+
+    if (!token) {
+      setError("API Access Token not found. Please set one on the Settings page.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchTickets(user.email);
+      const data = await fetchTickets(user.email, token);
       setReceipts(data);
     } catch (e: any) {
       setError(e.message || "Failed to load receipts.");
     } finally {
       setLoading(false);
     }
-  }, [user?.email]);
+  }, [user?.email, token]);
 
   useEffect(() => {
     loadReceipts();
   }, [loadReceipts]);
 
   const handleDelete = async (receipt: Receipt) => {
+    if (!token) {
+      toast({ variant: 'destructive', title: 'Deletion Failed', description: 'API Token not found.' });
+      return;
+    }
     try {
-      await deleteFromStorage(receipt.fileName);
-      await deleteFromFirestore(receipt.id);
+      await deleteFromStorage(receipt.fileName, token);
+      await deleteFromFirestore(receipt.id, token);
       setReceipts(prev => prev.filter(r => r.id !== receipt.id));
       toast({ title: 'Success', description: 'Receipt deleted successfully.' });
-    } catch (e: any) {
+    } catch (e: any)_ {
       toast({ variant: 'destructive', title: 'Deletion Failed', description: e.message });
     }
   };

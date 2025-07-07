@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useReceiptStore } from '@/lib/store';
 import { uploadToStorage, saveToFirestore } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useToken } from '@/contexts/token-context';
 import { Loader2, Send } from 'lucide-react';
 
 
@@ -32,8 +33,6 @@ type FormData = z.infer<typeof FormSchema>;
 const generateUniqueId = (userEmail: string) => `${userEmail.split('@')[0]}-${Date.now()}`;
 
 
-// We move the form into its own component to ensure it only renders when initialData is ready.
-// This avoids useEffect complexities and guarantees the form is initialized with the correct values.
 function VerifyForm({
   initialData,
   croppedPhotoDataUri,
@@ -45,6 +44,7 @@ function VerifyForm({
   const { toast } = useToast();
   const { clearReceiptData } = useReceiptStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { token } = useToken();
 
   const {
     control,
@@ -52,17 +52,25 @@ function VerifyForm({
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
-    // Initialize the form directly with the data from the AI. No useEffect needed.
     defaultValues: initialData,
   });
 
   const onSubmit = async (data: FormData) => {
+    if (!token) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: 'No API access token found. Please set one on the Settings page.',
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       const fileName = `ticketimages/${generateUniqueId(data.usuario)}.jpg`;
-      const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName);
+      const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName, token);
       
-      await saveToFirestore({ ...data, photoUrl, fileName });
+      await saveToFirestore({ ...data, photoUrl, fileName }, token);
 
       toast({ title: 'Success!', description: 'Your receipt has been saved.' });
       clearReceiptData();
