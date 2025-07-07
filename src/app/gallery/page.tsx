@@ -42,7 +42,20 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
       setLoading(true);
       setError(false);
       try {
-        const response = await fetch(src, {
+        // The src from Firestore is the console URL (storage.cloud.google.com).
+        // We need to convert it to the API download URL (storage.googleapis.com).
+        const consoleUrl = src;
+        const urlParts = new URL(consoleUrl);
+        const bucket = urlParts.pathname.split('/')[1];
+        const objectName = urlParts.pathname.split('/').slice(2).join('/');
+        
+        if (!bucket || !objectName) {
+            throw new Error('Invalid GCS URL format');
+        }
+
+        const apiUrl = `https://storage.googleapis.com/storage/v1/b/${bucket}/o/${encodeURIComponent(objectName)}?alt=media`;
+
+        const response = await fetch(apiUrl, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
