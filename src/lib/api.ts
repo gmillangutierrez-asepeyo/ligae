@@ -58,24 +58,10 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
     await handleResponseError(uploadResponse, 'upload image');
   }
 
-  // After uploading, make the file public so it can be viewed by anyone with the link.
-  const aclUrl = `${STORAGE_BUCKET_URL}/${encodeURIComponent(fileName)}/acl`;
-  const aclResponse = await fetch(aclUrl, {
-      method: 'POST',
-      headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ entity: 'allUsers', role: 'READER' }),
-  });
-
-  if (!aclResponse.ok) {
-      await handleResponseError(aclResponse, 'make image public');
-  }
-
-  // Construct and return the public URL in the desired format.
-  const publicUrl = `https://storage.cloud.google.com/ticketimages/${fileName}`;
-  return publicUrl;
+  // The image is uploaded and remains private.
+  // Construct the direct-access URL which requires authentication to be fetched.
+  const authenticatedUrl = `https://storage.googleapis.com/ticketimages/${fileName}`;
+  return authenticatedUrl;
 }
 
 export async function saveToFirestore(data: any, token: string): Promise<{ id: string }> {

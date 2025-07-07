@@ -24,11 +24,91 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+// This component fetches a private image from GCS using a token and displays it.
+function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; token: string | null }) {
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!src || !token) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
+    let objectUrl: string | null = null;
+    const fetchImage = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const response = await fetch(src, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+        setImgSrc(objectUrl);
+      } catch (e) {
+        console.error("Error fetching authenticated image:", e);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchImage();
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [src, token]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full bg-secondary animate-pulse">
+        <Loader2 className="h-8 w-8 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error || !imgSrc) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center p-2">
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+            <p className="text-xs text-muted-foreground mt-1">Load Failed</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+      style={{ objectFit: 'cover' }}
+      className="transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
+
 // The Receipt type now uses the clean interface from api.ts
 type Receipt = CleanReceipt;
 
 // Component to render a single receipt card with public image URLs
-function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void> }) {
+function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void>, token: string | null }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteClick = async () => {
@@ -42,13 +122,10 @@ function ReceiptCard({ receipt, onDelete }: { receipt: Receipt; onDelete: (recei
       <CardHeader className="p-0">
         <div className="relative aspect-square bg-secondary">
           {receipt.photoUrl ? (
-            <Image
+            <AuthenticatedImage
               src={receipt.photoUrl}
               alt={`Receipt for ${receipt.sector}`}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-              style={{ objectFit: 'cover' }}
-              className="transition-transform duration-300 group-hover:scale-105"
+              token={token}
             />
           ) : (
              <div className="flex items-center justify-center h-full">
@@ -178,7 +255,7 @@ function GalleryPage() {
           {!loading && !error && receipts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {receipts.map((receipt) => (
-                <ReceiptCard key={receipt.id} receipt={receipt} onDelete={handleDelete} />
+                <ReceiptCard key={receipt.id} receipt={receipt} onDelete={handleDelete} token={token} />
               ))}
             </div>
           )}
