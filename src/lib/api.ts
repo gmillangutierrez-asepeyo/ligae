@@ -8,11 +8,23 @@ const BUCKET_NAME = 'ticketimages';
 const FIRESTORE_DATABASE_ID = 'ticketsligae';
 const FIRESTORE_COLLECTION_ID = 'tickets';
 
-// Initialize Google Cloud clients.
-// The SDKs will automatically use the service account credentials
-// if the GOOGLE_SERVICE_ACCOUNT_KEY_JSON environment variable is set.
-const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY_JSON!);
+// Build credentials from environment variables to avoid JSON parsing issues.
+// This is a more robust way to handle multi-line private keys from .env files.
+const credentials = {
+  client_email: process.env.GOOGLE_CLIENT_EMAIL,
+  private_key: process.env.GOOGLE_PRIVATE_KEY,
+};
 
+// Check if credentials are valid, which is a common cause for server errors.
+if (!credentials.client_email || !credentials.private_key) {
+  // This error will be logged on the server and helps in debugging.
+  // The app will likely throw an exception when trying to use the clients.
+  console.error("FATAL: Service account credentials (GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY) are not set in environment variables.");
+}
+
+
+// Initialize Google Cloud clients.
+// The SDKs will automatically use the service account credentials.
 const db = new Firestore({ projectId: PROJECT_ID, credentials, databaseId: FIRESTORE_DATABASE_ID });
 const storage = new Storage({ projectId: PROJECT_ID, credentials });
 const bucket = storage.bucket(BUCKET_NAME);
