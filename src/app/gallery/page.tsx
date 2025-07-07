@@ -128,7 +128,7 @@ function GalleryPage() {
       await deleteFromFirestore(receipt.id, token);
       setReceipts(prev => prev.filter(r => r.id !== receipt.id));
       toast({ title: 'Success', description: 'Receipt deleted successfully.' });
-    } catch (e: any)_ {
+    } catch (e: any) {
       toast({ variant: 'destructive', title: 'Deletion Failed', description: e.message });
     }
   };
