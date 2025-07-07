@@ -1,8 +1,36 @@
 // This file is intended for client-side execution. Do NOT add 'use server'.
 // It uses the Fetch API to communicate with Google Cloud REST endpoints.
 
-const FIRESTORE_BASE_URL = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/tickets';
+// Base path for Firestore documents, used for running queries.
+const FIRESTORE_PARENT_PATH = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents';
+// Specific path for the 'tickets' collection, used for CRUD operations on individual documents.
+const FIRESTORE_COLLECTION_PATH = `${FIRESTORE_PARENT_PATH}/tickets`;
+
 const STORAGE_UPLOAD_URL = 'https://storage.googleapis.com/upload/storage/v1/b/ticketimages/o';
+const STORAGE_BUCKET_URL = 'https://storage.googleapis.com/storage/v1/b/ticketimages/o';
+
+/**
+ * A helper function to handle API response errors consistently.
+ * @param response The fetch Response object.
+ * @param action A description of the action that failed (e.g., "upload image").
+ * @throws An error with a descriptive message.
+ */
+async function handleResponseError(response: Response, action: string): Promise<never> {
+    let errorMessage = `Failed to ${action}: ${response.status} ${response.statusText}`;
+    try {
+        const errorData = await response.json();
+        console.error(`${action} failed:`, errorData);
+        // Google Cloud APIs usually have a standard error format
+        if (errorData.error && errorData.error.message) {
+            errorMessage = `Failed to ${action}: ${errorData.error.message}`;
+        }
+    } catch (e) {
+        // Not a JSON response, the statusText is the best info we have.
+        console.error(`Could not parse error response for ${action} as JSON.`);
+    }
+    throw new Error(errorMessage);
+}
+
 
 function dataURIToBlob(dataURI: string): Blob {
   const [meta, data] = dataURI.split(',');
@@ -27,13 +55,28 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    console.error("Storage upload failed:", errorData);
-    throw new Error(`Failed to upload image: ${errorData.error.message}`);
+    await handleResponseError(response, 'upload image');
   }
 
-  const result = await response.json();
-  return `https://storage.googleapis.com/${result.bucket}/${result.name}`;
+  // Manually construct the public URL for consistency
+  const publicUrl = `https://storage.googleapis.com/ticketimages/${fileName}`;
+
+  // Make the file public so it can be viewed in the browser
+  const aclUrl = `${STORAGE_BUCKET_URL}/${encodeURIComponent(fileName)}/acl`;
+  const aclResponse = await fetch(aclUrl, {
+      method: 'POST',
+      headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ entity: 'allUsers', role: 'READER' }),
+  });
+
+  if (!aclResponse.ok) {
+    await handleResponseError(aclResponse, 'make image public');
+  }
+
+  return publicUrl;
 }
 
 export async function saveToFirestore(data: any, token: string): Promise<{ id: string }> {
@@ -48,7 +91,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
     },
   };
 
-  const response = await fetch(FIRESTORE_BASE_URL, {
+  const response = await fetch(FIRESTORE_COLLECTION_PATH, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -58,9 +101,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    console.error("Firestore save failed:", errorData);
-    throw new Error(`Failed to save data: ${errorData.error.message}`);
+    await handleResponseError(response, 'save receipt data');
   }
 
   const result = await response.json();
@@ -106,7 +147,7 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
     },
   };
 
-  const response = await fetch(`${FIRESTORE_BASE_URL}:runQuery`, {
+  const response = await fetch(`${FIRESTORE_PARENT_PATH}:runQuery`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -116,9 +157,7 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
   });
 
   if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Firestore fetch failed:", errorData);
-      throw new Error(`Failed to load receipts: ${errorData.error.message}`);
+      await handleResponseError(response, 'load receipts');
   }
 
   const results = await response.json();
@@ -130,7 +169,7 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
 }
 
 export async function deleteFromStorage(fileName: string, token: string): Promise<void> {
-    const deleteUrl = `https://storage.googleapis.com/storage/v1/b/ticketimages/o/${encodeURIComponent(fileName)}`;
+    const deleteUrl = `${STORAGE_BUCKET_URL}/${encodeURIComponent(fileName)}`;
 
     const response = await fetch(deleteUrl, {
         method: 'DELETE',
@@ -138,13 +177,12 @@ export async function deleteFromStorage(fileName: string, token: string): Promis
     });
 
     if (!response.ok && response.status !== 204 && response.status !== 404) {
-        const errorData = await response.json();
-        throw new Error(`Failed to delete image: ${errorData.error.message}`);
+        await handleResponseError(response, 'delete image');
     }
 }
 
 export async function deleteFromFirestore(docId: string, token: string): Promise<void> {
-    const deleteUrl = `${FIRESTORE_BASE_URL}/${docId}`;
+    const deleteUrl = `${FIRESTORE_COLLECTION_PATH}/${docId}`;
 
     const response = await fetch(deleteUrl, {
         method: 'DELETE',
@@ -152,7 +190,6 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to delete data: ${errorData.error.message}`);
+        await handleResponseError(response, 'delete receipt data');
     }
 }
