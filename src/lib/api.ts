@@ -64,7 +64,9 @@ export async function uploadToStorage(photoDataUri: string, fileName: string): P
   // Make the file public so it can be viewed in the browser.
   await file.makePublic();
 
-  return file.publicUrl();
+  // Construct the public URL manually for consistency and to avoid complex signed URLs.
+  // This format is directly accessible and works well with next/image.
+  return `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`;
 }
 
 /**
