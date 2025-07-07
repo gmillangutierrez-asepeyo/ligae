@@ -1,54 +1,62 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './auth-context';
+import { getAccessToken } from '@/app/actions/getToken';
+import { useToast } from '@/hooks/use-toast';
 
 interface TokenContextType {
   token: string | null;
-  setToken: (token: string | null) => void;
+  isTokenLoading: boolean;
+  fetchToken: () => Promise<void>;
 }
 
 const TokenContext = createContext<TokenContextType | undefined>(undefined);
 
-const TOKEN_STORAGE_KEY = 'google-oauth-token';
-
 export function TokenProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
+  const [isTokenLoading, setIsTokenLoading] = useState(false);
   const { user } = useAuth();
+  const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchToken = useCallback(async () => {
+    // Avoid fetching if already in progress or no user
+    if (isTokenLoading || !user) return; 
+    
+    setIsTokenLoading(true);
     try {
-      const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-      if (storedToken) {
-        setTokenState(storedToken);
+      const result = await getAccessToken();
+      if (result.error) {
+        throw new Error(result.error);
       }
-    } catch (error) {
-      console.error("Could not access localStorage", error);
+      setTokenState(result.token!);
+    } catch (error: any) {
+      console.error("Failed to fetch access token:", error);
+      setTokenState(null);
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Failed',
+        description: 'Could not obtain an access token from the server. ' + error.message,
+      });
+    } finally {
+      setIsTokenLoading(false);
     }
-  }, []);
+  }, [user, toast, isTokenLoading]);
 
-  const setToken = (newToken: string | null) => {
-    setTokenState(newToken);
-    try {
-        if (newToken) {
-            localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
-        } else {
-            localStorage.removeItem(TOKEN_STORAGE_KEY);
-        }
-    } catch (error) {
-        console.error("Could not access localStorage", error);
-    }
-  };
-  
-  // When user signs out, clear the token.
+  // When user logs in, fetch a token
   useEffect(() => {
-      if (!user) {
-          setToken(null);
-      }
-  }, [user]);
+    if (user && !token) {
+      fetchToken();
+    }
+    // When user logs out, clear the token
+    if (!user) {
+      setTokenState(null);
+    }
+  }, [user, token, fetchToken]);
+
 
   return (
-    <TokenContext.Provider value={{ token, setToken }}>
+    <TokenContext.Provider value={{ token, isTokenLoading, fetchToken }}>
       {children}
     </TokenContext.Provider>
   );

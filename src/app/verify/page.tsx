@@ -44,7 +44,7 @@ function VerifyForm({
   const { toast } = useToast();
   const { clearReceiptData } = useReceiptStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { token } = useToken();
+  const { token, isTokenLoading } = useToken();
 
   const {
     control,
@@ -60,7 +60,7 @@ function VerifyForm({
       toast({
         variant: 'destructive',
         title: 'Authentication Error',
-        description: 'No API access token found. Please set one on the Settings page.',
+        description: 'No API access token found. Please try refreshing it on the Settings page.',
       });
       return;
     }
@@ -157,13 +157,13 @@ function VerifyForm({
                 />
                 {errors.usuario && <p className="text-destructive text-sm mt-1">{errors.usuario.message}</p>}
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
+              <Button type="submit" className="w-full" disabled={isSubmitting || isTokenLoading}>
+                {isSubmitting || isTokenLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="mr-2 h-4 w-4" />
                 )}
-                Confirm and Save
+                {isTokenLoading ? 'Authenticating...' : 'Confirm and Save'}
               </Button>
             </form>
           </CardContent>
@@ -175,6 +175,7 @@ function VerifyForm({
 function VerifyPage() {
   const router = useRouter();
   const { croppedPhotoDataUri, extractedData } = useReceiptStore();
+  const { isTokenLoading } = useToken();
 
   useEffect(() => {
     // Redirect if there's no photo data to verify
@@ -210,6 +211,14 @@ function VerifyPage() {
             initialData={extractedData} 
             croppedPhotoDataUri={croppedPhotoDataUri}
           />
+           {isTokenLoading && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                <div className="flex items-center gap-2 p-4 bg-background rounded-lg">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span className="text-foreground">Authenticating...</span>
+                </div>
+            </div>
+           )}
         </main>
       </div>
     </AuthGuard>

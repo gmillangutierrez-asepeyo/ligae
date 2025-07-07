@@ -32,7 +32,8 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
 
   useEffect(() => {
     if (!src || !token) {
-      setError(true);
+      // Don't set error if token is just loading
+      if (token !== null) setError(true);
       setLoading(false);
       return;
     }
@@ -187,17 +188,17 @@ function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete:
 
 function GalleryPage() {
   const { user } = useAuth();
-  const { token } = useToken();
+  const { token, isTokenLoading } = useToken();
   const { toast } = useToast();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadReceipts = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user?.email || isTokenLoading) return;
 
     if (!token) {
-      setError("API Access Token not found. Please set one on the Settings page.");
+      setError("API Access Token could not be generated. Please try refreshing on the Settings page or re-login.");
       setLoading(false);
       return;
     }
@@ -212,11 +213,13 @@ function GalleryPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.email, token]);
+  }, [user?.email, token, isTokenLoading]);
 
   useEffect(() => {
-    loadReceipts();
-  }, [loadReceipts]);
+    if(!isTokenLoading) {
+      loadReceipts();
+    }
+  }, [loadReceipts, isTokenLoading]);
 
   const handleDelete = async (receipt: Receipt) => {
     if (!token) {
@@ -243,9 +246,10 @@ function GalleryPage() {
             <p className="text-muted-foreground">A history of all your submitted receipts.</p>
           </div>
 
-          {loading && (
+          {(loading || isTokenLoading) && (
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
+               {isTokenLoading && <p className="ml-4 text-muted-foreground">Authenticating...</p>}
             </div>
           )}
 
@@ -257,7 +261,7 @@ function GalleryPage() {
             </Alert>
           )}
 
-          {!loading && !error && receipts.length === 0 && (
+          {!loading && !isTokenLoading && !error && receipts.length === 0 && (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
                 <Inbox className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No receipts</h3>
@@ -265,7 +269,7 @@ function GalleryPage() {
             </div>
           )}
 
-          {!loading && !error && receipts.length > 0 && (
+          {!loading && !isTokenLoading && !error && receipts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {receipts.map((receipt) => (
                 <ReceiptCard key={receipt.id} receipt={receipt} onDelete={handleDelete} token={token} />
