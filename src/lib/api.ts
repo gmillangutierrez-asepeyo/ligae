@@ -1,3 +1,4 @@
+
 'use server';
 
 import { Firestore } from '@google-cloud/firestore';
@@ -46,7 +47,9 @@ function dataURIToBuffer(dataURI: string): { buffer: Buffer; mimeType: string } 
 }
 
 /**
- * Uploads a file (from a data URI) to Google Cloud Storage.
+ * STEP 1: UPLOAD THE IMAGE FILE TO CLOUD STORAGE.
+ * This function takes the image data, uploads it to your Cloud Storage bucket,
+ * makes it public, and returns its public URL.
  * @param photoDataUri The photo data as a data URI string.
  * @param fileName The desired file name in the bucket.
  * @returns The public URL of the uploaded file.
@@ -70,8 +73,10 @@ export async function uploadToStorage(photoDataUri: string, fileName: string): P
 }
 
 /**
- * Saves a new receipt document to Firestore.
- * @param data The receipt data to save.
+ * STEP 2: SAVE THE METADATA (AND IMAGE URL) TO FIRESTORE.
+ * This function takes the extracted receipt data, which now includes the public URL
+ * of the image from Cloud Storage, and saves it as a new document in your Firestore database.
+ * @param data The receipt data to save (including photoUrl and fileName).
  * @returns An object containing the ID of the newly created document.
  */
 export async function saveToFirestore(data: any): Promise<{ id: string }> {
