@@ -4,14 +4,16 @@ import { Firestore } from '@google-cloud/firestore';
 import { Storage } from '@google-cloud/storage';
 
 const PROJECT_ID = 'ligae-asepeyo-463510';
-const BUCKET_NAME = 'ligae-asepeyo-463510.appspot.com'; 
+const BUCKET_NAME = 'ticketimages';
+const FIRESTORE_DATABASE_ID = 'ticketsligae';
+const FIRESTORE_COLLECTION_ID = 'tickets';
 
 // Initialize Google Cloud clients.
 // The SDKs will automatically use the service account credentials
 // if the GOOGLE_SERVICE_ACCOUNT_KEY_JSON environment variable is set.
 const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY_JSON!);
 
-const db = new Firestore({ projectId: PROJECT_ID, credentials });
+const db = new Firestore({ projectId: PROJECT_ID, credentials, databaseId: FIRESTORE_DATABASE_ID });
 const storage = new Storage({ projectId: PROJECT_ID, credentials });
 const bucket = storage.bucket(BUCKET_NAME);
 
@@ -55,7 +57,7 @@ export async function uploadToStorage(photoDataUri: string, fileName: string): P
  * @returns An object containing the ID of the newly created document.
  */
 export async function saveToFirestore(data: any): Promise<{ id: string }> {
-  const docRef = await db.collection('tickets').add({
+  const docRef = await db.collection(FIRESTORE_COLLECTION_ID).add({
     ...data,
     // Ensure importe is stored as a number
     importe: Number(data.importe)
@@ -80,7 +82,7 @@ export interface CleanReceipt {
  * @returns An array of receipt objects.
  */
 export async function fetchTickets(userEmail: string): Promise<CleanReceipt[]> {
-  const ticketsCollection = db.collection('tickets');
+  const ticketsCollection = db.collection(FIRESTORE_COLLECTION_ID);
   const snapshot = await ticketsCollection.where('usuario', '==', userEmail).get();
 
   if (snapshot.empty) {
@@ -129,5 +131,5 @@ export async function deleteFromStorage(fileName: string): Promise<void> {
  * @param docId The ID of the document to delete.
  */
 export async function deleteFromFirestore(docId: string): Promise<void> {
-  await db.collection('tickets').doc(docId).delete();
+  await db.collection(FIRESTORE_COLLECTION_ID).doc(docId).delete();
 }

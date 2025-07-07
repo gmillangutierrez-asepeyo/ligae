@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'storage.googleapis.com',
         port: '',
-        pathname: '/ligae-asepeyo-463510.appspot.com/**',
+        pathname: '/ticketimages/**',
       }
     ],
   },
