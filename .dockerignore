@@ -1,0 +1,31 @@
+# Docker and VS Code
+.dockerignore
+Dockerfile
+.vscode/
+
+# Git
+.git
+.gitignore
+
+# Next.js build artifacts
+.next/
+dist/
+out/
+
+# Node.js dependencies
+node_modules/
+
+# Environment files
+.env
+.env*
+!/.env.production.local
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test reports
+coverage
