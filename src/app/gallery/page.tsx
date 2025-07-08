@@ -132,7 +132,7 @@ function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete:
   };
 
   return (
-    <Card className="overflow-hidden group">
+    <Card className="overflow-hidden group flex flex-col">
       <CardHeader className="p-0">
         <div className="relative aspect-square bg-secondary">
           {receipt.photoUrl ? (
@@ -151,10 +151,16 @@ function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete:
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1">
         <CardTitle className="text-lg font-headline capitalize">{receipt.sector}</CardTitle>
         <p className="font-bold text-primary text-xl">€{receipt.importe.toFixed(2)}</p>
         <p className="text-sm text-muted-foreground">{receipt.fecha}</p>
+        {receipt.observaciones && (
+          <div className="mt-2 pt-2 border-t">
+            <p className="text-sm text-muted-foreground font-semibold">Observaciones:</p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{receipt.observaciones}</p>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <AlertDialog>

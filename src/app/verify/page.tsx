@@ -19,6 +19,7 @@ import { uploadToStorage, saveToFirestore } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from '@/contexts/token-context';
 import { Loader2, Send } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 
 const FormSchema = z.object({
@@ -26,6 +27,7 @@ const FormSchema = z.object({
   importe: z.coerce.number().positive('El importe debe ser positivo'),
   usuario: z.string().email('Email inválido'),
   fecha: z.string().min(1, 'La fecha es obligatoria'),
+  observaciones: z.string().optional(),
 });
 
 type FormData = z.infer<typeof FormSchema>;
@@ -149,6 +151,21 @@ function VerifyForm({
                 {errors.fecha && <p className="text-destructive text-sm mt-1">{errors.fecha.message}</p>}
               </div>
                <div>
+                <Label htmlFor="observaciones">Observaciones</Label>
+                 <Controller
+                  name="observaciones"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      id="observaciones"
+                      placeholder="Añade un comentario sobre el gasto..."
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  )}
+                />
+              </div>
+               <div>
                 <Label htmlFor="usuario">Email del Usuario</Label>
                 <Controller
                   name="usuario"
@@ -198,6 +215,11 @@ function VerifyPage() {
     );
   }
 
+  const initialFormData: FormData = {
+    ...extractedData,
+    observaciones: '', // Ensure the 'observaciones' field exists for the form.
+  };
+
   return (
     <AuthGuard>
       <div className="flex flex-col min-h-screen bg-background">
@@ -208,7 +230,7 @@ function VerifyPage() {
             <p className="text-muted-foreground">Por favor, comprueba los datos extraídos y corrígelos si es necesario.</p>
           </div>
           <VerifyForm 
-            initialData={extractedData} 
+            initialData={initialFormData} 
             croppedPhotoDataUri={croppedPhotoDataUri}
           />
            {isTokenLoading && (

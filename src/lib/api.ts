@@ -76,6 +76,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
       photoUrl: { stringValue: data.photoUrl },
       // We still save the fileName for easier reference, e.g., for deletions.
       fileName: { stringValue: data.fileName },
+      ...(data.observaciones && { observaciones: { stringValue: data.observaciones } }),
     },
   };
 
@@ -105,6 +106,7 @@ export interface CleanReceipt {
   photoUrl: string; // This now holds the direct public URL to the GCS object
   fileName: string;
   usuario: string;
+  observaciones?: string;
 }
 
 function transformFirestoreDoc(doc: any): CleanReceipt {
@@ -118,6 +120,7 @@ function transformFirestoreDoc(doc: any): CleanReceipt {
     photoUrl: fields.photoUrl?.stringValue || '',
     fileName: fields.fileName?.stringValue || '',
     usuario: fields.usuario?.stringValue || '',
+    observaciones: fields.observaciones?.stringValue,
   };
 }
 
