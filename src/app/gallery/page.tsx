@@ -99,7 +99,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-2">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-            <p className="text-xs text-muted-foreground mt-1">Load Failed</p>
+            <p className="text-xs text-muted-foreground mt-1">Error al cargar</p>
         </div>
       </div>
     );
@@ -138,14 +138,14 @@ function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete:
           {receipt.photoUrl ? (
             <AuthenticatedImage
               src={receipt.photoUrl}
-              alt={`Receipt for ${receipt.sector}`}
+              alt={`Recibo de ${receipt.sector}`}
               token={token}
             />
           ) : (
              <div className="flex items-center justify-center h-full">
                 <div className="text-center p-2">
                     <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-                    <p className="text-xs text-muted-foreground mt-1">No Image</p>
+                    <p className="text-xs text-muted-foreground mt-1">Sin Imagen</p>
                 </div>
              </div>
           )}
@@ -161,21 +161,21 @@ function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete:
           <AlertDialogTrigger asChild>
              <Button variant="destructive" className="w-full" disabled={isDeleting}>
                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                Delete
+                Eliminar
              </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the receipt
-                and remove its data from our servers.
+                Esta acción no se puede deshacer. Esto eliminará permanentemente el recibo
+                y sus datos de nuestros servidores.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteClick}>
-                Continue
+                Continuar
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -198,7 +198,7 @@ function GalleryPage() {
     if (!user?.email || isTokenLoading) return;
 
     if (!token) {
-      setError("API Access Token could not be generated. Please try refreshing on the Settings page or re-login.");
+      setError("No se pudo generar el token de acceso a la API. Intenta refrescarlo en la página de Ajustes o vuelve a iniciar sesión.");
       setLoading(false);
       return;
     }
@@ -209,7 +209,7 @@ function GalleryPage() {
       const data = await fetchTickets(user.email, token);
       setReceipts(data);
     } catch (e: any) {
-      setError(e.message || "Failed to load receipts.");
+      setError(e.message || "Error al cargar los recibos.");
     } finally {
       setLoading(false);
     }
@@ -223,16 +223,16 @@ function GalleryPage() {
 
   const handleDelete = async (receipt: Receipt) => {
     if (!token) {
-      toast({ variant: 'destructive', title: 'Deletion Failed', description: 'API Token not found.' });
+      toast({ variant: 'destructive', title: 'Fallo al Eliminar', description: 'Token de la API no encontrado.' });
       return;
     }
     try {
       await deleteFromStorage(receipt.fileName, token);
       await deleteFromFirestore(receipt.id, token);
       setReceipts(prev => prev.filter(r => r.id !== receipt.id));
-      toast({ title: 'Success', description: 'Receipt deleted successfully.' });
+      toast({ title: 'Éxito', description: 'Recibo eliminado correctamente.' });
     } catch (e: any) {
-      toast({ variant: 'destructive', title: 'Deletion Failed', description: e.message });
+      toast({ variant: 'destructive', title: 'Fallo al Eliminar', description: e.message });
     }
   };
 
@@ -242,14 +242,14 @@ function GalleryPage() {
         <Header />
         <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
           <div className="mb-8">
-            <h1 className="font-headline text-3xl font-bold">Receipt Gallery</h1>
-            <p className="text-muted-foreground">A history of all your submitted receipts.</p>
+            <h1 className="font-headline text-3xl font-bold">Galería de Recibos</h1>
+            <p className="text-muted-foreground">Un historial de todos tus recibos enviados.</p>
           </div>
 
           {(loading || isTokenLoading) && (
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
-               {isTokenLoading && <p className="ml-4 text-muted-foreground">Authenticating...</p>}
+               {isTokenLoading && <p className="ml-4 text-muted-foreground">Autenticando...</p>}
             </div>
           )}
 
@@ -264,8 +264,8 @@ function GalleryPage() {
           {!loading && !isTokenLoading && !error && receipts.length === 0 && (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
                 <Inbox className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No receipts</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by capturing a new receipt.</p>
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No hay recibos</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Empieza capturando un nuevo recibo.</p>
             </div>
           )}
 

@@ -10,7 +10,7 @@ export async function getAccessToken(): Promise<{ token?: string, error?: string
     try {
         const serviceAccountJsonString = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
         if (!serviceAccountJsonString) {
-            throw new Error('The GOOGLE_SERVICE_ACCOUNT_JSON environment variable is not set.');
+            throw new Error('La variable de entorno GOOGLE_SERVICE_ACCOUNT_JSON no está definida.');
         }
 
         let serviceAccountCredentials;
@@ -20,8 +20,8 @@ export async function getAccessToken(): Promise<{ token?: string, error?: string
              // We need to un-escape them for the crypto library to parse the PEM key correctly.
              serviceAccountCredentials.private_key = serviceAccountCredentials.private_key.replace(/\\n/g, '\n');
         } catch (e) {
-            console.error("Failed to parse service account JSON.");
-            throw new Error('Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON. Please ensure it is a valid JSON string.');
+            console.error("Fallo al interpretar el JSON de la cuenta de servicio.");
+            throw new Error('Fallo al interpretar GOOGLE_SERVICE_ACCOUNT_JSON. Asegúrate de que es una cadena JSON válida.');
         }
 
         const auth = new GoogleAuth({
@@ -33,13 +33,13 @@ export async function getAccessToken(): Promise<{ token?: string, error?: string
         const accessToken = await client.getAccessToken();
 
         if (!accessToken.token) {
-             throw new Error('Failed to retrieve access token from Google.');
+             throw new Error('Fallo al obtener el token de acceso de Google.');
         }
 
         return { token: accessToken.token };
     } catch (error: any) {
-        console.error('Error generating access token:', error);
+        console.error('Error generando el token de acceso:', error);
         // Return a structured error to the client
-        return { error: error.message || 'An unknown server error occurred.' };
+        return { error: error.message || 'Ha ocurrido un error desconocido en el servidor.' };
     }
 }

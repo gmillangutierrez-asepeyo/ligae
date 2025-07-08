@@ -31,12 +31,12 @@ export function TokenProvider({ children }: { children: ReactNode }) {
       }
       setTokenState(result.token!);
     } catch (error: any) {
-      console.error("Failed to fetch access token:", error);
+      console.error("Error al obtener el token de acceso:", error);
       setTokenState(null);
       toast({
         variant: 'destructive',
-        title: 'Authentication Failed',
-        description: 'Could not obtain an access token from the server. ' + error.message,
+        title: 'Fallo de Autenticación',
+        description: 'No se pudo obtener un token de acceso del servidor. ' + error.message,
       });
     } finally {
       setIsTokenLoading(false);

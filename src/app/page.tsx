@@ -21,12 +21,12 @@ function LoginView() {
           </div>
           <CardTitle className="font-headline text-2xl">LIGAE</CardTitle>
           <p className="text-muted-foreground font-headline">ASEPEYO</p>
-          <CardDescription className="pt-2">Sign in to manage your receipts.</CardDescription>
+          <CardDescription className="pt-2">Inicia sesión para gestionar tus recibos.</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={signIn} disabled={loading} className="w-full">
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
-            Sign In with Google
+            Iniciar Sesión con Google
           </Button>
         </CardContent>
       </Card>
@@ -61,19 +61,19 @@ function SelectionView({ setMode }: { setMode: (mode: 'camera' | 'selection') =>
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
         <div className="text-center">
-            <h1 className="font-headline text-3xl">Submit a Receipt</h1>
-            <p className="text-muted-foreground mt-2">Choose how to provide your receipt.</p>
+            <h1 className="font-headline text-3xl">Enviar un Recibo</h1>
+            <p className="text-muted-foreground mt-2">Elige cómo quieres enviar tu recibo.</p>
         </div>
         <div className="w-full max-w-md grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setMode('camera')}>
                 <Camera className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="font-headline text-xl">Take Photo</CardTitle>
-                <CardDescription>Use your device's camera.</CardDescription>
+                <CardTitle className="font-headline text-xl">Hacer Foto</CardTitle>
+                <CardDescription>Usa la cámara de tu dispositivo.</CardDescription>
             </Card>
              <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={handleUploadClick}>
                 <Upload className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="font-headline text-xl">Upload Image</CardTitle>
-                <CardDescription>Select a file from your device.</CardDescription>
+                <CardTitle className="font-headline text-xl">Subir Imagen</CardTitle>
+                <CardDescription>Selecciona un archivo de tu dispositivo.</CardDescription>
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -106,7 +106,7 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
-      setError("Could not access camera. Please check permissions.");
+      setError("No se pudo acceder a la cámara. Por favor, comprueba los permisos.");
     }
   }, []);
 
@@ -143,11 +143,11 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
       <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative">
          <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 md:left-8">
             <ArrowLeft className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Back</span>
+            <span className="hidden md:inline">Volver</span>
         </Button>
-        <h1 className="font-headline text-2xl text-center">Capture Receipt</h1>
+        <h1 className="font-headline text-2xl text-center">Capturar Recibo</h1>
         <p className="text-muted-foreground text-center mb-4">
-          Center the receipt within the frame and take a photo.
+          Centra el recibo en el marco y haz una foto.
         </p>
         <div className="relative w-full max-w-md aspect-[9/16] rounded-lg overflow-hidden border-4 border-dashed border-primary/50 bg-secondary shadow-lg">
           <video

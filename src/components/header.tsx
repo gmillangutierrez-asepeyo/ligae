@@ -20,9 +20,9 @@ import { cn } from '@/lib/utils';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
 const navLinks = [
-  { href: '/', label: 'Capture', icon: Camera },
-  { href: '/gallery', label: 'Gallery', icon: GalleryHorizontal },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/', label: 'Capturar', icon: Camera },
+  { href: '/gallery', label: 'Galería', icon: GalleryHorizontal },
+  { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
 
 export default function Header() {
@@ -62,7 +62,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.photoURL ?? ''} alt={user?.displayName ?? 'User'} />
+                <AvatarImage src={user?.photoURL ?? ''} alt={user?.displayName ?? 'Usuario'} />
                 <AvatarFallback>
                   {user?.email?.[0].toUpperCase()}
                 </AvatarFallback>
@@ -94,7 +94,7 @@ export default function Header() {
             </div>
             <DropdownMenuItem onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>Cerrar sesión</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

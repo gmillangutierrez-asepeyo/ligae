@@ -24,19 +24,19 @@ const ExtractReceiptDataInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      "A photo of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      'Una foto de un recibo, como un data URI que debe incluir un tipo MIME y usar codificación Base64. Formato esperado: \'data:<mimetype>;base64,<encoded_data>\'.'
     ),
-  usuario: z.string().email().describe("The email of the user submitting the receipt."),
+  usuario: z.string().email().describe('El email del usuario que envía el recibo.'),
 });
 export type ExtractReceiptDataInput = z.infer<typeof ExtractReceiptDataInputSchema>;
 
 const validSectors = z.enum(["comida", "transporte", "otros"]);
 
 const ExtractReceiptDataOutputSchema = z.object({
-  sector: validSectors.describe('The type of expense. Must be one of: "comida", "transporte", or "otros".'),
-  importe: z.number().describe('The total cost in euros (€), as a numerical value.'),
-  usuario: z.string().describe('The email of the user who has logged in.'),
-  fecha: z.string().describe('The date on the receipt.'),
+  sector: validSectors.describe('El tipo de gasto. Debe ser uno de: "comida", "transporte" u "otros".'),
+  importe: z.number().describe('El coste total en euros (€), como valor numérico.'),
+  usuario: z.string().describe('El email del usuario que ha iniciado sesión.'),
+  fecha: z.string().describe('La fecha del recibo.'),
 });
 export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSchema>;
 
@@ -44,9 +44,9 @@ export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSc
 // Use the enum for sector to enforce the correct output from the model.
 // Allow string or number for importe to handle variations from the model.
 const ModelOutputSchema = z.object({
-  sector: validSectors.describe('The type of expense. It MUST be one of: "comida", "transporte", or "otros". If unsure, you MUST default to "otros".'),
-  importe: z.union([z.string(), z.number()]).optional().describe('The total cost in euros (€), as a numerical value or a string representing one.'),
-  fecha: z.string().optional().describe('The date on the receipt.'),
+  sector: validSectors.describe('El tipo de gasto. DEBE ser uno de: "comida", "transporte" u "otros". En caso de duda, DEBES usar "otros".'),
+  importe: z.union([z.string(), z.number()]).optional().describe('El coste total en euros (€), como valor numérico o una cadena de texto que lo represente.'),
+  fecha: z.string().optional().describe('La fecha del recibo.'),
 });
 
 
@@ -58,17 +58,17 @@ const extractReceiptDataPrompt = ai.definePrompt({
   name: 'extractReceiptDataPrompt',
   input: {schema: ExtractReceiptDataInputSchema.pick({ photoDataUri: true })},
   output: {schema: ModelOutputSchema},
-  prompt: `You are an expert accountant specializing in extracting data from receipts.
+  prompt: `Eres un contable experto especializado en extraer datos de recibos.
 
-You will use this information to extract key information from the receipt.
-- Analyze the receipt to determine the expense category. It must be one of the following: "comida", "transporte", or "otros". If you cannot confidently determine the category from the image, you MUST classify it as "otros".
-- Extract the total amount and the date.
+Utilizarás esta información para extraer los datos clave del recibo.
+- Analiza el recibo para determinar la categoría del gasto. Debe ser una de las siguientes: "comida", "transporte", u "otros". Si no puedes determinar la categoría con seguridad a partir de la imagen, DEBES clasificarla como "otros".
+- Extrae el importe total y la fecha.
 
-Use the following as the primary source of information about the receipt.
+Utiliza lo siguiente como fuente principal de información sobre el recibo.
 
-Photo: {{media url=photoDataUri}}
+Foto: {{media url=photoDataUri}}
 
-Output the data in JSON format according to the provided schema.
+Devuelve los datos en formato JSON según el esquema proporcionado.
 `,
 });
 
@@ -104,10 +104,10 @@ const extractReceiptDataFlow = ai.defineFlow(
           }
         }
       } else {
-        console.warn("AI model did not return valid structured data. Using default values.");
+        console.warn("El modelo de IA no devolvió datos estructurados válidos. Usando valores por defecto.");
       }
     } catch (error) {
-      console.error("An error occurred in extractReceiptDataFlow, using default values:", error);
+      console.error("Ocurrió un error en extractReceiptDataFlow, usando valores por defecto:", error);
       // In case of any error (e.g., API failure, safety filters), the default finalOutput is used.
     }
 

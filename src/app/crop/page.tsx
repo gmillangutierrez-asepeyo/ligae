@@ -94,7 +94,7 @@ function CropPage() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Could not process crop. Please try again.',
+        description: 'No se pudo procesar el recorte. Inténtalo de nuevo.',
       });
       return;
     }
@@ -120,8 +120,8 @@ function CropPage() {
       console.error("Error processing receipt:", e);
       toast({
         variant: 'destructive',
-        title: 'Processing Failed',
-        description: e.message || 'Failed to analyze receipt. Please try again.',
+        title: 'Fallo al Procesar',
+        description: e.message || 'No se pudo analizar el recibo. Inténtalo de nuevo.',
       });
       setIsLoading(false);
     }
@@ -135,9 +135,9 @@ function CropPage() {
     <div className="flex flex-col h-screen w-full bg-background">
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-        <h1 className="font-headline text-2xl text-center">Crop Receipt</h1>
+        <h1 className="font-headline text-2xl text-center">Recortar Recibo</h1>
         <p className="text-muted-foreground text-center mb-4">
-          Adjust the frame to fit the receipt, then confirm.
+          Ajusta el marco al recibo y confirma.
         </p>
         <div className="relative w-full max-w-md">
           <ReactCrop
@@ -148,7 +148,7 @@ function CropPage() {
           >
             <Image
               ref={imgRef}
-              alt="Receipt to crop"
+              alt="Recibo a recortar"
               src={originalPhotoDataUri}
               width={500}
               height={888} // approx 9/16 aspect ratio
@@ -164,13 +164,13 @@ function CropPage() {
           ) : (
             <Scissors className="mr-2 h-4 w-4" />
           )}
-          Confirm and Analyze
+          Confirmar y Analizar
         </Button>
 
         {isLoading && (
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
             <Loader className="h-12 w-12 animate-spin mb-4" />
-            <p className="font-headline">Analyzing receipt...</p>
+            <p className="font-headline">Analizando recibo...</p>
           </div>
         )}
 

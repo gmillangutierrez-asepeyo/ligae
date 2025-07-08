@@ -22,10 +22,10 @@ import { Loader2, Send } from 'lucide-react';
 
 
 const FormSchema = z.object({
-  sector: z.string().min(1, 'Sector is required'),
-  importe: z.coerce.number().positive('Amount must be positive'),
-  usuario: z.string().email('Invalid email'),
-  fecha: z.string().min(1, 'Date is required'),
+  sector: z.string().min(1, 'El sector es obligatorio'),
+  importe: z.coerce.number().positive('El importe debe ser positivo'),
+  usuario: z.string().email('Email inválido'),
+  fecha: z.string().min(1, 'La fecha es obligatoria'),
 });
 
 type FormData = z.infer<typeof FormSchema>;
@@ -59,8 +59,8 @@ function VerifyForm({
     if (!token) {
       toast({
         variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'No API access token found. Please try refreshing it on the Settings page.',
+        title: 'Error de Autenticación',
+        description: 'No se encontró el token de acceso a la API. Por favor, intenta refrescarlo en la página de Ajustes.',
       });
       return;
     }
@@ -72,14 +72,14 @@ function VerifyForm({
       
       await saveToFirestore({ ...data, photoUrl, fileName }, token);
 
-      toast({ title: 'Success!', description: 'Your receipt has been saved.' });
+      toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
       clearReceiptData();
       router.push('/gallery');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Submission Failed',
-        description: error.message || 'An unknown error occurred.',
+        title: 'Fallo al Enviar',
+        description: error.message || 'Ha ocurrido un error desconocido.',
       });
     } finally {
       setIsSubmitting(false);
@@ -90,13 +90,13 @@ function VerifyForm({
       <div className="grid md:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle>Receipt Image</CardTitle>
+            <CardTitle>Imagen del Recibo</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="relative aspect-[9/16] w-full max-w-sm mx-auto rounded-lg overflow-hidden border">
               <Image
                 src={croppedPhotoDataUri}
-                alt="Captured receipt"
+                alt="Recibo capturado"
                 layout="fill"
                 objectFit="contain"
               />
@@ -105,8 +105,8 @@ function VerifyForm({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Extracted Data</CardTitle>
-            <CardDescription>Edit the fields below as needed.</CardDescription>
+            <CardTitle>Datos Extraídos</CardTitle>
+            <CardDescription>Edita los campos si es necesario.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -131,7 +131,7 @@ function VerifyForm({
                 {errors.sector && <p className="text-destructive text-sm mt-1">{errors.sector.message}</p>}
               </div>
               <div>
-                <Label htmlFor="importe">Amount (€)</Label>
+                <Label htmlFor="importe">Importe (€)</Label>
                 <Controller
                   name="importe"
                   control={control}
@@ -140,7 +140,7 @@ function VerifyForm({
                 {errors.importe && <p className="text-destructive text-sm mt-1">{errors.importe.message}</p>}
               </div>
               <div>
-                <Label htmlFor="fecha">Date</Label>
+                <Label htmlFor="fecha">Fecha</Label>
                 <Controller
                   name="fecha"
                   control={control}
@@ -149,7 +149,7 @@ function VerifyForm({
                 {errors.fecha && <p className="text-destructive text-sm mt-1">{errors.fecha.message}</p>}
               </div>
                <div>
-                <Label htmlFor="usuario">User Email</Label>
+                <Label htmlFor="usuario">Email del Usuario</Label>
                 <Controller
                   name="usuario"
                   control={control}
@@ -163,7 +163,7 @@ function VerifyForm({
                 ) : (
                   <Send className="mr-2 h-4 w-4" />
                 )}
-                {isTokenLoading ? 'Authenticating...' : 'Confirm and Save'}
+                {isTokenLoading ? 'Autenticando...' : 'Confirmar y Guardar'}
               </Button>
             </form>
           </CardContent>
@@ -204,8 +204,8 @@ function VerifyPage() {
         <Header />
         <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
           <div className="mb-8">
-            <h1 className="font-headline text-3xl font-bold">Verify Receipt</h1>
-            <p className="text-muted-foreground">Please check the extracted data and correct it if necessary.</p>
+            <h1 className="font-headline text-3xl font-bold">Verificar Recibo</h1>
+            <p className="text-muted-foreground">Por favor, comprueba los datos extraídos y corrígelos si es necesario.</p>
           </div>
           <VerifyForm 
             initialData={extractedData} 
@@ -215,7 +215,7 @@ function VerifyPage() {
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                 <div className="flex items-center gap-2 p-4 bg-background rounded-lg">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-foreground">Authenticating...</span>
+                    <span className="text-foreground">Autenticando...</span>
                 </div>
             </div>
            )}

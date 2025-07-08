@@ -16,17 +16,17 @@ const STORAGE_BUCKET_URL = 'https://storage.googleapis.com/storage/v1/b/ticketim
  * @throws An error with a descriptive message.
  */
 async function handleResponseError(response: Response, action: string): Promise<never> {
-    let errorMessage = `Failed to ${action}: ${response.status} ${response.statusText}`;
+    let errorMessage = `Fallo al ${action}: ${response.status} ${response.statusText}`;
     try {
         const errorData = await response.json();
-        console.error(`${action} failed:`, errorData);
+        console.error(`Fallo en la acción '${action}':`, errorData);
         // Google Cloud APIs usually have a standard error format
         if (errorData.error && errorData.error.message) {
-            errorMessage = `Failed to ${action}: ${errorData.error.message}`;
+            errorMessage = `Fallo al ${action}: ${errorData.error.message}`;
         }
     } catch (e) {
         // Not a JSON response, the statusText is the best info we have.
-        console.error(`Could not parse error response for ${action} as JSON.`);
+        console.error(`No se pudo interpretar la respuesta de error para '${action}' como JSON.`);
     }
     throw new Error(errorMessage);
 }
@@ -55,7 +55,7 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   });
 
   if (!uploadResponse.ok) {
-    await handleResponseError(uploadResponse, 'upload image');
+    await handleResponseError(uploadResponse, 'subir la imagen');
   }
 
   // The image is uploaded and remains private.
@@ -89,7 +89,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
   });
 
   if (!response.ok) {
-    await handleResponseError(response, 'save receipt data');
+    await handleResponseError(response, 'guardar los datos del recibo');
   }
 
   const result = await response.json();
@@ -145,7 +145,7 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
   });
 
   if (!response.ok) {
-      await handleResponseError(response, 'load receipts');
+      await handleResponseError(response, 'cargar los recibos');
   }
 
   const results = await response.json();
@@ -165,7 +165,7 @@ export async function deleteFromStorage(fileName: string, token: string): Promis
     });
 
     if (!response.ok && response.status !== 204 && response.status !== 404) {
-        await handleResponseError(response, 'delete image');
+        await handleResponseError(response, 'eliminar la imagen');
     }
 }
 
@@ -178,6 +178,6 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
     });
 
     if (!response.ok) {
-        await handleResponseError(response, 'delete receipt data');
+        await handleResponseError(response, 'eliminar los datos del recibo');
     }
 }

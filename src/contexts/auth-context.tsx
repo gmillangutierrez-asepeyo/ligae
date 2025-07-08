@@ -45,11 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error("Sign in error", error);
+      console.error("Error al iniciar sesión", error);
       toast({
         variant: "destructive",
-        title: "Sign-in Failed",
-        description: "Could not sign in with Google. Please try again.",
+        title: "Fallo al Iniciar Sesión",
+        description: "No se pudo iniciar sesión con Google. Inténtalo de nuevo.",
       });
       setLoading(false);
     }
@@ -60,11 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error("Sign out error", error);
+      console.error("Error al cerrar sesión", error);
       toast({
         variant: 'destructive',
-        title: 'Sign-Out Failed',
-        description: 'Could not sign out. Please try again.',
+        title: 'Fallo al Cerrar Sesión',
+        description: 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
       });
     } finally {
         setLoading(false);
