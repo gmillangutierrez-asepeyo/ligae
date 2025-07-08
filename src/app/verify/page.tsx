@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format, isValid } from 'date-fns';
 
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
@@ -18,8 +19,10 @@ import { useReceiptStore } from '@/lib/store';
 import { uploadToStorage, saveToFirestore } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from '@/contexts/token-context';
-import { Loader2, Send } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 
 const FormSchema = z.object({
@@ -46,6 +49,7 @@ function VerifyForm({
   const { toast } = useToast();
   const { clearReceiptData } = useReceiptStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
   const { token, isTokenLoading } = useToken();
 
   const {
@@ -146,7 +150,54 @@ function VerifyForm({
                 <Controller
                   name="fecha"
                   control={control}
-                  render={({ field }) => <Input id="fecha" {...field} />}
+                  render={({ field }) => {
+                    const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+
+                    useEffect(() => {
+                        // This logic now runs only on the client, avoiding SSR issues.
+                        if (field.value) {
+                            const date = new Date(`${field.value}T00:00:00`);
+                            if (isValid(date)) {
+                                setSelectedDate(date);
+                            }
+                        }
+                    }, [field.value]);
+
+                    return (
+                      <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
+                        <div className="relative">
+                          <Input
+                            id="fecha"
+                            {...field}
+                            placeholder="YYYY-MM-DD"
+                          />
+                           <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+                              aria-label="Abrir calendario"
+                            >
+                              <CalendarIcon className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                        </div>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(format(date, 'yyyy-MM-dd'));
+                                setCalendarOpen(false);
+                              }
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  }}
                 />
                 {errors.fecha && <p className="text-destructive text-sm mt-1">{errors.fecha.message}</p>}
               </div>
