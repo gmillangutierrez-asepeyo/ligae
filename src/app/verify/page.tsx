@@ -248,16 +248,28 @@ function VerifyPage() {
   const router = useRouter();
   const { croppedPhotoDataUri, extractedData } = useReceiptStore();
   const { isTokenLoading } = useToken();
+  const [initialFormData, setInitialFormData] = useState<FormData | null>(null);
 
   useEffect(() => {
-    // Redirect if there's no photo data to verify
     if (!croppedPhotoDataUri) {
       router.replace('/');
+      return;
     }
-  }, [croppedPhotoDataUri, router]);
 
-  // Render a loading state or nothing until all required data is available
-  if (!croppedPhotoDataUri || !extractedData) {
+    if (extractedData) {
+      // This logic now runs only on the client, avoiding hydration errors.
+      const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
+      const initialDate = isValid(parsedDate) ? parsedDate : new Date();
+
+      setInitialFormData({
+        ...extractedData,
+        fecha: format(initialDate, 'dd/MM/yyyy'),
+        observaciones: '',
+      });
+    }
+  }, [croppedPhotoDataUri, extractedData, router]);
+
+  if (!initialFormData) {
     return (
         <AuthGuard>
              <div className="flex flex-col min-h-screen bg-background">
@@ -270,17 +282,6 @@ function VerifyPage() {
     );
   }
 
-  // Safely parse the initial date from the AI's output.
-  // This prevents crashes if the AI returns a malformed or empty date string.
-  const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
-  const initialDate = isValid(parsedDate) ? parsedDate : new Date();
-
-  const initialFormData: FormData = {
-    ...extractedData,
-    fecha: format(initialDate, 'dd/MM/yyyy'),
-    observaciones: '', // Ensure the 'observaciones' field exists for the form.
-  };
-
   return (
     <AuthGuard>
       <div className="flex flex-col min-h-screen bg-background">
@@ -292,7 +293,7 @@ function VerifyPage() {
           </div>
           <VerifyForm 
             initialData={initialFormData} 
-            croppedPhotoDataUri={croppedPhotoDataUri}
+            croppedPhotoDataUri={croppedPhotoDataUri!}
           />
            {isTokenLoading && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
