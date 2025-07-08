@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parse } from 'date-fns';
 
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
@@ -29,7 +29,9 @@ const FormSchema = z.object({
   sector: z.string().min(1, 'El sector es obligatorio'),
   importe: z.coerce.number().positive('El importe debe ser positivo'),
   usuario: z.string().email('Email inválido'),
-  fecha: z.string().min(1, 'La fecha es obligatoria'),
+  fecha: z.string().refine((val) => isValid(parse(val, 'dd/MM/yyyy', new Date())), {
+    message: 'Fecha inválida. Usa el formato DD/MM/YYYY.',
+  }),
   observaciones: z.string().optional(),
 });
 
@@ -74,9 +76,12 @@ function VerifyForm({
     setIsSubmitting(true);
     try {
       const fileName = `${generateUniqueId(data.usuario)}.jpg`;
+      const dateForDb = format(parse(data.fecha, 'dd/MM/yyyy', new Date()), 'yyyy-MM-dd');
+      const dataForApi = { ...data, fecha: dateForDb };
+      
       const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName, token);
       
-      await saveToFirestore({ ...data, photoUrl, fileName }, token);
+      await saveToFirestore({ ...dataForApi, photoUrl, fileName }, token);
 
       toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
       clearReceiptData();
@@ -154,9 +159,8 @@ function VerifyForm({
                     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
                     useEffect(() => {
-                        // This logic now runs only on the client, avoiding SSR issues.
                         if (field.value) {
-                            const date = new Date(`${field.value}T00:00:00`);
+                            const date = parse(field.value, 'dd/MM/yyyy', new Date());
                             if (isValid(date)) {
                                 setSelectedDate(date);
                             }
@@ -169,7 +173,7 @@ function VerifyForm({
                           <Input
                             id="fecha"
                             {...field}
-                            placeholder="YYYY-MM-DD"
+                            placeholder="DD/MM/YYYY"
                           />
                            <PopoverTrigger asChild>
                             <Button
@@ -188,7 +192,7 @@ function VerifyForm({
                             selected={selectedDate}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(format(date, 'yyyy-MM-dd'));
+                                field.onChange(format(date, 'dd/MM/yyyy'));
                                 setCalendarOpen(false);
                               }
                             }}
@@ -266,8 +270,14 @@ function VerifyPage() {
     );
   }
 
+  // Safely parse the initial date from the AI's output.
+  // This prevents crashes if the AI returns a malformed or empty date string.
+  const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
+  const initialDate = isValid(parsedDate) ? parsedDate : new Date();
+
   const initialFormData: FormData = {
     ...extractedData,
+    fecha: format(initialDate, 'dd/MM/yyyy'),
     observaciones: '', // Ensure the 'observaciones' field exists for the form.
   };
 

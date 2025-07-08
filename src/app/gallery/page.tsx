@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { format, isValid, parseISO } from 'date-fns';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
@@ -218,6 +219,17 @@ function GalleryPage() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      if (dateString && isValid(parseISO(dateString))) {
+        return format(parseISO(dateString), 'dd/MM/yyyy');
+      }
+      return dateString;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
     <AuthGuard>
       <div className="flex flex-col min-h-screen bg-background">
@@ -268,7 +280,7 @@ function GalleryPage() {
                     <TableRow key={receipt.id}>
                       <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
                       <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                      <TableCell>{receipt.fecha}</TableCell>
+                      <TableCell>{formatDate(receipt.fecha)}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -292,7 +304,7 @@ function GalleryPage() {
                     <DialogHeader>
                         <DialogTitle>Recibo de {viewingReceipt.sector}</DialogTitle>
                         <DialogDescription>
-                           {viewingReceipt.fecha} - €{viewingReceipt.importe.toFixed(2)}
+                           {formatDate(viewingReceipt.fecha)} - €{viewingReceipt.importe.toFixed(2)}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">

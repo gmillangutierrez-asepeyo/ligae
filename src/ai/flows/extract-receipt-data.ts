@@ -46,7 +46,7 @@ export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSc
 const ModelOutputSchema = z.object({
   sector: validSectors.describe('El tipo de gasto. DEBE ser uno de: "comida", "transporte" u "otros". En caso de duda, DEBES usar "otros".'),
   importe: z.union([z.string(), z.number()]).optional().describe('El coste total en euros (€), como valor numérico o una cadena de texto que lo represente.'),
-  fecha: z.string().optional().describe('La fecha del recibo.'),
+  fecha: z.string().optional().describe('La fecha del recibo en formato YYYY-MM-DD.'),
 });
 
 
@@ -62,7 +62,7 @@ const extractReceiptDataPrompt = ai.definePrompt({
 
 Utilizarás esta información para extraer los datos clave del recibo.
 - Analiza el recibo para determinar la categoría del gasto. Debe ser una de las siguientes: "comida", "transporte", u "otros". Si no puedes determinar la categoría con seguridad a partir de la imagen, DEBES clasificarla como "otros".
-- Extrae el importe total y la fecha.
+- Extrae el importe total y la fecha. La fecha debe estar en formato YYYY-MM-DD.
 
 Utiliza lo siguiente como fuente principal de información sobre el recibo.
 
@@ -94,7 +94,10 @@ const extractReceiptDataFlow = ai.defineFlow(
       // Genkit's Zod parsing guarantees that if modelOutput is not null/undefined, it matches ModelOutputSchema.
       if (modelOutput) {
         finalOutput.sector = modelOutput.sector; // This is guaranteed to be a valid enum value.
-        finalOutput.fecha = modelOutput.fecha || getSafeDateString();
+        
+        // Ensure the date is a non-empty string, otherwise use today's date.
+        // The model might return an empty or invalid string if no date is found.
+        finalOutput.fecha = (modelOutput.fecha && modelOutput.fecha.trim()) ? modelOutput.fecha : getSafeDateString();
 
         if (modelOutput.importe) {
           const importeAsString = String(modelOutput.importe).replace(',', '.');
