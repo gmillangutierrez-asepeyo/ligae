@@ -142,7 +142,8 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative">
          <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 md:left-8">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            <ArrowLeft className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Back</span>
         </Button>
         <h1 className="font-headline text-2xl text-center">Capture Receipt</h1>
         <p className="text-muted-foreground text-center mb-4">
