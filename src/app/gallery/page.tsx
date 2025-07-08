@@ -5,9 +5,17 @@ import Image from 'next/image';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Trash2, AlertCircle, Inbox } from 'lucide-react';
+import { Loader2, Trash2, AlertCircle, Inbox, Eye } from 'lucide-react';
 import { fetchTickets, deleteFromFirestore, deleteFromStorage, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useToken } from '@/contexts/token-context';
@@ -22,17 +30,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // This component fetches a private image from GCS using a token and displays it.
-function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; token: string | null }) {
+function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; token: string | null }) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!src || !token) {
-      // Don't set error if token is just loading
       if (token !== null) setError(true);
       setLoading(false);
       return;
@@ -43,8 +57,6 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
       setLoading(true);
       setError(false);
       try {
-        // The src from Firestore is the console URL (storage.cloud.google.com).
-        // We need to convert it to the API download URL (storage.googleapis.com).
         const consoleUrl = src;
         const urlParts = new URL(consoleUrl);
         const bucket = urlParts.pathname.split('/')[1];
@@ -88,7 +100,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full bg-secondary animate-pulse">
+      <div className="flex items-center justify-center w-full h-full bg-secondary animate-pulse min-h-[400px]">
         <Loader2 className="h-8 w-8 text-muted-foreground" />
       </div>
     );
@@ -96,10 +108,10 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
 
   if (error || !imgSrc) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center w-full h-full min-h-[400px]">
         <div className="text-center p-2">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-            <p className="text-xs text-muted-foreground mt-1">Error al cargar</p>
+            <p className="text-xs text-muted-foreground mt-1">Error al cargar la imagen</p>
         </div>
       </div>
     );
@@ -110,85 +122,48 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt:string; toke
       src={imgSrc}
       alt={alt}
       fill
-      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-      style={{ objectFit: 'cover' }}
-      className="transition-transform duration-300 group-hover:scale-105"
+      sizes="(max-width: 768px) 100vw, 50vw"
+      style={{ objectFit: 'contain' }}
     />
   );
 }
 
-
 // The Receipt type now uses the clean interface from api.ts
 type Receipt = CleanReceipt;
 
-// Component to render a single receipt card with public image URLs
-function ReceiptCard({ receipt, onDelete, token }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void>, token: string | null }) {
+function DeleteButton({ receipt, onDelete }: { receipt: Receipt; onDelete: (receipt: Receipt) => Promise<void> }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteClick = async () => {
     setIsDeleting(true);
     await onDelete(receipt);
-    // No need to setIsDeleting(false) as the component will unmount
+    // Component will unmount, no need to setIsDeleting(false)
   };
 
   return (
-    <Card className="overflow-hidden group flex flex-col">
-      <CardHeader className="p-0">
-        <div className="relative aspect-square bg-secondary">
-          {receipt.photoUrl ? (
-            <AuthenticatedImage
-              src={receipt.photoUrl}
-              alt={`Recibo de ${receipt.sector}`}
-              token={token}
-            />
-          ) : (
-             <div className="flex items-center justify-center h-full">
-                <div className="text-center p-2">
-                    <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-                    <p className="text-xs text-muted-foreground mt-1">Sin Imagen</p>
-                </div>
-             </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 flex-1">
-        <CardTitle className="text-lg font-headline capitalize">{receipt.sector}</CardTitle>
-        <p className="font-bold text-primary text-xl">€{receipt.importe.toFixed(2)}</p>
-        <p className="text-sm text-muted-foreground">{receipt.fecha}</p>
-        {receipt.observaciones && (
-          <div className="mt-2 pt-2 border-t">
-            <p className="text-sm text-muted-foreground font-semibold">Observaciones:</p>
-            <p className="text-sm text-foreground whitespace-pre-wrap">{receipt.observaciones}</p>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-             <Button variant="destructive" className="w-full" disabled={isDeleting}>
-               {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                Eliminar
-             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta acción no se puede deshacer. Esto eliminará permanentemente el recibo
-                y sus datos de nuestros servidores.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteClick}>
-                Continuar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardFooter>
-    </Card>
-  )
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" disabled={isDeleting} className="text-destructive hover:text-destructive">
+          {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Esto eliminará permanentemente el recibo
+            y sus datos de nuestros servidores.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDeleteClick}>
+            Continuar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 
@@ -199,6 +174,7 @@ function GalleryPage() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewingReceipt, setViewingReceipt] = useState<Receipt | null>(null);
 
   const loadReceipts = useCallback(async () => {
     if (!user?.email || isTokenLoading) return;
@@ -248,7 +224,7 @@ function GalleryPage() {
         <Header />
         <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
           <div className="mb-8">
-            <h1 className="font-headline text-3xl font-bold">Galería de Recibos</h1>
+            <h1 className="font-headline text-3xl font-bold">Listado de Recibos</h1>
             <p className="text-muted-foreground">Un historial de todos tus recibos enviados.</p>
           </div>
 
@@ -276,13 +252,59 @@ function GalleryPage() {
           )}
 
           {!loading && !isTokenLoading && !error && receipts.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {receipts.map((receipt) => (
-                <ReceiptCard key={receipt.id} receipt={receipt} onDelete={handleDelete} token={token} />
-              ))}
-            </div>
+            <Card>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Sector</TableHead>
+                    <TableHead>Importe</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Observaciones</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {receipts.map((receipt) => (
+                    <TableRow key={receipt.id}>
+                      <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
+                      <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
+                      <TableCell>{receipt.fecha}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                           <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
+                             <Eye className="h-4 w-4" />
+                           </Button>
+                          <DeleteButton receipt={receipt} onDelete={handleDelete} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
           )}
         </main>
+        
+        {viewingReceipt && token && (
+            <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
+                <DialogContent className="max-w-xl w-full">
+                    <DialogHeader>
+                        <DialogTitle>Recibo de {viewingReceipt.sector}</DialogTitle>
+                        <DialogDescription>
+                           {viewingReceipt.fecha} - €{viewingReceipt.importe.toFixed(2)}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">
+                        <AuthenticatedImage
+                            src={viewingReceipt.photoUrl}
+                            alt={`Recibo de ${viewingReceipt.sector}`}
+                            token={token}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )}
       </div>
     </AuthGuard>
   );
