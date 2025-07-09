@@ -7,6 +7,7 @@ import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -167,6 +168,16 @@ function DeleteButton({ receipt, onDelete }: { receipt: Receipt; onDelete: (rece
   );
 }
 
+// Helper to render a status badge with appropriate styling
+function StatusBadge({ status }: { status: string }) {
+  const variant: "default" | "secondary" | "destructive" =
+    status === 'aprobado' ? 'default' :
+    status === 'denegado' ? 'destructive' :
+    'secondary';
+
+  return <Badge variant={variant} className="capitalize">{status}</Badge>;
+}
+
 
 function GalleryPage() {
   const { user } = useAuth();
@@ -289,6 +300,7 @@ function GalleryPage() {
                     <TableHead>Sector</TableHead>
                     <TableHead>Importe</TableHead>
                     <TableHead>Fecha</TableHead>
+                    <TableHead>Estado</TableHead>
                     <TableHead>Observaciones</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -299,6 +311,9 @@ function GalleryPage() {
                       <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
                       <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
                       <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={receipt.estado} />
+                      </TableCell>
                       <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">

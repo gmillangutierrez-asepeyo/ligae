@@ -80,6 +80,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
       photoUrl: { stringValue: data.photoUrl },
       fileName: { stringValue: data.fileName },
       fechaSubida: { timestampValue: new Date().toISOString() },
+      estado: { stringValue: 'pendiente' },
       ...(data.observaciones && { observaciones: { stringValue: data.observaciones } }),
     },
   };
@@ -112,6 +113,7 @@ export interface CleanReceipt {
   usuario: string;
   observaciones?: string;
   fechaSubida: string;
+  estado: string;
 }
 
 function transformFirestoreDoc(doc: any): CleanReceipt {
@@ -127,6 +129,7 @@ function transformFirestoreDoc(doc: any): CleanReceipt {
     usuario: fields.usuario?.stringValue || '',
     observaciones: fields.observaciones?.stringValue,
     fechaSubida: fields.fechaSubida?.timestampValue || doc.createTime || new Date(0).toISOString(),
+    estado: fields.estado?.stringValue || 'pendiente',
   };
 }
 
