@@ -72,10 +72,9 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
       importe: { doubleValue: Number(data.importe) },
       fecha: { stringValue: data.fecha },
       usuario: { stringValue: data.usuario },
-      // The photoUrl now stores the direct public link to the image.
       photoUrl: { stringValue: data.photoUrl },
-      // We still save the fileName for easier reference, e.g., for deletions.
       fileName: { stringValue: data.fileName },
+      fechaSubida: { timestampValue: new Date().toISOString() },
       ...(data.observaciones && { observaciones: { stringValue: data.observaciones } }),
     },
   };
@@ -122,7 +121,7 @@ function transformFirestoreDoc(doc: any): CleanReceipt {
     fileName: fields.fileName?.stringValue || '',
     usuario: fields.usuario?.stringValue || '',
     observaciones: fields.observaciones?.stringValue,
-    fechaSubida: doc.createTime || new Date(0).toISOString(),
+    fechaSubida: fields.fechaSubida?.timestampValue || doc.createTime || new Date(0).toISOString(),
   };
 }
 
@@ -138,7 +137,7 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
         },
       },
       orderBy: [{
-        field: { fieldPath: '__name__' },
+        field: { fieldPath: 'fechaSubida' },
         direction: 'DESCENDING'
       }]
     },

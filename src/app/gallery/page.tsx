@@ -176,6 +176,11 @@ function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewingReceipt, setViewingReceipt] = useState<Receipt | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const loadReceipts = useCallback(async () => {
     if (!user?.email || isTokenLoading) return;
@@ -199,10 +204,10 @@ function GalleryPage() {
   }, [user?.email, token, isTokenLoading]);
 
   useEffect(() => {
-    if(!isTokenLoading) {
+    if(!isTokenLoading && isMounted) {
       loadReceipts();
     }
-  }, [loadReceipts, isTokenLoading]);
+  }, [loadReceipts, isTokenLoading, isMounted]);
 
   const handleDelete = async (receipt: Receipt) => {
     if (!token) {
@@ -229,6 +234,19 @@ function GalleryPage() {
       return dateString;
     }
   };
+
+  if (!isMounted) {
+    return (
+       <AuthGuard>
+        <div className="flex flex-col min-h-screen bg-background">
+          <Header />
+          <main className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </main>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard>
