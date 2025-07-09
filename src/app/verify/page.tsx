@@ -84,16 +84,21 @@ function VerifyForm({
       await saveToFirestore({ ...dataForApi, photoUrl, fileName }, token);
 
       toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
-      clearReceiptData();
+      
       router.push('/gallery');
+      // Aplazar la limpieza del estado para evitar una carrera de condiciones con la navegación.
+      // Esto previene que el useEffect en VerifyPage nos redirija a '/'
+      setTimeout(() => {
+        clearReceiptData();
+      }, 100);
+
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Fallo al Enviar',
         description: error.message || 'Ha ocurrido un error desconocido.',
       });
-    } finally {
-      setIsSubmitting(false);
+       setIsSubmitting(false);
     }
   };
   
@@ -257,7 +262,7 @@ function VerifyPage() {
     }
 
     if (extractedData) {
-      // This logic now runs only on the client, avoiding hydration errors.
+      // Esta lógica ahora se ejecuta solo en el cliente, evitando errores de hidratación.
       const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
       const initialDate = isValid(parsedDate) ? parsedDate : new Date();
 
