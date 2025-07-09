@@ -155,12 +155,12 @@ function CropPage() {
           </ReactCrop>
         </div>
         
-        <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={handleRetake} size="lg">
+        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4">
+            <Button variant="outline" onClick={handleRetake} size="lg" className="w-full sm:w-auto">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
             </Button>
-            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg">
+            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg" className="w-full sm:w-auto">
               {isLoading ? (
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
               ) : (
