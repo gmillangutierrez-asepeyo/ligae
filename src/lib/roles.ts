@@ -4,37 +4,62 @@
  */
 
 // Initialize an empty hierarchy. It will be populated from the environment variable.
-let parsedHierarchy: Record<string, string[]> = {};
+const parsedHierarchy: Record<string, string[]> = {};
+const hierarchyEnvVar = process.env.NEXT_PUBLIC_MANAGER_HIERARCHY;
 
-try {
-  const hierarchyEnvVar = process.env.NEXT_PUBLIC_MANAGER_HIERARCHY;
-  // Check if the environment variable is set. It must be prefixed with NEXT_PUBLIC_ to be available on the client.
-  if (hierarchyEnvVar) {
-    // Attempt to parse the JSON string from the environment variable.
-    parsedHierarchy = JSON.parse(hierarchyEnvVar);
-  } else {
-    // Log a warning if the variable is not set during development, as it's key for manager functionality.
-    if (process.env.NODE_ENV === 'development') {
-        console.warn("NEXT_PUBLIC_MANAGER_HIERARCHY environment variable is not set. Manager functionality will be limited. Please define it in your .env file as a JSON string, e.g., NEXT_PUBLIC_MANAGER_HIERARCHY='{\"manager@example.com\":[\"user@example.com\"]}'");
+/**
+ * Parses the manager hierarchy string from the environment variable.
+ * New Format: A single string where manager-user groups are separated by semicolons (;).
+ * Within each group, the manager's email is separated from their users' emails by a colon (:).
+ * Users' emails are separated by commas (,).
+ *
+ * Example: 'manager1@email.com:user1@email.com,user2@email.com;manager2@email.com:user3@email.com'
+ */
+if (hierarchyEnvVar) {
+  try {
+    const managerEntries = hierarchyEnvVar.split(';').filter(Boolean); // Split by ; and remove empty strings
+    for (const entry of managerEntries) {
+      const parts = entry.split(':');
+      if (parts.length !== 2 || !parts[0] || !parts[1]) {
+        console.warn(`Entrada de jerarquía con formato incorrecto, omitida: "${entry}"`);
+        continue;
+      }
+      
+      const managerEmail = parts[0].trim();
+      const userEmails = parts[1].split(',').map(email => email.trim()).filter(Boolean);
+
+      if (managerEmail && userEmails.length > 0) {
+        if (parsedHierarchy[managerEmail]) {
+          // Merge if manager is defined multiple times
+          parsedHierarchy[managerEmail] = [...new Set([...parsedHierarchy[managerEmail], ...userEmails])];
+        } else {
+          parsedHierarchy[managerEmail] = userEmails;
+        }
+      }
     }
+  } catch (error) {
+    console.error(
+      "Error crítico al interpretar NEXT_PUBLIC_MANAGER_HIERARCHY. Asegúrate de que el formato es correcto.",
+      "\nFormato esperado: 'manager1@email.com:user1,user2;manager2@email.com:user3'",
+      "\nValor recibido:", hierarchyEnvVar,
+      "\nError de parseo:", error
+    );
   }
-} catch (error) {
-  // Log an error if the JSON is invalid, but don't crash the app.
-  console.error(
-    "Error crítico al interpretar NEXT_PUBLIC_MANAGER_HIERARCHY. Asegúrate de que es una cadena de texto JSON válida.",
-    "\nValor recibido:", process.env.NEXT_PUBLIC_MANAGER_HIERARCHY,
-    "\nError de parseo:", error
-  );
-  // Default to an empty object on parsing failure.
-  parsedHierarchy = {};
+} else {
+  // Log a warning if the variable is not set during development.
+  if (process.env.NODE_ENV === 'development') {
+    console.warn("NEXT_PUBLIC_MANAGER_HIERARCHY environment variable is not set. Manager functionality will be limited.");
+  }
 }
+
 
 /**
  * Defines which users report to which manager.
  * This is populated from the NEXT_PUBLIC_MANAGER_HIERARCHY environment variable.
  * The key is the manager's email, and the value is an array of user emails.
- * Example format for the .env file:
- * NEXT_PUBLIC_MANAGER_HIERARCHY='{"manager1@asepeyo.es":["user1@asepeyo.es"],"manager2@asepeyo.es":["user2@asepeyo.es","user3@asepeyo.es"]}'
+ *
+ * New Format Example for .env or .yaml file:
+ * NEXT_PUBLIC_MANAGER_HIERARCHY='manager1@asepeyo.es:user1@asepeyo.es,user2@asepeyo.es;manager2@asepeyo.es:user3@asepeyo.es'
  */
 export const MANAGER_HIERARCHY: Record<string, string[]> = parsedHierarchy;
 
