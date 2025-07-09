@@ -190,8 +190,7 @@ function GalleryPage() {
     setError(null);
     try {
       const data = await fetchTickets(user.email, token);
-      const sortedData = data.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-      setReceipts(sortedData);
+      setReceipts(data);
     } catch (e: any) {
       setError(e.message || "Error al cargar los recibos.");
     } finally {

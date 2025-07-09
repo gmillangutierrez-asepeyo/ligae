@@ -107,6 +107,7 @@ export interface CleanReceipt {
   fileName: string;
   usuario: string;
   observaciones?: string;
+  fechaSubida: string;
 }
 
 function transformFirestoreDoc(doc: any): CleanReceipt {
@@ -121,6 +122,7 @@ function transformFirestoreDoc(doc: any): CleanReceipt {
     fileName: fields.fileName?.stringValue || '',
     usuario: fields.usuario?.stringValue || '',
     observaciones: fields.observaciones?.stringValue,
+    fechaSubida: doc.createTime || new Date(0).toISOString(),
   };
 }
 
@@ -135,6 +137,10 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
           value: { stringValue: userEmail },
         },
       },
+      orderBy: [{
+        field: { fieldPath: '__name__' },
+        direction: 'DESCENDING'
+      }]
     },
   };
 
