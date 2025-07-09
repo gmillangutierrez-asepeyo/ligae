@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 import { useReceiptStore } from '@/lib/store';
@@ -12,7 +12,7 @@ import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
 
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { Loader, Scissors } from 'lucide-react';
+import { Loader, Scissors, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 function getCroppedImg(
@@ -56,7 +56,7 @@ function CropPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { originalPhotoDataUri, setCroppedPhotoAndData } = useReceiptStore();
+  const { originalPhotoDataUri, setCroppedPhotoAndData, clearReceiptData } = useReceiptStore();
 
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();
@@ -72,22 +72,19 @@ function CropPage() {
   }, [originalPhotoDataUri, router]);
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const { width, height } = e.currentTarget;
-    const newCrop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 90,
-        },
-        height / width,
-        width,
-        height
-      ),
-      width,
-      height
-    );
-    setCrop(newCrop);
+    setCrop({
+        unit: '%',
+        width: 100,
+        height: 100,
+        x: 0,
+        y: 0,
+    });
   }
+
+  const handleRetake = () => {
+    clearReceiptData();
+    router.push('/');
+  };
 
   const handleConfirmCrop = useCallback(async () => {
     if (!completedCrop || !imgRef.current || !canvasRef.current || !user?.email) {
@@ -157,15 +154,21 @@ function CropPage() {
             />
           </ReactCrop>
         </div>
-
-        <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg">
-          {isLoading ? (
-            <Loader className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Scissors className="mr-2 h-4 w-4" />
-          )}
-          Confirmar y Analizar
-        </Button>
+        
+        <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={handleRetake} size="lg">
+                <Camera className="mr-2 h-4 w-4" />
+                Hacer otra foto
+            </Button>
+            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg">
+              {isLoading ? (
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Scissors className="mr-2 h-4 w-4" />
+              )}
+              Confirmar y Analizar
+            </Button>
+        </div>
 
         {isLoading && (
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">

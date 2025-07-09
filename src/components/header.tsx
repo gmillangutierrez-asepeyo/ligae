@@ -21,7 +21,7 @@ import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
 const navLinks = [
   { href: '/', label: 'Capturar', icon: Camera },
-  { href: '/gallery', label: 'Galería', icon: GalleryHorizontal },
+  { href: '/gallery', label: 'Mis Recibos', icon: GalleryHorizontal },
   { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
 
