@@ -11,6 +11,8 @@ const STORAGE_BUCKET_URL = 'https://storage.googleapis.com/storage/v1/b/ticketim
 
 /**
  * A helper function to handle API response errors consistently.
+ * It is designed to understand standard Google Cloud error formats, including those
+ * from the Firestore API which might be wrapped in an array.
  * @param response The fetch Response object.
  * @param action A description of the action that failed (e.g., "upload image").
  * @throws An error with a descriptive message.
@@ -20,9 +22,12 @@ async function handleResponseError(response: Response, action: string): Promise<
     try {
         const errorData = await response.json();
         console.error(`Fallo en la acción '${action}':`, errorData);
-        // Google Cloud APIs usually have a standard error format
-        if (errorData.error && errorData.error.message) {
-            errorMessage = `Fallo al ${action}: ${errorData.error.message}`;
+        
+        // Firestore runQuery can return an error in an array, e.g. [{ "error": {...} }]
+        const errorDetail = (Array.isArray(errorData) ? errorData[0]?.error : errorData.error);
+        
+        if (errorDetail && errorDetail.message) {
+            errorMessage = `Fallo al ${action}: ${errorDetail.message}`;
         }
     } catch (e) {
         // Not a JSON response, the statusText is the best info we have.
@@ -157,8 +162,22 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
   }
 
   const results = await response.json();
-  if (!Array.isArray(results)) return [];
+  
+  // The runQuery endpoint returns a JSON array.
+  // It might be an empty array, an array of documents, or an array containing an error object.
+  if (!Array.isArray(results)) {
+    console.error("Respuesta inesperada de Firestore, no es un array:", results);
+    return []; // Return empty on unexpected format
+  }
 
+  // Check if the first element signals an error, which Firestore does for some query issues.
+  const potentialError = results[0]?.error;
+  if (potentialError) {
+      console.error('Error en la consulta a Firestore:', potentialError);
+      throw new Error(`Error al cargar recibos: ${potentialError.message}`);
+  }
+
+  // Filter out any non-document items (like readTime objects) and transform the data.
   return results
     .filter((item: any) => item.document)
     .map((item: any) => transformFirestoreDoc(item.document));
