@@ -1,7 +1,6 @@
 # env-vars.yaml
 GOOGLE_API_KEY: AIzaSyCYnUQ15gUvTXr5IWCjFJd_yKnID9aHx5g
 GEMINI_API_KEY: AIzaSyCYnUQ15gUvTXr5IWCjFJd_yKnID9aHx5g
-NEXT_PUBLIC_MANAGER_HIERARCHY: '{"gmillangutierrez@asepeyo.es":["gmillangutierrez@asepeyo.es","pmoratomolina@asepeyo.es"]}'
 GOOGLE_SERVICE_ACCOUNT_JSON: |
   {
     "type": "service_account",
