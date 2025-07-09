@@ -186,6 +186,83 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
     .map((item: any) => transformFirestoreDoc(item.document));
 }
 
+export async function fetchAllPendingTickets(token: string): Promise<CleanReceipt[]> {
+  const queryPayload = {
+    structuredQuery: {
+      from: [{ collectionId: 'tickets' }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: 'estado' },
+          op: 'EQUAL',
+          value: { stringValue: 'pendiente' },
+        },
+      },
+      orderBy: [{
+        field: { fieldPath: 'fechaSubida' },
+        direction: 'ASCENDING'
+      }]
+    },
+  };
+
+  const response = await fetch(`${FIRESTORE_PARENT_PATH}:runQuery`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(queryPayload),
+  });
+
+  if (!response.ok) {
+    await handleResponseError(response, 'cargar los recibos pendientes');
+  }
+
+  const results = await response.json();
+  
+  if (!Array.isArray(results)) {
+    console.error("Respuesta inesperada de Firestore, no es un array:", results);
+    return [];
+  }
+
+  const potentialError = results[0]?.error;
+  if (potentialError) {
+      console.error('Error en la consulta a Firestore:', potentialError);
+      throw new Error(`Error al cargar recibos pendientes: ${potentialError.message}`);
+  }
+
+  return results
+    .filter((item: any) => item.document)
+    .map((item: any) => transformFirestoreDoc(item.document));
+}
+
+export async function updateTicketStatus(
+  docId: string, 
+  data: { estado: 'aprobado' | 'denegado', observaciones: string }, 
+  token: string
+): Promise<void> {
+  const updateUrl = `${FIRESTORE_COLLECTION_PATH}/${docId}?updateMask.fieldPaths=estado&updateMask.fieldPaths=observaciones`;
+
+  const firestorePayload = {
+    fields: {
+      estado: { stringValue: data.estado },
+      observaciones: { stringValue: data.observaciones },
+    },
+  };
+
+  const response = await fetch(updateUrl, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(firestorePayload),
+  });
+
+  if (!response.ok) {
+    await handleResponseError(response, 'actualizar el estado del recibo');
+  }
+}
+
 export async function deleteFromStorage(fileName: string, token: string): Promise<void> {
     const deleteUrl = `${STORAGE_BUCKET_URL}/${encodeURIComponent(fileName)}`;
 

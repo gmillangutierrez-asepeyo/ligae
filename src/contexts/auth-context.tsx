@@ -4,11 +4,12 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { MANAGER_EMAILS } from '@/lib/roles';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isManager: boolean;
   signIn: () => void;
   signOut: () => void;
 }
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isManager, setIsManager] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -30,8 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: 'Solo se permiten cuentas de @asepeyo.es.',
         });
         setUser(null);
+        setIsManager(false);
       } else {
         setUser(currentUser);
+        if (currentUser?.email) {
+          setIsManager(MANAGER_EMAILS.includes(currentUser.email));
+        } else {
+          setIsManager(false);
+        }
       }
       setLoading(false);
     });
@@ -74,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     loading,
+    isManager,
     signIn,
     signOut: handleSignOut,
   };

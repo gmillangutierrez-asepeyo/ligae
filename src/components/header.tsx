@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Camera, GalleryHorizontal, Settings, LogOut } from 'lucide-react';
+import { Camera, GalleryHorizontal, Settings, LogOut, ClipboardCheck } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -19,15 +19,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
-const navLinks = [
-  { href: '/', label: 'Capturar', icon: Camera },
-  { href: '/gallery', label: 'Mis Recibos', icon: GalleryHorizontal },
-  { href: '/settings', label: 'Ajustes', icon: Settings },
-];
-
 export default function Header() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isManager } = useAuth();
   const pathname = usePathname();
+
+  const navLinks = [
+    { href: '/', label: 'Capturar', icon: Camera },
+    { href: '/gallery', label: 'Mis Recibos', icon: GalleryHorizontal },
+    ...(isManager ? [{ href: '/approvals', label: 'Aprobaciones', icon: ClipboardCheck }] : []),
+    { href: '/settings', label: 'Ajustes', icon: Settings },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
