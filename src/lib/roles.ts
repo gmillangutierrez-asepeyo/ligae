@@ -7,6 +7,7 @@
 
 export const MANAGER_EMAILS: string[] = [
   'manager@asepeyo.es',
+  'gmillangutierrez@asepeyo.es',
   // This is a test email. Replace with actual manager emails.
   // Example: 'juan.perez@asepeyo.es',
 ];

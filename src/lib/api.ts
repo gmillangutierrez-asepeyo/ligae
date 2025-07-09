@@ -199,7 +199,7 @@ export async function fetchAllPendingTickets(token: string): Promise<CleanReceip
       },
       orderBy: [{
         field: { fieldPath: 'fechaSubida' },
-        direction: 'ASCENDING'
+        direction: 'DESCENDING'
       }]
     },
   };
