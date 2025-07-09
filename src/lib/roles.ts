@@ -9,38 +9,25 @@ const hierarchyEnvVar = process.env.NEXT_PUBLIC_MANAGER_HIERARCHY;
 
 /**
  * Parses the manager hierarchy string from the environment variable.
- * New Format: A single string where manager-user groups are separated by semicolons (;).
- * Within each group, the manager's email is separated from their users' emails by a colon (:).
- * Users' emails are separated by commas (,).
- *
- * Example: 'manager1@email.com:user1@email.com,user2@email.com;manager2@email.com:user3@email.com'
+ * The variable should contain a valid JSON string.
+ * Example: '{"manager1@email.com":["user1@email.com","user2@email.com"],"manager2@email.com":["user3@email.com"]}'
  */
 if (hierarchyEnvVar) {
   try {
-    const managerEntries = hierarchyEnvVar.split(';').filter(Boolean); // Split by ; and remove empty strings
-    for (const entry of managerEntries) {
-      const parts = entry.split(':');
-      if (parts.length !== 2 || !parts[0] || !parts[1]) {
-        console.warn(`Entrada de jerarquía con formato incorrecto, omitida: "${entry}"`);
-        continue;
-      }
-      
-      const managerEmail = parts[0].trim();
-      const userEmails = parts[1].split(',').map(email => email.trim()).filter(Boolean);
+    // Attempt to parse the string as JSON
+    const parsedJson = JSON.parse(hierarchyEnvVar);
 
-      if (managerEmail && userEmails.length > 0) {
-        if (parsedHierarchy[managerEmail]) {
-          // Merge if manager is defined multiple times
-          parsedHierarchy[managerEmail] = [...new Set([...parsedHierarchy[managerEmail], ...userEmails])];
-        } else {
-          parsedHierarchy[managerEmail] = userEmails;
-        }
-      }
+    // Basic validation to ensure it's an object
+    if (typeof parsedJson === 'object' && parsedJson !== null && !Array.isArray(parsedJson)) {
+      // Further validation can be added here if needed (e.g., check if values are arrays of strings)
+      Object.assign(parsedHierarchy, parsedJson);
+    } else {
+      throw new Error("El JSON no es un objeto válido de manager-a-usuarios.");
     }
   } catch (error) {
     console.error(
-      "Error crítico al interpretar NEXT_PUBLIC_MANAGER_HIERARCHY. Asegúrate de que el formato es correcto.",
-      "\nFormato esperado: 'manager1@email.com:user1,user2;manager2@email.com:user3'",
+      "Error crítico al interpretar NEXT_PUBLIC_MANAGER_HIERARCHY. La variable debe ser una cadena de texto JSON válida.",
+      "\nFormato esperado: '{\"manager1@email.com\":[\"user1\",\"user2\"],\"manager2@email.com\":[\"user3\"]}'",
       "\nValor recibido:", hierarchyEnvVar,
       "\nError de parseo:", error
     );
@@ -52,14 +39,13 @@ if (hierarchyEnvVar) {
   }
 }
 
-
 /**
  * Defines which users report to which manager.
  * This is populated from the NEXT_PUBLIC_MANAGER_HIERARCHY environment variable.
  * The key is the manager's email, and the value is an array of user emails.
  *
- * New Format Example for .env or .yaml file:
- * NEXT_PUBLIC_MANAGER_HIERARCHY='manager1@asepeyo.es:user1@asepeyo.es,user2@asepeyo.es;manager2@asepeyo.es:user3@asepeyo.es'
+ * Example for .env or .yaml file:
+ * NEXT_PUBLIC_MANAGER_HIERARCHY='{"manager1@asepeyo.es":["user1@asepeyo.es","user2@asepeyo.es"],"manager2@asepeyo.es":["user3@asepeyo.es"]}'
  */
 export const MANAGER_HIERARCHY: Record<string, string[]> = parsedHierarchy;
 
