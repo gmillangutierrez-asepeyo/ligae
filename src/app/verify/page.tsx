@@ -165,9 +165,15 @@ function VerifyForm({
 
                     useEffect(() => {
                         if (field.value) {
-                            const date = parse(field.value, 'dd/MM/yyyy', new Date());
-                            if (isValid(date)) {
-                                setSelectedDate(date);
+                            try {
+                                const date = parse(field.value, 'dd/MM/yyyy', new Date());
+                                if (isValid(date)) {
+                                    setSelectedDate(date);
+                                } else {
+                                    setSelectedDate(undefined);
+                                }
+                            } catch (e) {
+                                setSelectedDate(undefined);
                             }
                         }
                     }, [field.value]);
@@ -263,8 +269,13 @@ function VerifyPage() {
 
     if (extractedData) {
       // Esta lógica ahora se ejecuta solo en el cliente, evitando errores de hidratación.
-      const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
-      const initialDate = isValid(parsedDate) ? parsedDate : new Date();
+      let initialDate: Date;
+      try {
+        const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
+        initialDate = isValid(parsedDate) ? parsedDate : new Date();
+      } catch {
+        initialDate = new Date();
+      }
 
       setInitialFormData({
         ...extractedData,
@@ -274,7 +285,7 @@ function VerifyPage() {
     }
   }, [croppedPhotoDataUri, extractedData, router]);
 
-  if (!initialFormData) {
+  if (!initialFormData || !croppedPhotoDataUri) {
     return (
         <AuthGuard>
              <div className="flex flex-col min-h-screen bg-background">
@@ -298,7 +309,7 @@ function VerifyPage() {
           </div>
           <VerifyForm 
             initialData={initialFormData} 
-            croppedPhotoDataUri={croppedPhotoDataUri!}
+            croppedPhotoDataUri={croppedPhotoDataUri}
           />
            {isTokenLoading && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
