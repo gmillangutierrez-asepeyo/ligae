@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { MANAGER_EMAILS } from '@/lib/roles';
+import { ALL_MANAGER_EMAILS } from '@/lib/roles';
 
 interface AuthContextType {
   user: User | null;
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(currentUser);
         if (currentUser?.email) {
-          setIsManager(MANAGER_EMAILS.includes(currentUser.email));
+          setIsManager(ALL_MANAGER_EMAILS.includes(currentUser.email));
         } else {
           setIsManager(false);
         }

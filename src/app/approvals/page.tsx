@@ -33,6 +33,7 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import { MANAGER_HIERARCHY } from '@/lib/roles';
 
 type Receipt = CleanReceipt;
 
@@ -127,7 +128,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
 function ApprovalsPage() {
     const router = useRouter();
-    const { isManager, loading: authLoading } = useAuth();
+    const { user, isManager, loading: authLoading } = useAuth();
     const { token, isTokenLoading } = useToken();
     const { toast } = useToast();
 
@@ -154,22 +155,31 @@ function ApprovalsPage() {
     }, [isManager, authLoading, router, toast, isMounted]);
 
     const loadPendingReceipts = useCallback(async () => {
-        if (!token) {
-            setError("Token de acceso no disponible.");
+        if (!token || !user?.email) {
+            setError("Token de acceso o email de usuario no disponible.");
             setLoading(false);
             return;
         }
         setLoading(true);
         setError(null);
         try {
-            const data = await fetchAllPendingTickets(token);
+            const managedUsers = MANAGER_HIERARCHY[user.email] || [];
+            
+            if (managedUsers.length === 0) {
+                setReceipts([]);
+                setError("No tienes usuarios asignados para aprobar recibos.");
+                setLoading(false);
+                return;
+            }
+
+            const data = await fetchAllPendingTickets(token, managedUsers);
             setReceipts(data);
         } catch (e: any) {
             setError(e.message || "Error al cargar los recibos para aprobación.");
         } finally {
             setLoading(false);
         }
-    }, [token]);
+    }, [token, user?.email]);
 
     useEffect(() => {
         if (isManager && token && isMounted) {
@@ -267,7 +277,7 @@ function ApprovalsPage() {
                         <div className="text-center py-16 border-2 border-dashed rounded-lg">
                             <Inbox className="mx-auto h-12 w-12 text-gray-400" />
                             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">Bandeja de entrada vacía</h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No hay recibos pendientes de aprobación.</p>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No hay recibos pendientes de aprobación de tus usuarios.</p>
                         </div>
                     )}
 

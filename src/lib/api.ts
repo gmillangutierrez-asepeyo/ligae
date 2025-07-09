@@ -186,23 +186,56 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
     .map((item: any) => transformFirestoreDoc(item.document));
 }
 
-export async function fetchAllPendingTickets(token: string): Promise<CleanReceipt[]> {
-  const queryPayload = {
-    structuredQuery: {
-      from: [{ collectionId: 'tickets' }],
-      where: {
-        fieldFilter: {
-          field: { fieldPath: 'estado' },
-          op: 'EQUAL',
-          value: { stringValue: 'pendiente' },
-        },
-      },
-      orderBy: [{
-        field: { fieldPath: 'fechaSubida' },
-        direction: 'DESCENDING'
-      }]
-    },
+export async function fetchAllPendingTickets(token: string, userEmails?: string[]): Promise<CleanReceipt[]> {
+  // If userEmails is provided and is empty, it means the manager has no assigned users.
+  // Return early to avoid an invalid Firestore query.
+  if (userEmails && userEmails.length === 0) {
+    return [];
+  }
+
+  const structuredQuery: any = {
+    from: [{ collectionId: 'tickets' }],
+    orderBy: [{
+      field: { fieldPath: 'fechaSubida' },
+      direction: 'DESCENDING'
+    }]
   };
+
+  const filters: any[] = [
+    {
+      fieldFilter: {
+        field: { fieldPath: 'estado' },
+        op: 'EQUAL',
+        value: { stringValue: 'pendiente' },
+      },
+    }
+  ];
+
+  // If userEmails are provided, add the 'IN' filter.
+  if (userEmails) {
+    filters.push({
+      fieldFilter: {
+        field: { fieldPath: 'usuario' },
+        op: 'IN',
+        value: { arrayValue: { values: userEmails.map(email => ({ stringValue: email })) } },
+      },
+    });
+  }
+
+  // If there's more than one filter, wrap them in a compositeFilter.
+  if (filters.length > 1) {
+    structuredQuery.where = {
+      compositeFilter: {
+        op: 'AND',
+        filters: filters,
+      },
+    };
+  } else {
+    // Otherwise, just use the single 'pendiente' filter.
+    structuredQuery.where = filters[0];
+  }
+  
+  const queryPayload = { structuredQuery };
 
   const response = await fetch(`${FIRESTORE_PARENT_PATH}:runQuery`, {
     method: 'POST',
@@ -227,7 +260,7 @@ export async function fetchAllPendingTickets(token: string): Promise<CleanReceip
   const potentialError = results[0]?.error;
   if (potentialError) {
       console.error('Error en la consulta a Firestore:', potentialError);
-      throw new Error(`Error al cargar recibos pendientes: ${potentialError.message}`);
+      throw new Error(`Error al cargar recibos pendientes: ${potentialError.message}. Es posible que necesites crear un índice compuesto en Firestore. Revisa la consola para ver el enlace de creación del índice.`);
   }
 
   return results
