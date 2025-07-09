@@ -7,10 +7,11 @@
 let parsedHierarchy: Record<string, string[]> = {};
 
 try {
+  const hierarchyEnvVar = process.env.NEXT_PUBLIC_MANAGER_HIERARCHY;
   // Check if the environment variable is set. It must be prefixed with NEXT_PUBLIC_ to be available on the client.
-  if (process.env.NEXT_PUBLIC_MANAGER_HIERARCHY) {
+  if (hierarchyEnvVar) {
     // Attempt to parse the JSON string from the environment variable.
-    parsedHierarchy = JSON.parse(process.env.NEXT_PUBLIC_MANAGER_HIERARCHY);
+    parsedHierarchy = JSON.parse(hierarchyEnvVar);
   } else {
     // Log a warning if the variable is not set during development, as it's key for manager functionality.
     if (process.env.NODE_ENV === 'development') {
@@ -20,8 +21,9 @@ try {
 } catch (error) {
   // Log an error if the JSON is invalid, but don't crash the app.
   console.error(
-    "Error parsing NEXT_PUBLIC_MANAGER_HIERARCHY environment variable. Please ensure it is a valid JSON string.",
-    error
+    "Error crítico al interpretar NEXT_PUBLIC_MANAGER_HIERARCHY. Asegúrate de que es una cadena de texto JSON válida.",
+    "\nValor recibido:", process.env.NEXT_PUBLIC_MANAGER_HIERARCHY,
+    "\nError de parseo:", error
   );
   // Default to an empty object on parsing failure.
   parsedHierarchy = {};
