@@ -321,3 +321,57 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
         await handleResponseError(response, 'eliminar los datos del recibo');
     }
 }
+
+
+// --- Hierarchy Management ---
+export type ManagerHierarchy = Record<string, string[]>;
+
+/**
+ * Fetches the manager hierarchy configuration from a specific Firestore document.
+ * This allows for dynamic, real-time updates to user roles and permissions without
+ * needing to redeploy the application.
+ *
+ * @param token The authentication token required to access Firestore.
+ * @returns A promise that resolves to the ManagerHierarchy object.
+ */
+export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
+  // Path to the specific document that stores the hierarchy.
+  const hierarchyDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/main';
+
+  const response = await fetch(hierarchyDocPath, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    // If the document is not found (404), return an empty object, as it's a valid state.
+    if (response.status === 404) {
+      console.warn('El documento de jerarquía "main" no se encontró en Firestore. Se usará una jerarquía vacía.');
+      return {};
+    }
+    // For other errors, throw an exception.
+    await handleResponseError(response, 'cargar la jerarquía de managers');
+  }
+
+  const doc = await response.json();
+  const hierarchyMap = doc.fields?.hierarchy?.mapValue?.fields;
+
+  if (!hierarchyMap) {
+    console.warn('El documento de jerarquía "main" no contiene un campo "hierarchy" de tipo "map" válido. Se usará una jerarquía vacía.');
+    return {};
+  }
+
+  // Transform the Firestore map structure into a plain JavaScript object.
+  const parsedHierarchy: ManagerHierarchy = {};
+  for (const managerEmail in hierarchyMap) {
+    const managedUsersArray = hierarchyMap[managerEmail]?.arrayValue?.values || [];
+    parsedHierarchy[managerEmail] = managedUsersArray
+      .map((userValue: any) => userValue.stringValue)
+      .filter((email: string | undefined): email is string => !!email);
+  }
+
+  return parsedHierarchy;
+}

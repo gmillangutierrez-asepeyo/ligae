@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { useAuth } from './auth-context';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { getAccessToken } from '@/app/actions/getToken';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,12 +15,11 @@ const TokenContext = createContext<TokenContextType | undefined>(undefined);
 export function TokenProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
   const [isTokenLoading, setIsTokenLoading] = useState(false);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const fetchToken = useCallback(async () => {
-    // Avoid fetching if already in progress or no user
-    if (isTokenLoading || !user) return; 
+    // Avoid fetching if already in progress
+    if (isTokenLoading) return; 
     
     setIsTokenLoading(true);
     try {
@@ -41,19 +39,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsTokenLoading(false);
     }
-  }, [user, toast, isTokenLoading]);
-
-  // When user logs in, fetch a token
-  useEffect(() => {
-    if (user && !token) {
-      fetchToken();
-    }
-    // When user logs out, clear the token
-    if (!user) {
-      setTokenState(null);
-    }
-  }, [user, token, fetchToken]);
-
+  }, [toast, isTokenLoading]);
 
   return (
     <TokenContext.Provider value={{ token, isTokenLoading, fetchToken }}>

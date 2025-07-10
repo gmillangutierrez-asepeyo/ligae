@@ -33,7 +33,7 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
-import { MANAGER_HIERARCHY } from '@/lib/roles';
+
 
 type Receipt = CleanReceipt;
 
@@ -128,7 +128,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
 function ApprovalsPage() {
     const router = useRouter();
-    const { user, isManager, loading: authLoading } = useAuth();
+    const { user, isManager, managedUsers, loading: authLoading } = useAuth();
     const { token, isTokenLoading } = useToken();
     const { toast } = useToast();
 
@@ -155,16 +155,13 @@ function ApprovalsPage() {
     }, [isManager, authLoading, router, toast, isMounted]);
 
     const loadPendingReceipts = useCallback(async () => {
-        if (!token || !user?.email) {
-            setError("Token de acceso o email de usuario no disponible.");
+        if (!token || !user?.email || !isManager) {
             setLoading(false);
             return;
         }
         setLoading(true);
         setError(null);
         try {
-            const managedUsers = MANAGER_HIERARCHY[user.email] || [];
-            
             if (managedUsers.length === 0) {
                 setReceipts([]);
                 setError("No tienes usuarios asignados para aprobar recibos.");
@@ -179,13 +176,13 @@ function ApprovalsPage() {
         } finally {
             setLoading(false);
         }
-    }, [token, user?.email]);
+    }, [token, user?.email, isManager, managedUsers]);
 
     useEffect(() => {
-        if (isManager && token && isMounted) {
+        if (isManager && token && isMounted && !authLoading) {
             loadPendingReceipts();
         }
-    }, [isManager, token, loadPendingReceipts, isMounted]);
+    }, [isManager, token, isMounted, authLoading, loadPendingReceipts]);
 
 
     const handleOpenDialog = (receipt: Receipt, type: 'approve' | 'deny') => {

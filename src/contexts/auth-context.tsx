@@ -1,15 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { ALL_MANAGER_EMAILS } from '@/lib/roles';
+import { useToken } from './token-context';
+import { fetchHierarchy, type ManagerHierarchy } from '@/lib/api';
+
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isManager: boolean;
+  managedUsers: string[];
   signIn: () => void;
   signOut: () => void;
 }
@@ -18,9 +21,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [hierarchy, setHierarchy] = useState<ManagerHierarchy>({});
   const [isManager, setIsManager] = useState(false);
+  const [managedUsers, setManagedUsers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const { token, fetchToken, isTokenLoading } = useToken();
   const { toast } = useToast();
+
+  const updateUserRoles = useCallback((currentUser: User | null, currentHierarchy: ManagerHierarchy) => {
+    if (currentUser?.email && currentHierarchy) {
+      const userIsManager = currentUser.email in currentHierarchy;
+      setIsManager(userIsManager);
+      setManagedUsers(userIsManager ? currentHierarchy[currentUser.email] : []);
+    } else {
+      setIsManager(false);
+      setManagedUsers([]);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -32,20 +49,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: 'Solo se permiten cuentas de @asepeyo.es.',
         });
         setUser(null);
-        setIsManager(false);
       } else {
         setUser(currentUser);
-        if (currentUser?.email) {
-          setIsManager(ALL_MANAGER_EMAILS.includes(currentUser.email));
-        } else {
-          setIsManager(false);
-        }
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [toast]);
+  
+  // Effect to fetch token when user logs in
+  useEffect(() => {
+    if(user && !token) {
+      fetchToken();
+    }
+  }, [user, token, fetchToken]);
+
+
+  // Effect to load hierarchy when token is available
+  useEffect(() => {
+    async function loadHierarchy() {
+      if (token && user) {
+        try {
+          const fetchedHierarchy = await fetchHierarchy(token);
+          setHierarchy(fetchedHierarchy);
+          updateUserRoles(user, fetchedHierarchy);
+        } catch (error: any) {
+          console.error("Error al cargar la jerarquía de managers:", error);
+          toast({
+            variant: 'destructive',
+            title: 'Error de Configuración',
+            description: 'No se pudo cargar la jerarquía de managers desde Firestore.',
+          });
+          // Reset roles if hierarchy fetch fails
+          setHierarchy({});
+          updateUserRoles(user, {});
+        }
+      } else {
+        // Reset roles if no token or user
+        setHierarchy({});
+        updateUserRoles(null, {});
+      }
+    }
+    
+    // Only load hierarchy when token is available and auth is not loading
+    if (!isTokenLoading && !loading) {
+        loadHierarchy();
+    }
+  }, [user, token, isTokenLoading, loading, toast, updateUserRoles]);
 
   const signIn = async () => {
     setLoading(true);
@@ -81,8 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
-    loading,
+    loading: loading || isTokenLoading, // The overall loading state depends on both auth and token
     isManager,
+    managedUsers,
     signIn,
     signOut: handleSignOut,
   };

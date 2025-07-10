@@ -23,12 +23,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <TokenProvider>
+        <TokenProvider>
+          <AuthProvider>
             {children}
             <Toaster />
-          </TokenProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </TokenProvider>
       </body>
     </html>
   );
