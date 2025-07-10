@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Trash2, AlertCircle, Inbox, Eye } from 'lucide-react';
+import { Loader2, Trash2, AlertCircle, Inbox, Eye, RefreshCw } from 'lucide-react';
 import { fetchTickets, deleteFromFirestore, deleteFromStorage, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useToken } from '@/contexts/token-context';
@@ -264,9 +264,15 @@ function GalleryPage() {
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
-          <div className="mb-8">
-            <h1 className="font-headline text-3xl font-bold">Mis Recibos</h1>
-            <p className="text-muted-foreground">Un historial de todos tus recibos enviados.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+            <div>
+              <h1 className="font-headline text-3xl font-bold">Mis Recibos</h1>
+              <p className="text-muted-foreground">Un historial de todos tus recibos enviados.</p>
+            </div>
+             <Button onClick={() => loadReceipts()} disabled={loading || isTokenLoading}>
+                 <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Refrescar
+            </Button>
           </div>
 
           {(loading || isTokenLoading) && (

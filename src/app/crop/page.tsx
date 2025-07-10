@@ -12,7 +12,7 @@ import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
 
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { Loader, Scissors, Camera } from 'lucide-react';
+import { Loader2, Scissors, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 function getCroppedImg(
@@ -131,12 +131,14 @@ function CropPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-background">
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-        <h1 className="font-headline text-2xl text-center">Recortar Recibo</h1>
-        <p className="text-muted-foreground text-center mb-4">
-          Ajusta el marco al recibo y confirma.
-        </p>
-        <div className="relative w-full max-w-md">
+      <main className="flex-1 flex flex-col items-center p-4 gap-4 overflow-y-auto">
+        <div className="w-full text-center mt-4">
+            <h1 className="font-headline text-2xl">Recortar Recibo</h1>
+            <p className="text-muted-foreground">
+              Ajusta el marco al recibo y confirma.
+            </p>
+        </div>
+        <div className="w-full max-w-md my-4">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -155,14 +157,14 @@ function CropPage() {
           </ReactCrop>
         </div>
         
-        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4">
-            <Button variant="outline" onClick={handleRetake} size="lg" className="w-full sm:w-auto">
+        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4 mt-auto mb-4">
+            <Button variant="outline" onClick={handleRetake} size="lg" className="w-full">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
             </Button>
-            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg" className="w-full sm:w-auto">
+            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg" className="w-full">
               {isLoading ? (
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Scissors className="mr-2 h-4 w-4" />
               )}
@@ -171,8 +173,8 @@ function CropPage() {
         </div>
 
         {isLoading && (
-          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-            <Loader className="h-12 w-12 animate-spin mb-4" />
+          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white z-10">
+            <Loader2 className="h-12 w-12 animate-spin mb-4" />
             <p className="font-headline">Analizando recibo...</p>
           </div>
         )}

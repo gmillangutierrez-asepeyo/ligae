@@ -19,7 +19,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, AlertCircle, Inbox, ThumbsUp, ThumbsDown, Eye } from 'lucide-react';
+import { Loader2, AlertCircle, Inbox, ThumbsUp, ThumbsDown, Eye, RefreshCw } from 'lucide-react';
 import { fetchAllPendingTickets, updateTicketStatus, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useToken } from '@/contexts/token-context';
@@ -250,9 +250,15 @@ function ApprovalsPage() {
             <div className="flex flex-col min-h-screen bg-background">
                 <Header />
                 <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
-                    <div className="mb-8">
-                        <h1 className="font-headline text-3xl font-bold">Aprobación de Recibos</h1>
-                        <p className="text-muted-foreground">Recibos pendientes de revisión.</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+                        <div>
+                            <h1 className="font-headline text-3xl font-bold">Aprobación de Recibos</h1>
+                            <p className="text-muted-foreground">Recibos pendientes de revisión.</p>
+                        </div>
+                        <Button onClick={() => loadPendingReceipts()} disabled={loading || isTokenLoading}>
+                             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                            Refrescar
+                        </Button>
                     </div>
 
                     {(loading || isTokenLoading) && (

@@ -138,36 +138,33 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
   }, [router, setOriginalPhoto]);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background">
+    <div className="flex flex-col h-screen w-full bg-black">
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative">
-         <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 md:left-8">
+      <main className="flex-1 flex flex-col items-center justify-center relative">
+         <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 z-20 text-white bg-black/30 hover:bg-black/50">
             <ArrowLeft className="h-4 w-4 md:mr-2" />
             <span className="hidden md:inline">Volver</span>
         </Button>
-        <h1 className="font-headline text-2xl text-center">Capturar Recibo</h1>
-        <p className="text-muted-foreground text-center mb-4">
-          Centra el recibo en el marco y haz una foto.
-        </p>
-        <div className="relative w-full max-w-md aspect-[9/16] rounded-lg overflow-hidden border-4 border-dashed border-primary/50 bg-secondary shadow-lg">
+        <div className="absolute inset-0 top-[var(--header-height,64px)] bottom-0">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[90%] h-[90%] border-2 border-white/50 rounded-md" />
           </div>
+        </div>
 
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-full px-6 flex flex-col items-center gap-4">
+            <p className="text-white text-center text-shadow-lg">Centra el recibo y haz la foto.</p>
             <Button onClick={handleCapture} size="lg" className="rounded-full w-20 h-20 bg-accent hover:bg-accent/90 shadow-2xl">
               <Camera className="h-10 w-10 text-accent-foreground" />
             </Button>
-          </div>
-
         </div>
-        {error && <p className="text-destructive text-center">{error}</p>}
+
+        {error && <p className="absolute top-20 left-1/2 -translate-x-1/2 text-destructive bg-background/80 p-2 rounded-md z-20">{error}</p>}
         <canvas ref={canvasRef} className="hidden" />
       </main>
     </div>
