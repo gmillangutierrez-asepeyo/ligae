@@ -7,7 +7,6 @@ run:
   concurrency: 100
   timeoutSeconds: 300
   environmentVariables:
-    NEXT_PUBLIC_MANAGER_HIERARCHY: 'gmillangutierrez@asepeyo.es:gmillangutierrez@asepeyo.es pmoratomolina@asepeyo.es'
     GOOGLE_API_KEY: 'AIzaSyCYnUQ15gUvTXr5IWCjFJd_yKnID9aHx5g'
     GEMINI_API_KEY: 'AIzaSyCYnUQ15gUvTXr5IWCjFJd_yKnID9aHx5g'
     GOOGLE_SERVICE_ACCOUNT_JSON: |
