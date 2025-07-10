@@ -145,7 +145,7 @@ function CropPage() {
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
             aspect={undefined} // Free crop
-            className="max-h-full"
+            className="max-h-full flex items-center justify-center"
           >
             <Image
               ref={imgRef}
@@ -154,24 +154,23 @@ function CropPage() {
               width={500}
               height={888} // approx 9/16 aspect ratio
               onLoad={onImageLoad}
-              className="w-full h-auto object-contain max-h-full"
-              style={{ objectFit: 'contain' }}
+              className="w-auto h-auto max-h-full object-contain"
             />
           </ReactCrop>
         </div>
         
         <div className="w-full max-w-md flex items-center gap-4 mt-auto shrink-0 pb-2">
-            <Button variant="outline" onClick={handleRetake} size="lg" className="w-full">
+            <Button variant="outline" onClick={handleRetake} className="flex-1">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
             </Button>
-            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} size="lg" className="w-full">
+            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} className="flex-1">
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Scissors className="mr-2 h-4 w-4" />
               )}
-              Confirmar y Analizar
+              Confirmar
             </Button>
         </div>
 
