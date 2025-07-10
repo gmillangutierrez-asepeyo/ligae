@@ -130,21 +130,22 @@ function CropPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background">
+    <div className="flex flex-col h-[100svh] w-full bg-background overflow-hidden">
       <Header />
-      <main className="flex-1 flex flex-col items-center p-4 gap-2 overflow-y-auto">
-        <div className="w-full text-center mt-2">
+      <main className="flex-1 flex flex-col items-center p-4 gap-4 overflow-hidden">
+        <div className="w-full text-center shrink-0">
             <h1 className="font-headline text-2xl">Recortar Recibo</h1>
             <p className="text-muted-foreground">
               Ajusta el marco al recibo y confirma.
             </p>
         </div>
-        <div className="w-full max-w-md my-2 flex-shrink min-h-0">
+        <div className="w-full max-w-md flex-1 min-h-0 flex items-center justify-center">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
             aspect={undefined} // Free crop
+            className="max-h-full"
           >
             <Image
               ref={imgRef}
@@ -153,12 +154,13 @@ function CropPage() {
               width={500}
               height={888} // approx 9/16 aspect ratio
               onLoad={onImageLoad}
-              className="w-full h-auto max-h-[60svh] object-contain"
+              className="w-full h-auto object-contain max-h-full"
+              style={{ objectFit: 'contain' }}
             />
           </ReactCrop>
         </div>
         
-        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4 mt-auto mb-2">
+        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4 mt-auto shrink-0 pb-2">
             <Button variant="outline" onClick={handleRetake} size="lg" className="w-full">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto

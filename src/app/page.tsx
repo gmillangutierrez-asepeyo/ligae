@@ -138,18 +138,16 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
   }, [router, setOriginalPhoto]);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-black">
-      <main className="flex-1 flex flex-col items-center justify-center relative">
-        <div className="absolute inset-0">
-           <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="h-full w-full object-cover"
-          />
-           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[90%] h-[90%] border-2 border-white/50 rounded-md" />
-          </div>
+    <div className="h-[100svh] w-full bg-black overflow-hidden">
+      <main className="relative h-full w-full">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[90%] h-[90%] border-2 border-white/50 rounded-md" />
         </div>
         
         <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 z-20 text-white bg-black/30 hover:bg-black/50">
