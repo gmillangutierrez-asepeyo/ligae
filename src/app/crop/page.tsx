@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
@@ -131,14 +132,14 @@ function CropPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-background">
       <Header />
-      <main className="flex-1 flex flex-col items-center p-4 gap-4 overflow-y-auto">
-        <div className="w-full text-center mt-4">
+      <main className="flex-1 flex flex-col items-center p-4 gap-2 overflow-y-auto">
+        <div className="w-full text-center mt-2">
             <h1 className="font-headline text-2xl">Recortar Recibo</h1>
             <p className="text-muted-foreground">
               Ajusta el marco al recibo y confirma.
             </p>
         </div>
-        <div className="w-full max-w-md my-4">
+        <div className="w-full max-w-md my-2 flex-shrink min-h-0">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -152,12 +153,12 @@ function CropPage() {
               width={500}
               height={888} // approx 9/16 aspect ratio
               onLoad={onImageLoad}
-              className="w-full h-auto"
+              className="w-full h-auto max-h-[60svh] object-contain"
             />
           </ReactCrop>
         </div>
         
-        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4 mt-auto mb-4">
+        <div className="w-full max-w-md flex flex-col sm:flex-row items-center gap-4 mt-auto mb-2">
             <Button variant="outline" onClick={handleRetake} size="lg" className="w-full">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
