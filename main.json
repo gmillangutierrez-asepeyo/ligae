@@ -1,0 +1,25 @@
+{
+  "fields": {
+    "hierarchy": {
+      "mapValue": {
+        "fields": {
+          "gmillangutierrez@asepeyo.es": {
+            "arrayValue": {
+              "values": [
+                { "stringValue": "gmillangutierrez@asepeyo.es" },
+                { "stringValue": "pmoratomolina@asepeyo.es" }
+              ]
+            }
+          },
+          "otro.manager@asepeyo.es": {
+             "arrayValue": {
+              "values": [
+                { "stringValue": "otro.usuario@asepeyo.es" }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
