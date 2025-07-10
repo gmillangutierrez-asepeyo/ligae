@@ -139,14 +139,9 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
 
   return (
     <div className="flex flex-col h-screen w-full bg-black">
-      <Header />
       <main className="flex-1 flex flex-col items-center justify-center relative">
-         <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 z-20 text-white bg-black/30 hover:bg-black/50">
-            <ArrowLeft className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Volver</span>
-        </Button>
-        <div className="absolute inset-0 top-[var(--header-height,64px)] bottom-0">
-          <video
+        <div className="absolute inset-0">
+           <video
             ref={videoRef}
             autoPlay
             playsInline
@@ -156,6 +151,11 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
             <div className="w-[90%] h-[90%] border-2 border-white/50 rounded-md" />
           </div>
         </div>
+        
+        <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 z-20 text-white bg-black/30 hover:bg-black/50">
+            <ArrowLeft className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Volver</span>
+        </Button>
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-full px-6 flex flex-col items-center gap-4">
             <p className="text-white text-center text-shadow-lg">Centra el recibo y haz la foto.</p>
