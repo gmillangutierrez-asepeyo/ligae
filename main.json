@@ -1,3 +1,15 @@
+
+# Para subir este fichero a Firestore usando curl y que se guarde con el ID "main",
+# debes usar el método PATCH y apuntar la URL directamente al documento.
+#
+# Ejemplo de comando:
+# curl -X PATCH \
+#   -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+#   -H "Content-Type: application/json" \
+#   -d "@main.json" \
+#   "https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/(default)/documents/manager_hierarchy/main"
+#
+
 {
   "fields": {
     "hierarchy": {
