@@ -8,39 +8,51 @@ type ManagerHierarchy = Record<string, string[]>;
 
 /**
  * Initializes the manager hierarchy from an environment variable.
- * The variable `NEXT_PUBLIC_MANAGER_HIERARCHY` should contain a JSON string.
- * Example: '{"manager1@asepeyo.es":["user1@asepeyo.es"], "manager2@asepeyo.es":["user3@asepeyo.es"]}'
- * 
+ * The variable `NEXT_PUBLIC_MANAGER_HIERARCHY` should contain a string
+ * in the format: 'manager1:user1 user2;manager2:user3'
+ * - Manager groups are separated by a semicolon (;)
+ * - The manager is separated from their users by a colon (:)
+ * - Users are separated by a space
+ *
  * If the variable is not set or invalid, it defaults to an empty object
  * and logs an error to the console for easier debugging.
  * @returns The parsed manager hierarchy.
  */
 function getManagerHierarchy(): ManagerHierarchy {
-  const hierarchyJson = process.env.NEXT_PUBLIC_MANAGER_HIERARCHY;
+  const hierarchyStr = process.env.NEXT_PUBLIC_MANAGER_HIERARCHY;
 
-  if (!hierarchyJson) {
+  if (!hierarchyStr) {
     // Variable not set, return an empty hierarchy.
     return {};
   }
 
+  const hierarchy: ManagerHierarchy = {};
+
   try {
-    // Attempt to parse the JSON string from the environment variable.
-    const parsedHierarchy = JSON.parse(hierarchyJson);
-    
-    // Basic validation to ensure it's an object.
-    if (typeof parsedHierarchy === 'object' && parsedHierarchy !== null && !Array.isArray(parsedHierarchy)) {
-        return parsedHierarchy;
-    } else {
-       console.error(
-        'Error: NEXT_PUBLIC_MANAGER_HIERARCHY no es un objeto JSON válido.',
-        'Valor recibido:', hierarchyJson
-      );
-      return {};
+    const managerGroups = hierarchyStr.split(';').filter(Boolean); // Split by ; and remove empty strings
+
+    for (const group of managerGroups) {
+      const parts = group.split(':');
+      if (parts.length !== 2) {
+        // Malformed group, skip it
+        console.warn(`Grupo de jerarquía mal formado, se omitirá: "${group}"`);
+        continue;
+      }
+      
+      const managerEmail = parts[0].trim();
+      const userEmails = parts[1].trim().split(' ').filter(Boolean); // Split by space and remove empty strings
+
+      if (managerEmail && userEmails.length > 0) {
+        hierarchy[managerEmail] = userEmails;
+      }
     }
+    
+    return hierarchy;
+
   } catch (error) {
     console.error(
-      'Error al parsear NEXT_PUBLIC_MANAGER_HIERARCHY. Asegúrate de que es una cadena JSON válida.',
-      'Valor recibido:', hierarchyJson,
+      'Error al parsear NEXT_PUBLIC_MANAGER_HIERARCHY. Asegúrate de que tiene el formato correcto.',
+      'Valor recibido:', hierarchyStr,
       'Error:', error
     );
     // On parsing error, return an empty hierarchy to prevent crashes.
