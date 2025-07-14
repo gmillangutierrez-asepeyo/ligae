@@ -143,23 +143,23 @@ function CropPage() {
             </p>
         </div>
         
-        <div className="flex-1 flex justify-center items-center min-h-0 my-6">
-          <ReactCrop
-            crop={crop}
-            onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-          >
-            <Image
-              ref={imgRef}
-              alt="Recibo a recortar"
-              src={originalPhotoDataUri}
-              width={0}
-              height={0}
-              sizes="100vw"
-              style={{ maxHeight: '70svh', width: 'auto', height: 'auto' }}
-              onLoad={onImageLoad}
-            />
-          </ReactCrop>
+        <div className="flex-1 flex flex-col justify-center items-center min-h-0 py-6">
+            <ReactCrop
+              crop={crop}
+              onChange={(_, percentCrop) => setCrop(percentCrop)}
+              onComplete={(c) => setCompletedCrop(c)}
+            >
+              <Image
+                ref={imgRef}
+                alt="Recibo a recortar"
+                src={originalPhotoDataUri}
+                width={0}
+                height={0}
+                sizes="100vw"
+                style={{ maxHeight: '70svh', width: 'auto', height: 'auto' }}
+                onLoad={onImageLoad}
+              />
+            </ReactCrop>
         </div>
       
         <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
