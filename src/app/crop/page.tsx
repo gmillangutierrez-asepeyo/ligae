@@ -74,19 +74,13 @@ function CropPage() {
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    const initialCrop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: 'px',
-          width: width * 0.8, 
-        },
-        1, // aspect ratio (1 for freeform)
-        width,
-        height
-      ),
-      width,
-      height
-    );
+    const initialCrop = {
+      unit: 'px' as const,
+      x: 0,
+      y: 0,
+      width: width,
+      height: height
+    };
     setCrop(initialCrop);
     setCompletedCrop(initialCrop);
   }
