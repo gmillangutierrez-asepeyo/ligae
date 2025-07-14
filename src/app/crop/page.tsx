@@ -140,7 +140,7 @@ function CropPage() {
             </p>
         </div>
         
-        <div className="flex-1 w-full max-w-md min-h-0 flex items-center justify-center relative">
+        <div className="flex-1 w-full max-w-md min-h-0 flex items-center justify-center relative overflow-hidden rounded-md">
             <ReactCrop
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -153,9 +153,9 @@ function CropPage() {
                 alt="Recibo a recortar"
                 src={originalPhotoDataUri}
                 width={500}
-                height={888} // approx 9/16 aspect ratio
+                height={888} // A large height to demonstrate containment
                 onLoad={onImageLoad}
-                className="w-auto h-auto max-w-full max-h-full object-contain"
+                className="object-contain max-h-full"
               />
             </ReactCrop>
         </div>
