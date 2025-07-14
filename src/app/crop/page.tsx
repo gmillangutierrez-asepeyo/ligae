@@ -132,7 +132,7 @@ function CropPage() {
   return (
     <div className="flex flex-col h-[100svh] w-full bg-background">
       <Header />
-      <main className="flex-1 flex flex-col items-center p-4 gap-4 overflow-hidden">
+      <main className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
         <div className="w-full text-center shrink-0">
             <h1 className="font-headline text-2xl">Recortar Recibo</h1>
             <p className="text-muted-foreground">
@@ -140,28 +140,26 @@ function CropPage() {
             </p>
         </div>
         
-        <div className="relative w-full flex-1 flex items-center justify-center min-h-0">
-            <div className="relative w-full max-w-md h-full">
-                <ReactCrop
-                  crop={crop}
-                  onChange={(_, percentCrop) => setCrop(percentCrop)}
-                  onComplete={(c) => setCompletedCrop(c)}
-                  className="w-full h-full"
-                >
-                  <Image
-                    ref={imgRef}
-                    alt="Recibo a recortar"
-                    src={originalPhotoDataUri}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    onLoad={onImageLoad}
-                    className="object-contain"
-                  />
-                </ReactCrop>
-            </div>
+        <div className="relative flex-1 min-h-0">
+            <ReactCrop
+              crop={crop}
+              onChange={(_, percentCrop) => setCrop(percentCrop)}
+              onComplete={(c) => setCompletedCrop(c)}
+              className="w-full h-full"
+            >
+              <Image
+                ref={imgRef}
+                alt="Recibo a recortar"
+                src={originalPhotoDataUri}
+                fill
+                style={{ objectFit: 'contain' }}
+                onLoad={onImageLoad}
+                className="object-contain"
+              />
+            </ReactCrop>
         </div>
         
-        <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2">
+        <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
             <Button variant="outline" onClick={handleRetake} className="flex-1">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
