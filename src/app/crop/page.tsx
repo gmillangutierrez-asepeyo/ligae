@@ -136,7 +136,7 @@ function CropPage() {
     <div className="flex flex-col h-[100svh] w-full bg-background">
       <Header />
       <main className="flex-1 flex flex-col p-4 overflow-hidden">
-        <div className="w-full text-center shrink-0 mb-4">
+        <div className="w-full text-center shrink-0 mb-6">
             <h1 className="font-headline text-2xl">Recortar Recibo</h1>
             <p className="text-muted-foreground">
               Ajusta el marco al recibo y confirma.
