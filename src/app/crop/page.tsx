@@ -4,7 +4,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import ReactCrop, { type Crop } from 'react-image-crop';
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 import { useReceiptStore } from '@/lib/store';
@@ -73,13 +73,22 @@ function CropPage() {
   }, [originalPhotoDataUri, router]);
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    setCrop({
-        unit: '%',
-        width: 100,
-        height: 100,
-        x: 0,
-        y: 0,
-    });
+    const { width, height } = e.currentTarget;
+    const initialCrop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: 'px',
+          width: width * 0.8, 
+        },
+        1, // aspect ratio (1 for freeform)
+        width,
+        height
+      ),
+      width,
+      height
+    );
+    setCrop(initialCrop);
+    setCompletedCrop(initialCrop);
   }
 
   const handleRetake = () => {
@@ -92,7 +101,7 @@ function CropPage() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'No se pudo procesar el recorte. Inténtalo de nuevo.',
+        description: 'No se pudo procesar el recorte. Por favor, selecciona un área para recortar.',
       });
       return;
     }
@@ -140,23 +149,23 @@ function CropPage() {
             </p>
         </div>
         
-        <div className="relative flex-1 min-h-0">
-            <ReactCrop
-              crop={crop}
-              onChange={(_, percentCrop) => setCrop(percentCrop)}
-              onComplete={(c) => setCompletedCrop(c)}
-              className="w-full h-full"
-            >
-              <Image
-                ref={imgRef}
-                alt="Recibo a recortar"
-                src={originalPhotoDataUri}
-                fill
-                style={{ objectFit: 'contain' }}
-                onLoad={onImageLoad}
-                className="object-contain"
-              />
-            </ReactCrop>
+        <div className="flex-1 flex justify-center items-center min-h-0">
+          <ReactCrop
+            crop={crop}
+            onChange={(_, percentCrop) => setCrop(percentCrop)}
+            onComplete={(c) => setCompletedCrop(c)}
+          >
+            <Image
+              ref={imgRef}
+              alt="Recibo a recortar"
+              src={originalPhotoDataUri}
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ maxHeight: '70svh', width: 'auto', height: 'auto' }}
+              onLoad={onImageLoad}
+            />
+          </ReactCrop>
         </div>
         
         <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
