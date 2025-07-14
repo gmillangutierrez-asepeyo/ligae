@@ -139,7 +139,7 @@ function CropPage() {
               Ajusta el marco al recibo y confirma.
             </p>
         </div>
-        <div className="w-full max-w-md flex-1 min-h-0 flex items-center justify-center">
+        <div className="w-full max-w-md flex-1 min-h-0 flex items-center justify-center relative">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -154,7 +154,7 @@ function CropPage() {
               width={500}
               height={888} // approx 9/16 aspect ratio
               onLoad={onImageLoad}
-              className="w-auto max-h-full object-contain"
+              className="w-auto h-auto max-w-full max-h-full object-contain"
             />
           </ReactCrop>
         </div>
