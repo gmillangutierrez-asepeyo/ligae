@@ -151,10 +151,10 @@ function CropPage() {
                 ref={imgRef}
                 alt="Recibo a recortar"
                 src={originalPhotoDataUri}
-                width={500}
-                height={888} // A large height to demonstrate containment
+                width={800}
+                height={1200}
                 onLoad={onImageLoad}
-                className="object-contain max-h-full"
+                className="object-contain max-h-full max-w-full"
               />
             </ReactCrop>
         </div>
