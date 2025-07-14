@@ -154,7 +154,7 @@ function CropPage() {
               width={500}
               height={888} // approx 9/16 aspect ratio
               onLoad={onImageLoad}
-              className="w-auto h-auto max-h-full object-contain"
+              className="w-auto max-h-full object-contain"
             />
           </ReactCrop>
         </div>
