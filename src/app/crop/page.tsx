@@ -136,14 +136,14 @@ function CropPage() {
     <div className="flex flex-col h-[100svh] w-full bg-background">
       <Header />
       <main className="flex-1 flex flex-col p-4 overflow-hidden">
-        <div className="w-full text-center shrink-0 mb-6">
+        <div className="w-full text-center shrink-0">
             <h1 className="font-headline text-2xl">Recortar Recibo</h1>
             <p className="text-muted-foreground">
               Ajusta el marco al recibo y confirma.
             </p>
         </div>
         
-        <div className="flex-1 flex justify-center items-center min-h-0">
+        <div className="flex-1 flex justify-center items-center min-h-0 my-6">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -162,7 +162,7 @@ function CropPage() {
           </ReactCrop>
         </div>
       
-        <div className="w-full max-w-md flex items-center gap-4 shrink-0 mt-6 pb-2 self-center">
+        <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
             <Button variant="outline" onClick={handleRetake} className="flex-1">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
