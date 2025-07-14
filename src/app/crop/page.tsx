@@ -4,7 +4,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 import { useReceiptStore } from '@/lib/store';
@@ -74,12 +74,12 @@ function CropPage() {
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    const initialCrop = {
-      unit: 'px' as const,
+    const initialCrop: Crop = {
+      unit: 'px',
       x: 0,
       y: 0,
       width: width,
-      height: height
+      height: height,
     };
     setCrop(initialCrop);
     setCompletedCrop(initialCrop);
