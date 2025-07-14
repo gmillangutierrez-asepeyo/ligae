@@ -130,7 +130,7 @@ function CropPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100svh] w-full bg-background overflow-hidden">
+    <div className="flex flex-col h-[100svh] w-full bg-background">
       <Header />
       <main className="flex-1 flex flex-col items-center p-4 gap-4 overflow-hidden">
         <div className="w-full text-center shrink-0">
@@ -145,7 +145,6 @@ function CropPage() {
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
               onComplete={(c) => setCompletedCrop(c)}
-              aspect={undefined} // Free crop
               className="max-h-full max-w-full flex items-center justify-center"
             >
               <Image
