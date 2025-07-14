@@ -162,7 +162,7 @@ function CropPage() {
           </ReactCrop>
         </div>
       
-        <div className="w-full max-w-md flex items-center gap-4 shrink-0 mt-4 pb-2 self-center">
+        <div className="w-full max-w-md flex items-center gap-4 shrink-0 mt-6 pb-2 self-center">
             <Button variant="outline" onClick={handleRetake} className="flex-1">
                 <Camera className="mr-2 h-4 w-4" />
                 Hacer otra foto
