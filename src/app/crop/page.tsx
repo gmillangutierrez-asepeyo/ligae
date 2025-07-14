@@ -143,7 +143,9 @@ function CropPage() {
             </p>
         </div>
         
-        <div className="flex-1 flex flex-col justify-center items-center min-h-0 py-6">
+        <div className="h-6 shrink-0" />
+
+        <div className="flex-1 flex justify-center items-center min-h-0">
             <ReactCrop
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -156,12 +158,14 @@ function CropPage() {
                 width={0}
                 height={0}
                 sizes="100vw"
-                style={{ maxHeight: '70svh', width: 'auto', height: 'auto' }}
+                style={{ maxHeight: '65svh', width: 'auto', height: 'auto' }}
                 onLoad={onImageLoad}
               />
             </ReactCrop>
         </div>
       
+        <div className="h-6 shrink-0" />
+
         <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
             <Button variant="outline" onClick={handleRetake} className="flex-1">
                 <Camera className="mr-2 h-4 w-4" />
