@@ -140,13 +140,13 @@ function CropPage() {
             </p>
         </div>
         
-        <div className="flex-1 w-full max-w-md min-h-0 flex items-center justify-center">
+        <div className="flex-1 w-full max-w-md min-h-0 flex items-center justify-center relative">
             <ReactCrop
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
               onComplete={(c) => setCompletedCrop(c)}
               aspect={undefined} // Free crop
-              className="max-h-full flex items-center justify-center"
+              className="max-h-full max-w-full flex items-center justify-center"
             >
               <Image
                 ref={imgRef}
