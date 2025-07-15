@@ -7,7 +7,7 @@ import { format, isValid, parseISO } from 'date-fns';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -148,6 +148,7 @@ function ApprovalsPage() {
         setIsMounted(true);
     }, []);
 
+    // Wait until auth state is fully resolved before checking manager status
     useEffect(() => {
         if (isMounted && !authLoading && !isManager) {
             toast({ variant: 'destructive', title: 'Acceso Denegado', description: 'Esta página es solo para managers.' });
@@ -179,6 +180,7 @@ function ApprovalsPage() {
         }
     }, [token, user?.email, isManager, managedUsers]);
 
+    // This effect now correctly depends on authLoading to ensure isManager is stable
     useEffect(() => {
         if (isManager && token && isMounted && !authLoading) {
             loadPendingReceipts();
@@ -252,7 +254,8 @@ function ApprovalsPage() {
         }
     };
     
-    if (authLoading || !isManager) {
+    // Show a loading spinner until authentication and role checks are complete.
+    if (authLoading) {
         return (
             <AuthGuard>
                 <div className="flex flex-col min-h-screen bg-background">
@@ -380,22 +383,53 @@ function ApprovalsPage() {
                     </DialogContent>
                 </Dialog>
 
-                {/* View Image Dialog */}
+                {/* View Image and Details Dialog */}
                 {viewingReceipt && token && (
                     <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
-                        <DialogContent className="max-w-xl w-full">
-                            <DialogHeader>
-                                <DialogTitle>Recibo de {viewingReceipt.sector} ({viewingReceipt.usuario})</DialogTitle>
-                                <DialogDescription>
-                                {formatDate(viewingReceipt.fecha)} - €{viewingReceipt.importe.toFixed(2)}
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">
-                                <AuthenticatedImage
-                                    src={viewingReceipt.photoUrl}
-                                    alt={`Recibo de ${viewingReceipt.sector}`}
-                                    token={token}
-                                />
+                        <DialogContent className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <DialogHeader>
+                                    <DialogTitle>Imagen del Recibo</DialogTitle>
+                                </DialogHeader>
+                                <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">
+                                    <AuthenticatedImage
+                                        src={viewingReceipt.photoUrl}
+                                        alt={`Recibo de ${viewingReceipt.sector}`}
+                                        token={token}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <DialogHeader>
+                                    <DialogTitle>Detalles del Recibo</DialogTitle>
+                                    <DialogDescription>
+                                       Revisa la información del recibo enviado por {viewingReceipt.usuario}.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Card className="mt-4">
+                                    <CardContent className="p-4 space-y-3 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Importe:</span>
+                                            <span className="font-medium">€{viewingReceipt.importe.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Fecha:</span>
+                                            <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
+                                        </div>
+                                         <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Sector:</span>
+                                            <span className="font-medium capitalize">{viewingReceipt.sector}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Usuario:</span>
+                                            <span className="font-medium">{viewingReceipt.usuario}</span>
+                                        </div>
+                                         <div className="space-y-1 pt-2">
+                                            <span className="text-muted-foreground">Observaciones del usuario:</span>
+                                            <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.observaciones || 'Ninguna'}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </DialogContent>
                     </Dialog>
