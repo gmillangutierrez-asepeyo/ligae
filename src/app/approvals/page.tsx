@@ -119,9 +119,9 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
     <Image
       src={imgSrc}
       alt={alt}
-      fill
-      sizes="(max-width: 768px) 100vw, 50vw"
-      style={{ objectFit: 'contain' }}
+      width={400}
+      height={800}
+      className="h-auto w-full object-contain"
     />
   );
 }
@@ -388,12 +388,12 @@ function ApprovalsPage() {
                 {viewingReceipt && token && (
                     <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
                        <DialogContent className="max-w-4xl w-full max-h-[90svh] overflow-y-auto">
-                            <div className="flex flex-col gap-6 p-2">
-                                <div className="w-full">
+                            <div className="flex flex-col md:flex-row gap-6 p-6">
+                                <div className="w-full md:w-1/2">
                                     <DialogHeader>
-                                        <DialogTitle>Imagen del Recibo</DialogTitle>
+                                        <DialogTitle className="md:hidden mb-2">Imagen del Recibo</DialogTitle>
                                     </DialogHeader>
-                                    <div className="relative aspect-[9/16] w-full max-w-sm mx-auto mt-4 rounded-lg overflow-hidden border">
+                                    <div className="relative w-full rounded-lg overflow-hidden border">
                                         <AuthenticatedImage
                                             src={viewingReceipt.photoUrl}
                                             alt={`Recibo de ${viewingReceipt.sector}`}
@@ -401,7 +401,7 @@ function ApprovalsPage() {
                                         />
                                     </div>
                                 </div>
-                                <div className="w-full">
+                                <div className="w-full md:w-1/2">
                                     <DialogHeader>
                                         <DialogTitle>Detalles del Recibo</DialogTitle>
                                         <DialogDescription>
