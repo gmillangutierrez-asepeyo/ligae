@@ -100,7 +100,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-full h-full bg-secondary animate-pulse min-h-[400px]">
+      <div className="flex items-center justify-center w-full h-full bg-secondary animate-pulse min-h-[250px] md:min-h-[400px]">
         <Loader2 className="h-8 w-8 text-muted-foreground" />
       </div>
     );
@@ -108,7 +108,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
   if (error || !imgSrc) {
     return (
-      <div className="flex flex-col items-center justify-center w-full h-full bg-secondary rounded-lg text-center p-4 min-h-[400px]">
+      <div className="flex flex-col items-center justify-center w-full h-full bg-secondary rounded-lg text-center p-4 min-h-[250px] md:min-h-[400px]">
         <AlertCircle className="h-8 w-8 text-destructive" />
         <p className="mt-2 text-sm text-destructive-foreground">Error al cargar la imagen</p>
         <p className="text-xs text-muted-foreground mt-1">Comprueba la consola para más detalles.</p>
@@ -388,14 +388,14 @@ function ApprovalsPage() {
                 {/* View Image and Details Dialog */}
                 {viewingReceipt && token && (
                     <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
-                       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+                       <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col p-0">
                            <ScrollArea className="flex-1 p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex flex-col">
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    <div className="flex flex-col md:w-1/2">
                                         <DialogHeader>
                                             <DialogTitle>Imagen del Recibo</DialogTitle>
                                         </DialogHeader>
-                                        <div className="relative aspect-auto mt-4 min-h-[400px] flex-1">
+                                        <div className="relative aspect-auto mt-4 flex-1">
                                             <AuthenticatedImage
                                                 src={viewingReceipt.photoUrl}
                                                 alt={`Recibo de ${viewingReceipt.sector}`}
@@ -403,7 +403,7 @@ function ApprovalsPage() {
                                             />
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className="md:w-1/2">
                                         <DialogHeader>
                                             <DialogTitle>Detalles del Recibo</DialogTitle>
                                             <DialogDescription>
@@ -446,5 +446,3 @@ function ApprovalsPage() {
 }
 
 export default ApprovalsPage;
-
-    
