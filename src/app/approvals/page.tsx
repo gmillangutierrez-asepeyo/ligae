@@ -100,7 +100,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-full h-full bg-secondary animate-pulse min-h-[250px] md:min-h-[400px]">
+      <div className="flex items-center justify-center w-full h-full bg-secondary animate-pulse">
         <Loader2 className="h-8 w-8 text-muted-foreground" />
       </div>
     );
@@ -108,7 +108,7 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
   if (error || !imgSrc) {
     return (
-      <div className="flex flex-col items-center justify-center w-full h-full bg-secondary rounded-lg text-center p-4 min-h-[250px] md:min-h-[400px]">
+      <div className="flex flex-col items-center justify-center w-full h-full bg-secondary rounded-lg text-center p-4">
         <AlertCircle className="h-8 w-8 text-destructive" />
         <p className="mt-2 text-sm text-destructive-foreground">Error al cargar la imagen</p>
         <p className="text-xs text-muted-foreground mt-1">Comprueba la consola para más detalles.</p>
@@ -391,11 +391,11 @@ function ApprovalsPage() {
                        <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col p-0">
                            <ScrollArea className="flex-1 p-6">
                                 <div className="flex flex-col md:flex-row gap-6">
-                                    <div className="flex flex-col md:w-1/2">
+                                    <div className="md:w-1/2">
                                         <DialogHeader>
                                             <DialogTitle>Imagen del Recibo</DialogTitle>
                                         </DialogHeader>
-                                        <div className="relative aspect-auto mt-4 flex-1">
+                                        <div className="relative aspect-[9/16] w-full max-w-sm mx-auto mt-4 rounded-lg overflow-hidden border">
                                             <AuthenticatedImage
                                                 src={viewingReceipt.photoUrl}
                                                 alt={`Recibo de ${viewingReceipt.sector}`}
