@@ -340,7 +340,7 @@ function GalleryPage() {
         
         {viewingReceipt && token && (
             <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
-                <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col p-0">
+                <DialogContent className="max-w-4xl w-full max-h-[90svh] flex flex-col p-0">
                     <ScrollArea className="flex-1 p-6">
                         <div className="flex flex-col md:flex-row gap-6">
                              <div className="md:w-1/2">
