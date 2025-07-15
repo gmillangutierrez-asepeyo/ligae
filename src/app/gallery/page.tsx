@@ -41,7 +41,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 // This component fetches a private image from GCS using a token and displays it.
 function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; token: string | null }) {
@@ -340,61 +339,59 @@ function GalleryPage() {
         
         {viewingReceipt && token && (
             <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
-                <DialogContent className="max-w-4xl w-full max-h-[90svh] flex flex-col p-0">
-                    <ScrollArea className="flex-1 p-6">
-                        <div className="flex flex-col md:flex-row gap-6">
-                             <div className="md:w-1/2">
-                                <DialogHeader>
-                                    <DialogTitle>Imagen del Recibo</DialogTitle>
-                                </DialogHeader>
-                                <div className="relative aspect-[9/16] w-full max-w-sm mx-auto mt-4 rounded-lg overflow-hidden border">
-                                    <AuthenticatedImage
-                                        src={viewingReceipt.photoUrl}
-                                        alt={`Recibo de ${viewingReceipt.sector}`}
-                                        token={token}
-                                    />
-                                </div>
-                            </div>
-                            <div className="md:w-1/2">
-                                <DialogHeader>
-                                    <DialogTitle>Detalles del Recibo</DialogTitle>
-                                    <DialogDescription>
-                                    Resumen completo de la información.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <Card className="mt-4">
-                                    <CardContent className="p-4 space-y-3 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Importe:</span>
-                                            <span className="font-medium">€{viewingReceipt.importe.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Fecha:</span>
-                                            <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Sector:</span>
-                                            <span className="font-medium capitalize">{viewingReceipt.sector}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Estado:</span>
-                                            <StatusBadge status={viewingReceipt.estado} />
-                                        </div>
-                                        <div className="space-y-1 pt-2">
-                                            <span className="text-muted-foreground">Observaciones del usuario:</span>
-                                            <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.observaciones || 'Ninguna'}</p>
-                                        </div>
-                                        {(viewingReceipt.estado === 'aprobado' || viewingReceipt.estado === 'denegado') && (
-                                            <div className="space-y-1 pt-2">
-                                                <span className="text-muted-foreground">Motivo del manager:</span>
-                                                <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.motivo || 'Sin motivo'}</p>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                <DialogContent className="max-w-4xl w-full max-h-[90svh] overflow-y-auto">
+                    <div className="flex flex-col gap-6 p-2">
+                         <div className="w-full">
+                            <DialogHeader>
+                                <DialogTitle>Imagen del Recibo</DialogTitle>
+                            </DialogHeader>
+                            <div className="relative aspect-[9/16] w-full max-w-sm mx-auto mt-4 rounded-lg overflow-hidden border">
+                                <AuthenticatedImage
+                                    src={viewingReceipt.photoUrl}
+                                    alt={`Recibo de ${viewingReceipt.sector}`}
+                                    token={token}
+                                />
                             </div>
                         </div>
-                    </ScrollArea>
+                        <div className="w-full">
+                            <DialogHeader>
+                                <DialogTitle>Detalles del Recibo</DialogTitle>
+                                <DialogDescription>
+                                Resumen completo de la información.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <Card className="mt-4">
+                                <CardContent className="p-4 space-y-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Importe:</span>
+                                        <span className="font-medium">€{viewingReceipt.importe.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Fecha:</span>
+                                        <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Sector:</span>
+                                        <span className="font-medium capitalize">{viewingReceipt.sector}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-muted-foreground">Estado:</span>
+                                        <StatusBadge status={viewingReceipt.estado} />
+                                    </div>
+                                    <div className="space-y-1 pt-2">
+                                        <span className="text-muted-foreground">Observaciones del usuario:</span>
+                                        <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.observaciones || 'Ninguna'}</p>
+                                    </div>
+                                    {(viewingReceipt.estado === 'aprobado' || viewingReceipt.estado === 'denegado') && (
+                                        <div className="space-y-1 pt-2">
+                                            <span className="text-muted-foreground">Motivo del manager:</span>
+                                            <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.motivo || 'Sin motivo'}</p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         )}
@@ -404,5 +401,3 @@ function GalleryPage() {
 }
 
 export default GalleryPage;
-
-    
