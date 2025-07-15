@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -107,11 +108,10 @@ function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; tok
 
   if (error || !imgSrc) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-[400px]">
-        <div className="text-center p-2">
-            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-            <p className="text-xs text-muted-foreground mt-1">Error al cargar la imagen</p>
-        </div>
+      <div className="flex flex-col items-center justify-center w-full h-full bg-secondary rounded-lg text-center p-4 min-h-[400px]">
+        <AlertCircle className="h-8 w-8 text-destructive" />
+        <p className="mt-2 text-sm text-destructive-foreground">Error al cargar la imagen</p>
+        <p className="text-xs text-muted-foreground mt-1">Comprueba la consola para más detalles.</p>
       </div>
     );
   }
@@ -388,14 +388,14 @@ function ApprovalsPage() {
                 {/* View Image and Details Dialog */}
                 {viewingReceipt && token && (
                     <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
-                        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+                       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
                            <ScrollArea className="flex-1 p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
+                                    <div className="flex flex-col">
                                         <DialogHeader>
                                             <DialogTitle>Imagen del Recibo</DialogTitle>
                                         </DialogHeader>
-                                        <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">
+                                        <div className="relative aspect-auto mt-4 min-h-[400px] flex-1">
                                             <AuthenticatedImage
                                                 src={viewingReceipt.photoUrl}
                                                 alt={`Recibo de ${viewingReceipt.sector}`}
@@ -446,3 +446,5 @@ function ApprovalsPage() {
 }
 
 export default ApprovalsPage;
+
+    
