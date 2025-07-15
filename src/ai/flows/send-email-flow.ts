@@ -6,15 +6,15 @@
  * It uses environment variables for SMTP configuration to keep credentials secure.
  * 
  * - sendEmail - A function that handles the email sending process.
- * - SendEmailSchema - The input type for the sendEmail function.
+ * - SendEmailInput - The input type for the sendEmail function.
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import * as nodemailer from 'nodemailer';
 
 // Define the schema for the email sending function's input.
-export const SendEmailSchema = z.object({
+const SendEmailSchema = z.object({
   to: z.string().email().describe('The recipient\'s email address.'),
   subject: z.string().describe('The subject line of the email.'),
   text: z.string().describe('The plain text body of the email.'),

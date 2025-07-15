@@ -21,10 +21,10 @@ MAIL_PORT: '587'
 
 # El nombre de usuario, que suele ser la dirección de correo completa.
 # Ejemplo: tu.correo.de.servicio@gmail.com
-MAIL_USER: 'tu.correo.de.servicio@gmail.com' 
+MAIL_USER: 'ligae.asepeyo@gmail.com' 
 
 # La contraseña de la cuenta de correo.
 # IMPORTANTE: Si usas Gmail con verificación en dos pasos, debes generar una "Contraseña de Aplicación"
 # de 16 caracteres y ponerla aquí, en lugar de tu contraseña habitual.
 # Ejemplo: 'abcdefghijklmnop'
-MAIL_PASS: 'tuContraseñaDeAplicacion'
+MAIL_PASS: 'Dasem223mkzmKDl'
