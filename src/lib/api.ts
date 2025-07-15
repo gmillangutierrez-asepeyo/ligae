@@ -82,6 +82,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
       fechaSubida: { timestampValue: new Date().toISOString() },
       estado: { stringValue: 'pendiente' },
       ...(data.observaciones && { observaciones: { stringValue: data.observaciones } }),
+      motivo: { stringValue: '' }, // Initialize an empty reason
     },
   };
 
@@ -108,10 +109,11 @@ export interface CleanReceipt {
   sector: string;
   importe: number;
   fecha: string;
-  photoUrl: string; // This now holds the direct public URL to the GCS object
+  photoUrl: string;
   fileName: string;
   usuario: string;
   observaciones?: string;
+  motivo?: string;
   fechaSubida: string;
   estado: string;
 }
@@ -128,6 +130,7 @@ function transformFirestoreDoc(doc: any): CleanReceipt {
     fileName: fields.fileName?.stringValue || '',
     usuario: fields.usuario?.stringValue || '',
     observaciones: fields.observaciones?.stringValue,
+    motivo: fields.motivo?.stringValue,
     fechaSubida: fields.fechaSubida?.timestampValue || doc.createTime || new Date(0).toISOString(),
     estado: fields.estado?.stringValue || 'pendiente',
   };
@@ -270,15 +273,15 @@ export async function fetchAllPendingTickets(token: string, userEmails?: string[
 
 export async function updateTicketStatus(
   docId: string, 
-  data: { estado: 'aprobado' | 'denegado', observaciones: string }, 
+  data: { estado: 'aprobado' | 'denegado', motivo: string }, 
   token: string
 ): Promise<void> {
-  const updateUrl = `${FIRESTORE_COLLECTION_PATH}/${docId}?updateMask.fieldPaths=estado&updateMask.fieldPaths=observaciones`;
+  const updateUrl = `${FIRESTORE_COLLECTION_PATH}/${docId}?updateMask.fieldPaths=estado&updateMask.fieldPaths=motivo`;
 
   const firestorePayload = {
     fields: {
       estado: { stringValue: data.estado },
-      observaciones: { stringValue: data.observaciones },
+      motivo: { stringValue: data.motivo },
     },
   };
 

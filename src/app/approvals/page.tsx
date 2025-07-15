@@ -140,7 +140,7 @@ function ApprovalsPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [action, setAction] = useState<'approve' | 'deny' | null>(null);
     const [currentReceipt, setCurrentReceipt] = useState<Receipt | null>(null);
-    const [denialReason, setDenialReason] = useState('');
+    const [approvalReason, setApprovalReason] = useState('');
     const [viewingReceipt, setViewingReceipt] = useState<Receipt | null>(null);
     const [isMounted, setIsMounted] = useState(false);
 
@@ -189,18 +189,18 @@ function ApprovalsPage() {
     const handleOpenDialog = (receipt: Receipt, type: 'approve' | 'deny') => {
         setCurrentReceipt(receipt);
         setAction(type);
-        setDenialReason(receipt.observaciones || '');
+        setApprovalReason(receipt.motivo || '');
     };
 
     const handleCloseDialog = () => {
         setCurrentReceipt(null);
         setAction(null);
-        setDenialReason('');
+        setApprovalReason('');
     };
 
     const handleSubmit = async () => {
         if (!currentReceipt || !action || !token) return;
-        if (action === 'deny' && !denialReason.trim()) {
+        if (action === 'deny' && !approvalReason.trim()) {
             toast({ variant: 'destructive', title: 'Razón requerida', description: 'Debes indicar una razón para denegar el recibo.' });
             return;
         }
@@ -210,7 +210,7 @@ function ApprovalsPage() {
             const newState = action === 'approve' ? 'aprobado' : 'denegado';
             await updateTicketStatus(currentReceipt.id, {
                 estado: newState,
-                observaciones: denialReason,
+                motivo: approvalReason,
             }, token);
 
             setReceipts(prev => prev.filter(r => r.id !== currentReceipt.id));
@@ -221,8 +221,8 @@ function ApprovalsPage() {
               await sendEmail({
                   to: currentReceipt.usuario,
                   subject: `Tu recibo ha sido ${newState}`,
-                  text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${formatDate(currentReceipt.fecha)} ha sido ${newState}. ${denialReason ? `Razón: ${denialReason}` : ''}`,
-                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${formatDate(currentReceipt.fecha)} ha sido <strong>${newState}</strong>.</p>${denialReason ? `<p><strong>Razón:</strong> ${denialReason}</p>` : ''}<p>Puedes ver los detalles en la <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">galería de recibos</a>.</p>`,
+                  text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${formatDate(currentReceipt.fecha)} ha sido ${newState}. ${approvalReason ? `Razón: ${approvalReason}` : ''}`,
+                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${formatDate(currentReceipt.fecha)} ha sido <strong>${newState}</strong>.</p>${approvalReason ? `<p><strong>Razón:</strong> ${approvalReason}</p>` : ''}<p>Puedes ver los detalles en el <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">historial de recibos</a>.</p>`,
               });
             } catch (emailError: any) {
               console.error("Fallo al enviar el email de notificación al usuario:", emailError);
@@ -358,11 +358,13 @@ function ApprovalsPage() {
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-2">
-                            <Label htmlFor="observaciones">Observaciones (Razón si se deniega)</Label>
+                            <Label htmlFor="motivo">
+                                {action === 'deny' ? 'Motivo de Denegación' : 'Comentario (Opcional)'}
+                            </Label>
                             <Textarea
-                                id="observaciones"
-                                value={denialReason}
-                                onChange={(e) => setDenialReason(e.target.value)}
+                                id="motivo"
+                                value={approvalReason}
+                                onChange={(e) => setApprovalReason(e.target.value)}
                                 placeholder={action === 'deny' ? 'Añade una razón para la denegación...' : 'Añade un comentario opcional...'}
                             />
                         </div>
