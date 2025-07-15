@@ -34,6 +34,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { sendEmail } from '@/ai/flows/send-email-flow';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 type Receipt = CleanReceipt;
@@ -387,51 +388,55 @@ function ApprovalsPage() {
                 {/* View Image and Details Dialog */}
                 {viewingReceipt && token && (
                     <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
-                        <DialogContent className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <DialogHeader>
-                                    <DialogTitle>Imagen del Recibo</DialogTitle>
-                                </DialogHeader>
-                                <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">
-                                    <AuthenticatedImage
-                                        src={viewingReceipt.photoUrl}
-                                        alt={`Recibo de ${viewingReceipt.sector}`}
-                                        token={token}
-                                    />
+                        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+                           <ScrollArea className="flex-1 p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <DialogHeader>
+                                            <DialogTitle>Imagen del Recibo</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="relative aspect-auto max-h-[70vh] min-h-[400px] w-full mt-4">
+                                            <AuthenticatedImage
+                                                src={viewingReceipt.photoUrl}
+                                                alt={`Recibo de ${viewingReceipt.sector}`}
+                                                token={token}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <DialogHeader>
+                                            <DialogTitle>Detalles del Recibo</DialogTitle>
+                                            <DialogDescription>
+                                            Revisa la información del recibo enviado por {viewingReceipt.usuario}.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <Card className="mt-4">
+                                            <CardContent className="p-4 space-y-3 text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Importe:</span>
+                                                    <span className="font-medium">€{viewingReceipt.importe.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Fecha:</span>
+                                                    <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Sector:</span>
+                                                    <span className="font-medium capitalize">{viewingReceipt.sector}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-muted-foreground">Usuario:</span>
+                                                    <span className="font-medium">{viewingReceipt.usuario}</span>
+                                                </div>
+                                                <div className="space-y-1 pt-2">
+                                                    <span className="text-muted-foreground">Observaciones del usuario:</span>
+                                                    <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.observaciones || 'Ninguna'}</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <DialogHeader>
-                                    <DialogTitle>Detalles del Recibo</DialogTitle>
-                                    <DialogDescription>
-                                       Revisa la información del recibo enviado por {viewingReceipt.usuario}.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <Card className="mt-4">
-                                    <CardContent className="p-4 space-y-3 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Importe:</span>
-                                            <span className="font-medium">€{viewingReceipt.importe.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Fecha:</span>
-                                            <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
-                                        </div>
-                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Sector:</span>
-                                            <span className="font-medium capitalize">{viewingReceipt.sector}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Usuario:</span>
-                                            <span className="font-medium">{viewingReceipt.usuario}</span>
-                                        </div>
-                                         <div className="space-y-1 pt-2">
-                                            <span className="text-muted-foreground">Observaciones del usuario:</span>
-                                            <p className="font-medium p-2 bg-muted/50 rounded-md break-words">{viewingReceipt.observaciones || 'Ninguna'}</p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
+                            </ScrollArea>
                         </DialogContent>
                     </Dialog>
                 )}
