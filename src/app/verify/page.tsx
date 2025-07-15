@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useReceiptStore } from '@/lib/store';
-import { uploadToStorage, saveToFirestore, getManagerForUser } from '@/lib/api';
+import { uploadToStorage, saveToFirestore, getManagersForUser } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from '@/contexts/token-context';
 import { Calendar as CalendarIcon, Loader2, Send } from 'lucide-react';
@@ -88,16 +88,19 @@ function VerifyForm({
 
       toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
 
-      // Notify manager in a separate try-catch block
+      // Notify managers in a separate try-catch block
       try {
-        const managerEmail = await getManagerForUser(data.usuario, token);
-        if (managerEmail) {
-          await sendEmail({
-            to: managerEmail,
-            subject: `Nuevo recibo de ${data.usuario} pendiente de validación`,
-            text: `El usuario ${data.usuario} ha subido un nuevo recibo de ${data.importe.toFixed(2)}€ con fecha ${data.fecha} que requiere tu aprobación.`,
-            html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p>`,
-          });
+        const managerEmails = await getManagersForUser(data.usuario, token);
+        if (managerEmails.length > 0) {
+          const emailPromises = managerEmails.map(managerEmail => 
+            sendEmail({
+              to: managerEmail,
+              subject: `Nuevo recibo de ${data.usuario} pendiente de validación`,
+              text: `El usuario ${data.usuario} ha subido un nuevo recibo de ${data.importe.toFixed(2)}€ con fecha ${data.fecha} que requiere tu aprobación.`,
+              html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p>`,
+            })
+          );
+          await Promise.all(emailPromises);
         } else {
             // This toast helps debug hierarchy issues.
              toast({

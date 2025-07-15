@@ -381,27 +381,31 @@ export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
 
 
 /**
- * Finds the manager for a given user email by searching the hierarchy.
- * If the user is a manager themselves, it returns their own email.
+ * Finds all managers for a given user email by searching the hierarchy.
+ * If the user is a manager themselves, their own email is included in the list.
  * @param userEmail The email of the user.
  * @param token The authentication token to fetch the hierarchy.
- * @returns The manager's email or null if not found.
+ * @returns An array of manager emails. Returns an empty array if no managers are found.
  */
-export async function getManagerForUser(userEmail: string, token: string): Promise<string | null> {
+export async function getManagersForUser(userEmail: string, token: string): Promise<string[]> {
     const hierarchy = await fetchHierarchy(token);
+    const managers: string[] = [];
     
     // First, check if the user is a manager. If so, they are their own manager for notifications.
     if (hierarchy[userEmail]) {
-        return userEmail;
+        managers.push(userEmail);
     }
 
-    // If not a manager, find which manager they report to.
+    // Then, find all managers who have this user in their list.
     for (const manager in hierarchy) {
         if (hierarchy[manager].includes(userEmail)) {
-            return manager;
+            // Avoid adding duplicates if the user is their own manager and also in another list.
+            if (!managers.includes(manager)) {
+                managers.push(manager);
+            }
         }
     }
     
-    // If no manager is found, return null.
-    return null;
+    // Return unique managers
+    return Array.from(new Set(managers));
 }
