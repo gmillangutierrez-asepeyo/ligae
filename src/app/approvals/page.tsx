@@ -33,6 +33,7 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import { sendEmail } from '@/ai/flows/send-email-flow';
 
 
 type Receipt = CleanReceipt;
@@ -206,13 +207,32 @@ function ApprovalsPage() {
 
         setIsSubmitting(true);
         try {
+            const newState = action === 'approve' ? 'aprobado' : 'denegado';
             await updateTicketStatus(currentReceipt.id, {
-                estado: action === 'approve' ? 'aprobado' : 'denegado',
+                estado: newState,
                 observaciones: denialReason,
             }, token);
 
             setReceipts(prev => prev.filter(r => r.id !== currentReceipt.id));
-            toast({ title: 'Éxito', description: `Recibo ${action === 'approve' ? 'aprobado' : 'denegado'} correctamente.` });
+            toast({ title: 'Éxito', description: `Recibo ${newState} correctamente.` });
+            
+            // Notify user
+            try {
+              await sendEmail({
+                  to: currentReceipt.usuario,
+                  subject: `Tu recibo ha sido ${newState}`,
+                  text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${formatDate(currentReceipt.fecha)} ha sido ${newState}. ${denialReason ? `Razón: ${denialReason}` : ''}`,
+                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${formatDate(currentReceipt.fecha)} ha sido <strong>${newState}</strong>.</p>${denialReason ? `<p><strong>Razón:</strong> ${denialReason}</p>` : ''}<p>Puedes ver los detalles en la <a href="https://ligae-asepeyo-gcp-codelabs-426909-qj9bklhzma-ew.a.run.app/gallery">galería de recibos</a>.</p>`,
+              });
+            } catch (emailError: any) {
+              console.error("Fallo al enviar el email de notificación al usuario:", emailError);
+              toast({
+                variant: 'destructive',
+                title: 'Fallo al Notificar',
+                description: 'El estado se actualizó, pero no se pudo notificar al usuario por email.',
+              });
+            }
+
             handleCloseDialog();
         } catch (e: any) {
             toast({ variant: 'destructive', title: 'Fallo al Actualizar', description: e.message });

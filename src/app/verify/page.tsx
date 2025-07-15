@@ -16,13 +16,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useReceiptStore } from '@/lib/store';
-import { uploadToStorage, saveToFirestore } from '@/lib/api';
+import { uploadToStorage, saveToFirestore, getManagerForUser } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from '@/contexts/token-context';
 import { Calendar as CalendarIcon, Loader2, Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { sendEmail } from '@/ai/flows/send-email-flow';
+import { useAuth } from '@/contexts/auth-context';
 
 
 const FormSchema = z.object({
@@ -50,6 +52,7 @@ function VerifyForm({
   const router = useRouter();
   const { toast } = useToast();
   const { clearReceiptData } = useReceiptStore();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const { token, isTokenLoading } = useToken();
@@ -84,6 +87,27 @@ function VerifyForm({
       await saveToFirestore({ ...dataForApi, photoUrl, fileName }, token);
 
       toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
+
+      // Notify manager
+      try {
+        const managerEmail = await getManagerForUser(data.usuario, token);
+        if (managerEmail) {
+          await sendEmail({
+            to: managerEmail,
+            subject: `Nuevo recibo de ${data.usuario} pendiente de validación`,
+            text: `El usuario ${data.usuario} ha subido un nuevo recibo de ${data.importe.toFixed(2)}€ con fecha ${data.fecha} que requiere tu aprobación.`,
+            html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-gcp-codelabs-426909-qj9bklhzma-ew.a.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p>`,
+          });
+        }
+      } catch (emailError: any) {
+        // Log the email error but don't block the user flow
+        console.error("Fallo al enviar el email de notificación al manager:", emailError);
+        toast({
+          variant: 'destructive',
+          title: 'Fallo al Notificar',
+          description: 'El recibo se guardó, pero no se pudo notificar al manager.',
+        });
+      }
       
       router.push('/gallery');
       // Aplazar la limpieza del estado para evitar una carrera de condiciones con la navegación.

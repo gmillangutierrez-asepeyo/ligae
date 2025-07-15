@@ -375,3 +375,20 @@ export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
 
   return parsedHierarchy;
 }
+
+
+/**
+ * Finds the manager for a given user email by searching the hierarchy.
+ * @param userEmail The email of the user.
+ * @param token The authentication token to fetch the hierarchy.
+ * @returns The manager's email or null if not found.
+ */
+export async function getManagerForUser(userEmail: string, token: string): Promise<string | null> {
+    const hierarchy = await fetchHierarchy(token);
+    for (const manager in hierarchy) {
+        if (hierarchy[manager].includes(userEmail)) {
+            return manager;
+        }
+    }
+    return null;
+}
