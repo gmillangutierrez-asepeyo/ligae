@@ -24,7 +24,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hierarchy, setHierarchy] = useState<ManagerHierarchy>({});
   const [isManager, setIsManager] = useState(false);
   const [managedUsers, setManagedUsers] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true); // Renamed from 'loading' to be specific
+  const [hierarchyLoading, setHierarchyLoading] = useState(true);
   const { token, fetchToken, isTokenLoading } = useToken();
   const { toast } = useToast();
 
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(currentUser);
       }
-      setLoading(false);
+      setAuthLoading(false);
     });
 
     return () => unsubscribe();
@@ -60,16 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Effect to fetch token when user logs in
   useEffect(() => {
-    if(user && !token) {
+    if(user && !token && !authLoading) {
       fetchToken();
     }
-  }, [user, token, fetchToken]);
+  }, [user, token, fetchToken, authLoading]);
 
 
   // Effect to load hierarchy when token is available
   useEffect(() => {
     async function loadHierarchy() {
       if (token && user) {
+        setHierarchyLoading(true);
         try {
           const fetchedHierarchy = await fetchHierarchy(token);
           setHierarchy(fetchedHierarchy);
@@ -81,25 +83,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             title: 'Error de Configuración',
             description: 'No se pudo cargar la jerarquía de managers desde Firestore.',
           });
-          // Reset roles if hierarchy fetch fails
           setHierarchy({});
           updateUserRoles(user, {});
+        } finally {
+          setHierarchyLoading(false);
         }
-      } else {
-        // Reset roles if no token or user
-        setHierarchy({});
+      } else if (!user) {
+        // If there's no user, we are not loading the hierarchy.
+        setHierarchyLoading(false);
         updateUserRoles(null, {});
       }
     }
     
-    // Only load hierarchy when token is available and auth is not loading
-    if (!isTokenLoading && !loading) {
+    // Only load hierarchy when token is available and auth check is complete.
+    if (!isTokenLoading && !authLoading) {
         loadHierarchy();
     }
-  }, [user, token, isTokenLoading, loading, toast, updateUserRoles]);
+  }, [user, token, isTokenLoading, authLoading, toast, updateUserRoles]);
 
   const signIn = async () => {
-    setLoading(true);
+    setAuthLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -110,12 +113,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Fallo al Iniciar Sesión",
         description: "No se pudo iniciar sesión con Google. Inténtalo de nuevo.",
       });
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const handleSignOut = async () => {
-    setLoading(true);
+    setAuthLoading(true);
     try {
       await signOut(auth);
     } catch (error) {
@@ -126,13 +129,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
       });
     } finally {
-        setLoading(false);
+        setAuthLoading(false);
+        setHierarchyLoading(true); // Reset for next login
     }
   };
 
   const value = {
     user,
-    loading: loading || isTokenLoading, // The overall loading state depends on both auth and token
+    // The overall loading state is now more accurate.
+    loading: authLoading || isTokenLoading || hierarchyLoading,
     isManager,
     managedUsers,
     signIn,

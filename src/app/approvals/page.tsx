@@ -148,11 +148,13 @@ function ApprovalsPage() {
         setIsMounted(true);
     }, []);
 
-    // Wait until auth state is fully resolved before checking manager status
+    // Wait until auth state is fully resolved (including hierarchy) before checking manager status
     useEffect(() => {
-        if (isMounted && !authLoading && !isManager) {
-            toast({ variant: 'destructive', title: 'Acceso Denegado', description: 'Esta página es solo para managers.' });
-            router.replace('/');
+        if (isMounted && !authLoading) {
+            if (!isManager) {
+                toast({ variant: 'destructive', title: 'Acceso Denegado', description: 'Esta página es solo para managers.' });
+                router.replace('/');
+            }
         }
     }, [isManager, authLoading, router, toast, isMounted]);
 
@@ -182,10 +184,10 @@ function ApprovalsPage() {
 
     // This effect now correctly depends on authLoading to ensure isManager is stable
     useEffect(() => {
-        if (isManager && token && isMounted && !authLoading) {
+        if (isManager && token && !authLoading) {
             loadPendingReceipts();
         }
-    }, [isManager, token, isMounted, authLoading, loadPendingReceipts]);
+    }, [isManager, token, authLoading, loadPendingReceipts]);
 
 
     const handleOpenDialog = (receipt: Receipt, type: 'approve' | 'deny') => {
@@ -284,10 +286,9 @@ function ApprovalsPage() {
                         </Button>
                     </div>
 
-                    {(loading || isTokenLoading) && (
+                    {loading && (
                         <div className="flex justify-center items-center h-64">
                             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                            {isTokenLoading && <p className="ml-4 text-muted-foreground">Autenticando...</p>}
                         </div>
                     )}
 
@@ -299,7 +300,7 @@ function ApprovalsPage() {
                         </Alert>
                     )}
 
-                    {!loading && !isTokenLoading && !error && receipts.length === 0 && (
+                    {!loading && !error && receipts.length === 0 && (
                         <div className="text-center py-16 border-2 border-dashed rounded-lg">
                             <Inbox className="mx-auto h-12 w-12 text-gray-400" />
                             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">Bandeja de entrada vacía</h3>
@@ -307,7 +308,7 @@ function ApprovalsPage() {
                         </div>
                     )}
 
-                    {!loading && !isTokenLoading && !error && receipts.length > 0 && (
+                    {!loading && !error && receipts.length > 0 && (
                         <Card>
                             <Table>
                                 <TableHeader>
