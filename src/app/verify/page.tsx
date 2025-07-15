@@ -88,7 +88,7 @@ function VerifyForm({
 
       toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
 
-      // Notify manager
+      // Notify manager in a separate try-catch block
       try {
         const managerEmail = await getManagerForUser(data.usuario, token);
         if (managerEmail) {
@@ -98,9 +98,15 @@ function VerifyForm({
             text: `El usuario ${data.usuario} ha subido un nuevo recibo de ${data.importe.toFixed(2)}€ con fecha ${data.fecha} que requiere tu aprobación.`,
             html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-gcp-codelabs-426909-qj9bklhzma-ew.a.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p>`,
           });
+        } else {
+            // This toast helps debug hierarchy issues.
+             toast({
+              variant: 'destructive',
+              title: 'Manager no encontrado',
+              description: `No se pudo encontrar un manager para notificar sobre el recibo de ${data.usuario}.`,
+            });
         }
       } catch (emailError: any) {
-        // Log the email error but don't block the user flow
         console.error("Fallo al enviar el email de notificación al manager:", emailError);
         toast({
           variant: 'destructive',
@@ -110,8 +116,7 @@ function VerifyForm({
       }
       
       router.push('/gallery');
-      // Aplazar la limpieza del estado para evitar una carrera de condiciones con la navegación.
-      // Esto previene que el useEffect en VerifyPage nos redirija a '/'
+      // Delay clearing state to prevent race conditions with navigation.
       setTimeout(() => {
         clearReceiptData();
       }, 100);
@@ -292,7 +297,7 @@ function VerifyPage() {
     }
 
     if (extractedData) {
-      // Esta lógica ahora se ejecuta solo en el cliente, evitando errores de hidratación.
+      // This logic now runs only on the client, avoiding hydration errors.
       let initialDate: Date;
       try {
         const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();

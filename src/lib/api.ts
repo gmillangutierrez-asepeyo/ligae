@@ -379,16 +379,26 @@ export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
 
 /**
  * Finds the manager for a given user email by searching the hierarchy.
+ * If the user is a manager themselves, it returns their own email.
  * @param userEmail The email of the user.
  * @param token The authentication token to fetch the hierarchy.
  * @returns The manager's email or null if not found.
  */
 export async function getManagerForUser(userEmail: string, token: string): Promise<string | null> {
     const hierarchy = await fetchHierarchy(token);
+    
+    // First, check if the user is a manager. If so, they are their own manager for notifications.
+    if (hierarchy[userEmail]) {
+        return userEmail;
+    }
+
+    // If not a manager, find which manager they report to.
     for (const manager in hierarchy) {
         if (hierarchy[manager].includes(userEmail)) {
             return manager;
         }
     }
+    
+    // If no manager is found, return null.
     return null;
 }
