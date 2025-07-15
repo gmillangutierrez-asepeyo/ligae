@@ -96,7 +96,7 @@ function VerifyForm({
             to: managerEmail,
             subject: `Nuevo recibo de ${data.usuario} pendiente de validación`,
             text: `El usuario ${data.usuario} ha subido un nuevo recibo de ${data.importe.toFixed(2)}€ con fecha ${data.fecha} que requiere tu aprobación.`,
-            html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-gcp-codelabs-426909-qj9bklhzma-ew.a.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p>`,
+            html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p>`,
           });
         } else {
             // This toast helps debug hierarchy issues.
