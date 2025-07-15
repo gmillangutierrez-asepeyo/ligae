@@ -66,7 +66,7 @@ const sendEmailFlow = ai.defineFlow(
     try {
       // Send the email with the defined transport object and input data.
       const info = await transporter.sendMail({
-        from: `LIGAE Asepeyo <${MAIL_USER}>`, // Sender address
+        from: `"LIGAE Asepeyo" <${MAIL_USER}>`, // Sender address, shows "LIGAE Asepeyo" as name
         to: input.to,
         subject: input.subject,
         text: input.text,
