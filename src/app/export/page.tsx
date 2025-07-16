@@ -35,6 +35,7 @@ import { useToken } from '@/contexts/token-context';
 import { useToast } from '@/hooks/use-toast';
 import { generateCsv } from '@/ai/flows/generate-csv-flow';
 import type { DateRange } from 'react-day-picker';
+import { cn } from '@/lib/utils';
 
 type Receipt = CleanReceipt;
 
@@ -282,7 +283,7 @@ function ExportPage() {
                             )}
 
                             {!loading && !error && receipts.length > 0 && (
-                                <div className="w-full overflow-x-auto rounded-lg border">
+                                <div className="w-full overflow-x-auto rounded-lg border bg-card">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
@@ -295,7 +296,9 @@ function ExportPage() {
                                         </TableHeader>
                                         <TableBody>
                                             {receipts.map((receipt) => (
-                                                <TableRow key={receipt.id}>
+                                                <TableRow key={receipt.id} className={cn(
+                                                    receipt.estado !== 'pendiente' && 'bg-muted/50'
+                                                )}>
                                                     <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
                                                     <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
                                                     <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>

@@ -42,6 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
 
 // This component fetches a private image from GCS using a token and displays it.
 function AuthenticatedImage({ src, alt, token }: { src: string; alt: string; token: string | null }) {
@@ -305,7 +306,7 @@ function GalleryPage() {
             )}
 
             {!loading && !isTokenLoading && !error && receipts.length > 0 && (
-                <div className="w-full overflow-x-auto rounded-lg border">
+                <div className="w-full overflow-x-auto rounded-lg border bg-card">
                 <Table>
                     <TableHeader>
                     <TableRow>
@@ -319,7 +320,9 @@ function GalleryPage() {
                     </TableHeader>
                     <TableBody>
                     {receipts.map((receipt) => (
-                        <TableRow key={receipt.id}>
+                        <TableRow key={receipt.id} className={cn(
+                            receipt.estado !== 'pendiente' && 'bg-muted/50'
+                        )}>
                         <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
                         <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
                         <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>

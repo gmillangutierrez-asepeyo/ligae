@@ -315,7 +315,7 @@ function ApprovalsPage() {
                         )}
 
                         {!loading && !error && receipts.length > 0 && (
-                            <div className="w-full overflow-x-auto rounded-lg border">
+                            <div className="w-full overflow-x-auto rounded-lg border bg-card">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
