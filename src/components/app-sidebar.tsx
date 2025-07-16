@@ -43,7 +43,7 @@ export default function AppSidebar() {
                                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                             )}
                         >
-                            <link.icon className={cn('h-5 w-5', sidebarState === 'collapsed' && 'h-6 w-6')} />
+                            <link.icon className="h-5 w-5" />
                             <span className={cn(sidebarState === 'collapsed' && 'sr-only')}>
                                 {link.label}
                             </span>
