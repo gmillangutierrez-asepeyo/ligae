@@ -305,13 +305,13 @@ function GalleryPage() {
             )}
 
             {!loading && !isTokenLoading && !error && receipts.length > 0 && (
-                <Card>
+                <Card className="overflow-x-auto">
                 <Table>
                     <TableHeader>
                     <TableRow>
                         <TableHead>Sector</TableHead>
                         <TableHead>Importe</TableHead>
-                        <TableHead>Fecha</TableHead>
+                        <TableHead className="whitespace-nowrap">Fecha</TableHead>
                         <TableHead>Estado</TableHead>
                         <TableHead>Observaciones</TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
@@ -321,8 +321,8 @@ function GalleryPage() {
                     {receipts.map((receipt) => (
                         <TableRow key={receipt.id}>
                         <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
-                        <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                        <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                        <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>
                         <TableCell>
                             <StatusBadge status={receipt.estado} />
                         </TableCell>

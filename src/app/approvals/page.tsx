@@ -315,14 +315,14 @@ function ApprovalsPage() {
                         )}
 
                         {!loading && !error && receipts.length > 0 && (
-                            <Card>
+                            <Card className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Usuario</TableHead>
+                                            <TableHead className="whitespace-nowrap">Usuario</TableHead>
                                             <TableHead>Sector</TableHead>
                                             <TableHead>Importe</TableHead>
-                                            <TableHead>Fecha</TableHead>
+                                            <TableHead className="whitespace-nowrap">Fecha</TableHead>
                                             <TableHead>Observaciones</TableHead>
                                             <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
@@ -330,10 +330,10 @@ function ApprovalsPage() {
                                     <TableBody>
                                         {receipts.map((receipt) => (
                                             <TableRow key={receipt.id}>
-                                                <TableCell className="font-medium">{receipt.usuario}</TableCell>
+                                                <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
                                                 <TableCell className="capitalize">{receipt.sector}</TableCell>
-                                                <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                                                <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                                                <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
+                                                <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>
                                                 <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-2">

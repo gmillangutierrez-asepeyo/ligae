@@ -282,13 +282,13 @@ function ExportPage() {
                             )}
 
                             {!loading && !error && receipts.length > 0 && (
-                                <Card>
+                                <Card className="overflow-x-auto">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Usuario</TableHead>
+                                                <TableHead className="whitespace-nowrap">Usuario</TableHead>
                                                 <TableHead>Importe</TableHead>
-                                                <TableHead>Fecha</TableHead>
+                                                <TableHead className="whitespace-nowrap">Fecha</TableHead>
                                                 <TableHead>Sector</TableHead>
                                                 <TableHead>Observaciones</TableHead>
                                             </TableRow>
@@ -296,9 +296,9 @@ function ExportPage() {
                                         <TableBody>
                                             {receipts.map((receipt) => (
                                                 <TableRow key={receipt.id}>
-                                                    <TableCell className="font-medium">{receipt.usuario}</TableCell>
-                                                    <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                                                    <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                                                    <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>
                                                     <TableCell className="capitalize">{receipt.sector}</TableCell>
                                                     <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                                                 </TableRow>
