@@ -315,7 +315,7 @@ function ApprovalsPage() {
                         )}
 
                         {!loading && !error && receipts.length > 0 && (
-                            <Card className="overflow-x-auto">
+                            <div className="w-full overflow-x-auto rounded-lg border">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -352,7 +352,7 @@ function ApprovalsPage() {
                                         ))}
                                     </TableBody>
                                 </Table>
-                            </Card>
+                            </div>
                         )}
                     </main>
                 </div>

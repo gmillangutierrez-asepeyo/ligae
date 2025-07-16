@@ -282,7 +282,7 @@ function ExportPage() {
                             )}
 
                             {!loading && !error && receipts.length > 0 && (
-                                <Card className="overflow-x-auto">
+                                <div className="w-full overflow-x-auto rounded-lg border">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
@@ -305,7 +305,7 @@ function ExportPage() {
                                             ))}
                                         </TableBody>
                                     </Table>
-                                </Card>
+                                </div>
                             )}
                         </main>
                     </div>
