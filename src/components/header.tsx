@@ -46,6 +46,9 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs p-0">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Menú Principal</SheetTitle>
+                </SheetHeader>
                 <div className="flex h-16 items-center justify-between border-b px-4">
                      <Link href="/" className="flex items-center gap-3 font-semibold">
                         <ReceiptEuroIcon className="h-8 w-8 text-primary" />
