@@ -28,7 +28,7 @@ export default function AppSidebar() {
       <SidebarHeader></SidebarHeader>
       <SidebarContent>
         <TooltipProvider delayDuration={0}>
-            <nav className="grid gap-2 text-lg font-medium p-2">
+            <nav className="grid gap-2 text-lg font-medium p-1">
             {navLinks.filter(link => link.visible).map(link => (
                 <Tooltip key={link.href}>
                     <TooltipTrigger asChild>
@@ -37,7 +37,7 @@ export default function AppSidebar() {
                             className={cn(
                                 'flex items-center gap-4 py-2 rounded-md transition-colors',
                                 'text-sm font-medium',
-                                sidebarState === 'collapsed' ? 'justify-center px-2.5' : 'px-4',
+                                sidebarState === 'collapsed' ? 'justify-center px-2.5' : 'px-3',
                                 pathname === link.href 
                                 ? 'bg-accent text-accent-foreground' 
                                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
