@@ -28,7 +28,10 @@ export default function AppSidebar() {
       <SidebarHeader></SidebarHeader>
       <SidebarContent>
         <TooltipProvider delayDuration={0}>
-            <nav className="grid gap-2 text-lg font-medium p-1">
+            <nav className={cn(
+              "grid gap-2 text-lg font-medium",
+              sidebarState === 'collapsed' ? 'p-1' : 'p-2'
+            )}>
             {navLinks.filter(link => link.visible).map(link => (
                 <Tooltip key={link.href}>
                     <TooltipTrigger asChild>
@@ -49,11 +52,9 @@ export default function AppSidebar() {
                             </span>
                         </Link>
                     </TooltipTrigger>
-                    {sidebarState === 'collapsed' && (
-                         <TooltipContent side="right">
-                            {link.label}
-                        </TooltipContent>
-                    )}
+                    <TooltipContent side="right" hidden={sidebarState !== 'collapsed'}>
+                        {link.label}
+                    </TooltipContent>
                 </Tooltip>
             ))}
             </nav>
