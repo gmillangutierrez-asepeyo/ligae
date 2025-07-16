@@ -350,7 +350,7 @@ function ApprovalsPage() {
                 
                 {/* Approval/Denial Dialog */}
                 <Dialog open={!!action} onOpenChange={(open) => !open && handleCloseDialog()}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-md top-1/4 sm:top-1/2">
                         <DialogHeader>
                             <DialogTitle>
                                 {action === 'approve' ? 'Aprobar Recibo' : 'Denegar Recibo'}
@@ -372,11 +372,11 @@ function ApprovalsPage() {
                                 className="resize-y"
                             />
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-0">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline" onClick={handleCloseDialog}>Cancelar</Button>
+                                <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={handleCloseDialog}>Cancelar</Button>
                             </DialogClose>
-                            <Button onClick={handleSubmit} disabled={isSubmitting}>
+                            <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto">
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {action === 'approve' ? 'Confirmar Aprobación' : 'Confirmar Denegación'}
                             </Button>
@@ -443,3 +443,5 @@ function ApprovalsPage() {
 }
 
 export default ApprovalsPage;
+
+    
