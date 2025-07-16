@@ -58,7 +58,7 @@ function ExporterAuthGuard({ children }: { children: React.ReactNode }) {
         return (
             <div className="flex h-screen bg-background">
                 <AppSidebar />
-                <div className="flex flex-col flex-1">
+                <div className="flex flex-col flex-1 min-w-0">
                     <Header />
                     <main className="flex-1 flex items-center justify-center">
                         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -182,7 +182,7 @@ function ExportPage() {
             <ExporterAuthGuard>
                 <div className="flex min-h-screen w-full bg-background">
                     <AppSidebar />
-                    <div className="flex flex-1 flex-col">
+                    <div className="flex flex-1 flex-col min-w-0">
                         <Header />
                         <main className="flex-1 p-4 sm:p-6 md:p-8">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
