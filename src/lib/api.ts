@@ -263,7 +263,7 @@ export async function fetchAllPendingTickets(token: string, userEmails?: string[
   const potentialError = results[0]?.error;
   if (potentialError) {
       console.error('Error en la consulta a Firestore:', potentialError);
-      throw new Error(`Error al cargar recibos pendientes: ${potentialError.message}. Es posible que necesites crear un índice compuesto en Firestore. Revisa la consola para ver el enlace de creación del índice.`);
+      throw new Error(`Error al cargar recibos pendientes: ${potentialError.message}. Es posible que necesites crear un índice compuesto en Firestore. Revisa la consola para ver el enlace de creación del índice. Asegúrate de que la primera prioridad sea 'fechaSubida' (descendente).`);
   }
 
   return results
