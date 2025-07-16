@@ -77,7 +77,7 @@ const generateCsvFlow = ai.defineFlow(
     };
 
     /**
-     * Formats a date string or timestamp into a consistent 'YYYY-MM-DD HH:mm:ss' format.
+     * Formats a date string or timestamp into a consistent 'DD/MM/YYYY HH:mm:ss' format.
      * @param dateInput The date string or timestamp from Firestore.
      * @returns A formatted date string.
      */
@@ -87,13 +87,13 @@ const generateCsvFlow = ai.defineFlow(
             if (isNaN(date.getTime())) {
                 return ''; // Invalid date
             }
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = String(date.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
         } catch {
             return ''; // Return empty if parsing fails
         }
@@ -105,7 +105,7 @@ const generateCsvFlow = ai.defineFlow(
         // Format number with comma for decimal separator, for Spanish Excel.
         escapeCsvField(receipt.importe.toFixed(2).replace('.', ',')), 
         escapeCsvField('EUR'),
-        escapeCsvField(receipt.fecha), // Already in YYYY-MM-DD
+        escapeCsvField(receipt.fecha), // Already in DD/MM/YYYY
         escapeCsvField(formatUploadDate(receipt.fechaSubida)),
         escapeCsvField(receipt.sector),
         escapeCsvField(receipt.estado),
