@@ -353,7 +353,7 @@ function GalleryPage() {
                                 />
                             </div>
                         </div>
-                        <div className="w-full md:w-1/2">
+                        <div className="w-full md:w-1/2 min-w-0">
                             <DialogHeader>
                                 <DialogTitle>Detalles del Recibo</DialogTitle>
                                 <DialogDescription>
