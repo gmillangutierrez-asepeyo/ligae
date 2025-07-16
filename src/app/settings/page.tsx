@@ -20,7 +20,7 @@ function SettingsPage() {
     <AuthGuard>
       <div className="flex h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col h-screen min-w-0">
+        <div className="flex flex-1 flex-col min-w-0">
             <Header />
             <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto">
             <Card className="w-full max-w-2xl">

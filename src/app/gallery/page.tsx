@@ -256,7 +256,7 @@ function GalleryPage() {
     <AuthGuard>
       <div className="flex h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-col flex-1 min-w-0 h-screen">
+        <div className="flex flex-col flex-1 min-w-0">
             <Header />
             <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
