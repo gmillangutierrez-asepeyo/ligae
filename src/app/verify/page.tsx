@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -34,7 +35,7 @@ const FormSchema = z.object({
   fecha: z.string().refine((val) => isValid(parse(val, 'dd/MM/yyyy', new Date())), {
     message: 'Fecha inválida. Usa el formato DD/MM/YYYY.',
   }),
-  observaciones: z.string().optional(),
+  observaciones: z.string().max(250, 'Las observaciones no pueden exceder los 250 caracteres.').optional(),
 });
 
 type FormData = z.infer<typeof FormSchema>;
@@ -259,9 +260,12 @@ function VerifyForm({
                       placeholder="Añade un comentario sobre el gasto..."
                       {...field}
                       value={field.value ?? ''}
+                      maxLength={250}
+                      className="resize-y"
                     />
                   )}
                 />
+                 {errors.observaciones && <p className="text-destructive text-sm mt-1">{errors.observaciones.message}</p>}
               </div>
                <div>
                 <Label htmlFor="usuario">Email del Usuario</Label>

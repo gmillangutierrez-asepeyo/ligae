@@ -370,6 +370,8 @@ function ApprovalsPage() {
                                 value={approvalReason}
                                 onChange={(e) => setApprovalReason(e.target.value)}
                                 placeholder={action === 'deny' ? 'Añade una razón para la denegación...' : 'Añade un comentario opcional...'}
+                                maxLength={250}
+                                className="resize-y"
                             />
                         </div>
                         <DialogFooter>
