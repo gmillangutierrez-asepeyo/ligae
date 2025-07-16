@@ -334,7 +334,7 @@ function VerifyPage() {
     <AuthGuard>
       <div className="flex h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-col flex-1 h-screen">
+        <div className="flex flex-col flex-1 h-screen min-w-0">
             <Header />
             <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
             <div className="mb-8">

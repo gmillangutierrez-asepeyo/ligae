@@ -423,25 +423,31 @@ export async function fetchAllApprovedTickets(token: string, filters: ApprovedTi
             },
         });
     }
+    
+    // Convert dates from Date object to DD/MM/YYYY string for querying
+    const formatDateForQuery = (date: Date): string => {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
 
     if (filters.startDate) {
-        const [day, month, year] = filters.startDate.toLocaleDateString('es-ES').split('/');
         queryFilters.push({
             fieldFilter: {
                 field: { fieldPath: 'fecha' },
                 op: 'GREATER_THAN_OR_EQUAL',
-                value: { stringValue: `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}` },
+                value: { stringValue: formatDateForQuery(filters.startDate) },
             },
         });
     }
 
     if (filters.endDate) {
-        const [day, month, year] = filters.endDate.toLocaleDateString('es-ES').split('/');
         queryFilters.push({
             fieldFilter: {
                 field: { fieldPath: 'fecha' },
                 op: 'LESS_THAN_OR_EQUAL',
-                value: { stringValue: `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}` },
+                value: { stringValue: formatDateForQuery(filters.endDate) },
             },
         });
     }
