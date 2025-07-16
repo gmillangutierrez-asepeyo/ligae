@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -54,27 +55,58 @@ const generateCsvFlow = ai.defineFlow(
       'Nombre Fichero',
     ];
 
-    // Helper to escape commas and quotes in a string for CSV.
+    /**
+     * Escapes a field for CSV format. If the field contains a comma, double quote, or newline,
+     * it will be enclosed in double quotes. Existing double quotes within the field will be escaped
+     * by doubling them (e.g., " becomes "").
+     * @param field The data to escape.
+     * @returns A CSV-safe string.
+     */
     const escapeCsvField = (field: string | number | undefined | null): string => {
         if (field === null || field === undefined) {
             return '';
         }
         const str = String(field);
-        // If the string contains a comma, a quote, or a newline, wrap it in double quotes.
-        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-            // Also, double up any existing double quotes.
-            return `"${str.replace(/"/g, '""')}"`;
+        // Check if the string needs to be quoted
+        if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+            // Escape any double quotes inside the string by replacing them with two double quotes
+            const escapedStr = str.replace(/"/g, '""');
+            return `"${escapedStr}"`;
         }
         return str;
+    };
+
+    /**
+     * Formats a date string or timestamp into a consistent 'YYYY-MM-DD HH:mm:ss' format.
+     * @param dateInput The date string or timestamp from Firestore.
+     * @returns A formatted date string.
+     */
+    const formatUploadDate = (dateInput: string | number): string => {
+        try {
+            const date = new Date(dateInput);
+            if (isNaN(date.getTime())) {
+                return ''; // Invalid date
+            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        } catch {
+            return ''; // Return empty if parsing fails
+        }
     };
     
     const csvRows = receipts.map(receipt => [
         escapeCsvField(receipt.id),
         escapeCsvField(receipt.usuario),
-        escapeCsvField(receipt.importe.toFixed(2)),
-        'EUR', // Assuming currency is always EUR
-        escapeCsvField(receipt.fecha),
-        escapeCsvField(new Date(receipt.fechaSubida).toLocaleString('es-ES')),
+        // Use dot as decimal separator consistently.
+        escapeCsvField(receipt.importe.toFixed(2).replace('.', ',')), 
+        escapeCsvField('EUR'),
+        escapeCsvField(receipt.fecha), // Already in YYYY-MM-DD
+        escapeCsvField(formatUploadDate(receipt.fechaSubida)),
         escapeCsvField(receipt.sector),
         escapeCsvField(receipt.estado),
         escapeCsvField(receipt.observaciones),
@@ -83,7 +115,7 @@ const generateCsvFlow = ai.defineFlow(
         escapeCsvField(receipt.fileName),
     ].join(','));
 
-    // Combine headers and rows
+    // Combine headers and rows, separated by newlines
     return [headers.join(','), ...csvRows].join('\n');
   }
 );
