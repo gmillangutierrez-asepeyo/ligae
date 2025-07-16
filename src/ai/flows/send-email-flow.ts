@@ -74,12 +74,12 @@ const sendEmailFlow = ai.defineFlow(
           <style>
               body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; margin: 0; padding: 0; background-color: #f8fafc; }
               .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; overflow: hidden; }
-              .header { background-color: #0d9488; color: #ffffff; padding: 24px; text-align: center; }
+              .header { background-color: #29ABE2; color: #ffffff; padding: 24px; text-align: center; }
               .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
               .header p { margin: 4px 0 0; font-size: 16px; opacity: 0.9; }
               .content { padding: 32px; color: #334155; line-height: 1.6; }
               .content p { margin: 0 0 16px; }
-              .content a { color: #0d9488; text-decoration: none; font-weight: 500; }
+              .content a { color: #29ABE2; text-decoration: none; font-weight: 500; }
               .footer { padding: 24px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; display: flex; align-items: center; }
               .footer img { border-radius: 50%; margin-right: 12px; }
           </style>

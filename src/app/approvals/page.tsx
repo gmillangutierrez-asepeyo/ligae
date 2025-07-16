@@ -230,7 +230,7 @@ function ApprovalsPage() {
                 ${approvalReason ? `<p><strong>Comentarios del gestor:</strong><br>${approvalReason}</p>` : ''}
                 <p>Puede consultar el estado de todos sus recibos en el portal de LIGAE.</p>
                 <p style="text-align: center; margin-top: 24px;">
-                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Ver mis recibos</a>
+                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery" style="background-color: #29ABE2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Ver mis recibos</a>
                 </p>
                 <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
               `;

@@ -106,7 +106,7 @@ function VerifyForm({
                 </ul>
                 <p>Por favor, acceda a la plataforma para revisar y aprobar la solicitud.</p>
                 <p style="text-align: center; margin-top: 24px;">
-                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Revisar Solicitud</a>
+                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals" style="background-color: #29ABE2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Revisar Solicitud</a>
                 </p>
                 <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
             `;
