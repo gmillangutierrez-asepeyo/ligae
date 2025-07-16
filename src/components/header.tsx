@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PanelLeft } from 'lucide-react';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
@@ -46,14 +46,17 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs p-0">
-                <SheetHeader>
-                  <SheetTitle className="sr-only">Menú Principal</SheetTitle>
-                </SheetHeader>
-                <div className="flex h-16 items-center border-b px-4">
+                <div className="flex h-16 items-center justify-between border-b px-4">
                      <Link href="/" className="flex items-center gap-3 font-semibold">
                         <ReceiptEuroIcon className="h-8 w-8 text-primary" />
                         <span>LIGAE</span>
                     </Link>
+                    <SheetClose asChild>
+                        <Button size="icon" variant="ghost">
+                            <PanelLeft className="h-5 w-5" />
+                            <span className="sr-only">Cerrar Menú</span>
+                        </Button>
+                    </SheetClose>
                 </div>
               <nav className="grid gap-2 text-lg font-medium p-4">
                 {navLinks.filter(l => l.visible).map(link => (
@@ -77,7 +80,7 @@ export default function Header() {
 
             <div className="flex items-center gap-3">
                 <ReceiptEuroIcon className="h-8 w-8 text-primary" />
-                <div className="hidden flex-col md:flex">
+                <div className="flex flex-col">
                     <span className="font-headline text-lg font-bold">LIGAE</span>
                     <span className="text-xs text-muted-foreground">ASEPEYO</span>
                 </div>
