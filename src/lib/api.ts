@@ -169,21 +169,17 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
 
   const results = await response.json();
   
-  // The runQuery endpoint returns a JSON array.
-  // It might be an empty array, an array of documents, or an array containing an error object.
   if (!Array.isArray(results)) {
     console.error("Respuesta inesperada de Firestore, no es un array:", results);
-    return []; // Return empty on unexpected format
+    return [];
   }
 
-  // Check if the first element signals an error, which Firestore does for some query issues.
   const potentialError = results[0]?.error;
   if (potentialError) {
       console.error('Error en la consulta a Firestore:', potentialError);
       throw new Error(`Error al cargar recibos: ${potentialError.message}`);
   }
 
-  // Filter out any non-document items (like readTime objects) and transform the data.
   return results
     .filter((item: any) => item.document)
     .map((item: any) => transformFirestoreDoc(item.document));
@@ -316,19 +312,10 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
 }
 
 
-// --- Hierarchy Management ---
+// --- Role & Hierarchy Management ---
 export type ManagerHierarchy = Record<string, string[]>;
 
-/**
- * Fetches the manager hierarchy configuration from a specific Firestore document.
- * This allows for dynamic, real-time updates to user roles and permissions without
- * needing to redeploy the application.
- *
- * @param token The authentication token required to access Firestore.
- * @returns A promise that resolves to the ManagerHierarchy object.
- */
 export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
-  // Path to the specific document that stores the hierarchy.
   const hierarchyDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/main';
 
   const response = await fetch(hierarchyDocPath, {
@@ -340,12 +327,10 @@ export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
   });
 
   if (!response.ok) {
-    // If the document is not found (404), return an empty object, as it's a valid state.
     if (response.status === 404) {
-      console.warn('El documento de jerarquía "main" no se encontró en Firestore. Se usará una jerarquía vacía.');
+      console.warn('El documento de jerarquía "main" no se encontró. Se usará una jerarquía vacía.');
       return {};
     }
-    // For other errors, throw an exception.
     await handleResponseError(response, 'cargar la jerarquía de managers');
   }
 
@@ -353,11 +338,10 @@ export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
   const hierarchyMap = doc.fields?.hierarchy?.mapValue?.fields;
 
   if (!hierarchyMap) {
-    console.warn('El documento de jerarquía "main" no contiene un campo "hierarchy" de tipo "map" válido. Se usará una jerarquía vacía.');
+    console.warn('El documento de jerarquía "main" no contiene un campo "hierarchy" válido. Se usará una jerarquía vacía.');
     return {};
   }
 
-  // Transform the Firestore map structure into a plain JavaScript object.
   const parsedHierarchy: ManagerHierarchy = {};
   for (const managerEmail in hierarchyMap) {
     const managedUsersArray = hierarchyMap[managerEmail]?.arrayValue?.values || [];
@@ -369,33 +353,166 @@ export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
   return parsedHierarchy;
 }
 
+export async function fetchExporterEmails(token: string): Promise<string[]> {
+  const exportersDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/exporters';
+  
+  const response = await fetch(exportersDocPath, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
 
-/**
- * Finds all managers for a given user email by searching the hierarchy.
- * If the user is a manager themselves, their own email is included in the list.
- * @param userEmail The email of the user.
- * @param token The authentication token to fetch the hierarchy.
- * @returns An array of manager emails. Returns an empty array if no managers are found.
- */
+  if (!response.ok) {
+    if (response.status === 404) {
+      console.warn('El documento "exporters" no se encontró. Nadie tendrá permisos de exportación.');
+      return [];
+    }
+    await handleResponseError(response, 'cargar la lista de exportadores');
+  }
+
+  const doc = await response.json();
+  const emailsArray = doc.fields?.emails?.arrayValue?.values || [];
+  return emailsArray
+    .map((v: any) => v.stringValue)
+    .filter((email: string | undefined): email is string => !!email);
+}
+
+
 export async function getManagersForUser(userEmail: string, token: string): Promise<string[]> {
     const hierarchy = await fetchHierarchy(token);
     const managers: string[] = [];
     
-    // First, check if the user is a manager. If so, they are their own manager for notifications.
     if (hierarchy[userEmail]) {
         managers.push(userEmail);
     }
 
-    // Then, find all managers who have this user in their list.
     for (const manager in hierarchy) {
         if (hierarchy[manager].includes(userEmail)) {
-            // Avoid adding duplicates if the user is their own manager and also in another list.
             if (!managers.includes(manager)) {
                 managers.push(manager);
             }
         }
     }
     
-    // Return unique managers
     return Array.from(new Set(managers));
+}
+
+// --- Data for Export Page ---
+
+interface ApprovedTicketsFilters {
+    userEmail?: string;
+    startDate?: Date;
+    endDate?: Date;
+}
+
+export async function fetchAllApprovedTickets(token: string, filters: ApprovedTicketsFilters = {}): Promise<CleanReceipt[]> {
+    const queryFilters: any[] = [
+        {
+            fieldFilter: {
+                field: { fieldPath: 'estado' },
+                op: 'EQUAL',
+                value: { stringValue: 'aprobado' },
+            },
+        }
+    ];
+
+    if (filters.userEmail) {
+        queryFilters.push({
+            fieldFilter: {
+                field: { fieldPath: 'usuario' },
+                op: 'EQUAL',
+                value: { stringValue: filters.userEmail },
+            },
+        });
+    }
+
+    if (filters.startDate) {
+        queryFilters.push({
+            fieldFilter: {
+                field: { fieldPath: 'fecha' },
+                op: 'GREATER_THAN_OR_EQUAL',
+                value: { stringValue: filters.startDate.toISOString().split('T')[0] },
+            },
+        });
+    }
+
+    if (filters.endDate) {
+        queryFilters.push({
+            fieldFilter: {
+                field: { fieldPath: 'fecha' },
+                op: 'LESS_THAN_OR_EQUAL',
+                value: { stringValue: filters.endDate.toISOString().split('T')[0] },
+            },
+        });
+    }
+    
+    const structuredQuery: any = {
+        from: [{ collectionId: 'tickets' }],
+        orderBy: [{
+            field: { fieldPath: 'fechaSubida' },
+            direction: 'DESCENDING'
+        }],
+        where: {
+            compositeFilter: {
+                op: 'AND',
+                filters: queryFilters,
+            },
+        },
+    };
+  
+    const queryPayload = { structuredQuery };
+
+    const response = await fetch(`${FIRESTORE_PARENT_PATH}:runQuery`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(queryPayload),
+    });
+
+    if (!response.ok) {
+        await handleResponseError(response, 'cargar los recibos aprobados');
+    }
+
+    const results = await response.json();
+  
+    if (!Array.isArray(results)) return [];
+    const potentialError = results[0]?.error;
+    if (potentialError) {
+        throw new Error(`Error al cargar recibos aprobados: ${potentialError.message}. Puede que necesites un índice compuesto. Revisa la consola para ver el enlace.`);
+    }
+
+    return results
+        .filter((item: any) => item.document)
+        .map((item: any) => transformFirestoreDoc(item.document));
+}
+
+export async function fetchAllUsers(token: string): Promise<string[]> {
+    const queryPayload = {
+        structuredQuery: {
+            from: [{ collectionId: 'tickets' }],
+            select: { fields: [{ fieldPath: 'usuario' }] },
+        },
+    };
+
+    const response = await fetch(`${FIRESTORE_PARENT_PATH}:runQuery`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(queryPayload),
+    });
+
+     if (!response.ok) {
+        await handleResponseError(response, 'cargar la lista de usuarios');
+    }
+
+    const results = await response.json();
+    if (!Array.isArray(results)) return [];
+
+    const emails = results
+        .filter((item: any) => item.document?.fields?.usuario?.stringValue)
+        .map((item: any) => item.document.fields.usuario.stringValue);
+
+    return Array.from(new Set(emails)); // Return unique emails
 }

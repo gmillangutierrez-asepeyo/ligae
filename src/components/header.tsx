@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Camera, GalleryHorizontal, Settings, LogOut, ClipboardCheck } from 'lucide-react';
+import { Camera, GalleryHorizontal, Settings, LogOut, ClipboardCheck, FileDown } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -20,14 +20,15 @@ import { cn } from '@/lib/utils';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
 export default function Header() {
-  const { user, signOut, isManager } = useAuth();
+  const { user, signOut, isManager, isExporter } = useAuth();
   const pathname = usePathname();
 
   const navLinks = [
-    { href: '/', label: 'Capturar', icon: Camera },
-    { href: '/gallery', label: 'Mis Recibos', icon: GalleryHorizontal },
-    ...(isManager ? [{ href: '/approvals', label: 'Aprobaciones', icon: ClipboardCheck }] : []),
-    { href: '/settings', label: 'Ajustes', icon: Settings },
+    { href: '/', label: 'Capturar', icon: Camera, visible: true },
+    { href: '/gallery', label: 'Mis Recibos', icon: GalleryHorizontal, visible: true },
+    { href: '/approvals', label: 'Aprobaciones', icon: ClipboardCheck, visible: isManager },
+    { href: '/export', label: 'Exportación', icon: FileDown, visible: isExporter },
+    { href: '/settings', label: 'Ajustes', icon: Settings, visible: true },
   ];
 
   return (
@@ -42,7 +43,7 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-2">
-          {navLinks.map((link) => (
+          {navLinks.filter(link => link.visible).map((link) => (
             <Button
               key={link.href}
               variant="ghost"
@@ -83,7 +84,7 @@ export default function Header() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="md:hidden">
-              {navLinks.map((link) => (
+              {navLinks.filter(link => link.visible).map((link) => (
                 <DropdownMenuItem key={link.href} asChild>
                   <Link href={link.href}>
                     <link.icon className="mr-2 h-4 w-4" />

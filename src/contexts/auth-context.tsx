@@ -5,7 +5,7 @@ import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User 
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from './token-context';
-import { fetchHierarchy, type ManagerHierarchy } from '@/lib/api';
+import { fetchHierarchy, fetchExporterEmails, type ManagerHierarchy } from '@/lib/api';
 
 
 interface AuthContextType {
@@ -13,6 +13,7 @@ interface AuthContextType {
   loading: boolean;
   isManager: boolean;
   managedUsers: string[];
+  isExporter: boolean;
   signIn: () => void;
   signOut: () => void;
 }
@@ -22,20 +23,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [hierarchy, setHierarchy] = useState<ManagerHierarchy>({});
+  const [exporterEmails, setExporterEmails] = useState<string[]>([]);
   const [isManager, setIsManager] = useState(false);
+  const [isExporter, setIsExporter] = useState(false);
   const [managedUsers, setManagedUsers] = useState<string[]>([]);
-  const [authLoading, setAuthLoading] = useState(true); // Renamed from 'loading' to be specific
-  const [hierarchyLoading, setHierarchyLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
   const { token, fetchToken, isTokenLoading } = useToken();
   const { toast } = useToast();
 
-  const updateUserRoles = useCallback((currentUser: User | null, currentHierarchy: ManagerHierarchy) => {
-    if (currentUser?.email && currentHierarchy) {
+  const updateUserRoles = useCallback((currentUser: User | null, currentHierarchy: ManagerHierarchy, currentExporterEmails: string[]) => {
+    if (currentUser?.email) {
+      // Manager role
       const userIsManager = currentUser.email in currentHierarchy;
       setIsManager(userIsManager);
       setManagedUsers(userIsManager ? currentHierarchy[currentUser.email] : []);
+
+      // Exporter role
+      const userIsExporter = currentExporterEmails.includes(currentUser.email);
+      setIsExporter(userIsExporter);
     } else {
       setIsManager(false);
+      setIsExporter(false);
       setManagedUsers([]);
     }
   }, []);
@@ -67,37 +76,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, token, fetchToken, authLoading]);
 
 
-  // Effect to load hierarchy when token is available
+  // Effect to load roles when token is available
   useEffect(() => {
-    async function loadHierarchy() {
+    async function loadRoles() {
       if (token && user) {
-        setHierarchyLoading(true);
+        setRolesLoading(true);
         try {
-          const fetchedHierarchy = await fetchHierarchy(token);
+          const [fetchedHierarchy, fetchedExporters] = await Promise.all([
+             fetchHierarchy(token),
+             fetchExporterEmails(token)
+          ]);
           setHierarchy(fetchedHierarchy);
-          updateUserRoles(user, fetchedHierarchy);
+          setExporterEmails(fetchedExporters);
+          updateUserRoles(user, fetchedHierarchy, fetchedExporters);
         } catch (error: any) {
-          console.error("Error al cargar la jerarquía de managers:", error);
+          console.error("Error al cargar los roles:", error);
           toast({
             variant: 'destructive',
             title: 'Error de Configuración',
-            description: 'No se pudo cargar la jerarquía de managers desde Firestore.',
+            description: 'No se pudo cargar la configuración de roles desde Firestore.',
           });
           setHierarchy({});
-          updateUserRoles(user, {});
+          setExporterEmails([]);
+          updateUserRoles(user, {}, []);
         } finally {
-          setHierarchyLoading(false);
+          setRolesLoading(false);
         }
       } else if (!user) {
-        // If there's no user, we are not loading the hierarchy.
-        setHierarchyLoading(false);
-        updateUserRoles(null, {});
+        // If there's no user, we are not loading roles.
+        setRolesLoading(false);
+        updateUserRoles(null, {}, []);
       }
     }
     
-    // Only load hierarchy when token is available and auth check is complete.
+    // Only load roles when token is available and auth check is complete.
     if (!isTokenLoading && !authLoading) {
-        loadHierarchy();
+        loadRoles();
     }
   }, [user, token, isTokenLoading, authLoading, toast, updateUserRoles]);
 
@@ -130,16 +144,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } finally {
         setAuthLoading(false);
-        setHierarchyLoading(true); // Reset for next login
+        setRolesLoading(true); // Reset for next login
     }
   };
 
   const value = {
     user,
-    // The overall loading state is now more accurate.
-    loading: authLoading || isTokenLoading || hierarchyLoading,
+    // The overall loading state now includes role loading.
+    loading: authLoading || isTokenLoading || rolesLoading,
     isManager,
     managedUsers,
+    isExporter,
     signIn,
     signOut: handleSignOut,
   };
