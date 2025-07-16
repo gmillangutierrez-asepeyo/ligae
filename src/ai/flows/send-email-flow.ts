@@ -18,15 +18,15 @@ import md5 from 'md5';
 const SendEmailSchema = z.object({
   to: z.string().email().describe('The recipient\'s email address.'),
   subject: z.string().describe('The subject line of the email.'),
-  text: z.string().describe('The plain text body of the email.'),
-  html: z.string().describe('The HTML body of the email. Can contain {{EMAIL_FOOTER}} placeholder.'),
+  htmlBody: z.string().describe('The main HTML content of the email body.'),
+  plainText: z.string().describe('The plain text version of the email for compatibility.'),
 });
 
 export type SendEmailInput = z.infer<typeof SendEmailSchema>;
 
 /**
  * A wrapper function that can be called from client components to trigger the email flow.
- * @param input The email details (to, subject, text, html).
+ * @param input The email details (to, subject, htmlBody, plainText).
  * @returns A promise that resolves with the result of the email sending operation.
  */
 export async function sendEmail(input: SendEmailInput): Promise<{ success: boolean; message: string }> {
@@ -60,37 +60,58 @@ const sendEmailFlow = ai.defineFlow(
       },
     });
 
-    // --- Gravatar Integration ---
     const senderEmail = MAIL_USER.trim().toLowerCase();
     const gravatarHash = md5(senderEmail);
     const gravatarUrl = `https://www.gravatar.com/avatar/${gravatarHash}?s=64&d=mp`;
 
-    const emailFooter = `
-      <table style="margin-top: 24px; border-top: 1px solid #e2e8f0; width: 100%;">
-        <tr>
-          <td style="padding-top: 16px; display: flex; align-items: center;">
-            <img src="${gravatarUrl}" alt="Avatar del remitente" width="40" height="40" style="border-radius: 50%; margin-right: 12px;">
-            <div style="font-family: sans-serif; font-size: 12px; color: #64748b;">
-              <strong>LIGAE Asepeyo</strong><br>
-              Este es un correo electrónico automatizado.
-            </div>
-          </td>
-        </tr>
-      </table>
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${input.subject}</title>
+          <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; margin: 0; padding: 0; background-color: #f8fafc; }
+              .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; overflow: hidden; }
+              .header { background-color: #0d9488; color: #ffffff; padding: 24px; text-align: center; }
+              .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+              .header p { margin: 4px 0 0; font-size: 16px; opacity: 0.9; }
+              .content { padding: 32px; color: #334155; line-height: 1.6; }
+              .content p { margin: 0 0 16px; }
+              .content a { color: #0d9488; text-decoration: none; font-weight: 500; }
+              .footer { padding: 24px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; display: flex; align-items: center; }
+              .footer img { border-radius: 50%; margin-right: 12px; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>LIGAE Asepeyo</h1>
+                  <p>Gestión de Notas de Gastos</p>
+              </div>
+              <div class="content">
+                  ${input.htmlBody}
+              </div>
+              <div class="footer">
+                  <img src="${gravatarUrl}" alt="Avatar" width="40" height="40">
+                  <div>
+                      <strong>Enviado desde LIGAE Asepeyo</strong><br>
+                      Este es un correo electrónico generado automáticamente. Por favor, no responda a este mensaje.
+                  </div>
+              </div>
+          </div>
+      </body>
+      </html>
     `;
-
-    const finalHtml = input.html.includes('{{EMAIL_FOOTER}}')
-      ? input.html.replace('{{EMAIL_FOOTER}}', emailFooter)
-      : input.html + emailFooter;
-
 
     try {
       const info = await transporter.sendMail({
         from: `"LIGAE Asepeyo" <${MAIL_USER}>`,
         to: input.to,
         subject: input.subject,
-        text: input.text,
-        html: finalHtml,
+        text: input.plainText,
+        html: fullHtml,
       });
 
       console.log('Message sent: %s', info.messageId);

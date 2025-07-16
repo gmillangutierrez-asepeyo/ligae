@@ -223,11 +223,24 @@ function ApprovalsPage() {
             
             // Notify user
             try {
+              const subject = `Resolución sobre su nota de gastos: ${newState.charAt(0).toUpperCase() + newState.slice(1)}`;
+              const htmlBody = `
+                <p>Estimado/a usuario/a,</p>
+                <p>Le informamos que su nota de gastos con un importe de <strong>${currentReceipt.importe.toFixed(2)} €</strong>, correspondiente a la fecha <strong>${currentReceipt.fecha}</strong>, ha sido resuelta con el siguiente estado: <strong>${newState.toUpperCase()}</strong>.</p>
+                ${approvalReason ? `<p><strong>Comentarios del gestor:</strong><br>${approvalReason}</p>` : ''}
+                <p>Puede consultar el estado de todos sus recibos en el portal de LIGAE.</p>
+                <p style="text-align: center; margin-top: 24px;">
+                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Ver mis recibos</a>
+                </p>
+                <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
+              `;
+              const plainText = `Estimado/a usuario/a,\n\nLe informamos que su nota de gastos con un importe de ${currentReceipt.importe.toFixed(2)} €, correspondiente a la fecha ${currentReceipt.fecha}, ha sido resuelta con el siguiente estado: ${newState.toUpperCase()}.\n\n${approvalReason ? `Comentarios del gestor: ${approvalReason}\n\n` : ''}Puede consultar el estado de todos sus recibos en el portal de LIGAE: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
+
               await sendEmail({
                   to: currentReceipt.usuario,
-                  subject: `Tu recibo ha sido ${newState}`,
-                  text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${currentReceipt.fecha} ha sido ${newState}. ${approvalReason ? `Razón: ${approvalReason}` : ''}`,
-                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${currentReceipt.fecha} ha sido <strong>${newState}</strong>.</p>${approvalReason ? `<p><strong>Razón:</strong> ${approvalReason}</p>` : ''}<p>Puedes ver los detalles en el <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">historial de recibos</a>.</p><div>{{EMAIL_FOOTER}}</div>`,
+                  subject,
+                  htmlBody,
+                  plainText
               });
             } catch (emailError: any) {
               console.error("Fallo al enviar el email de notificación al usuario:", emailError);
@@ -350,7 +363,7 @@ function ApprovalsPage() {
                 
                 {/* Approval/Denial Dialog */}
                 <Dialog open={!!action} onOpenChange={(open) => !open && handleCloseDialog()}>
-                    <DialogContent className="sm:max-w-md top-1/4 sm:top-1/2">
+                    <DialogContent className="sm:max-w-md top-[10%] translate-y-0 sm:top-1/2 sm:-translate-y-1/2">
                         <DialogHeader>
                             <DialogTitle>
                                 {action === 'approve' ? 'Aprobar Recibo' : 'Denegar Recibo'}
@@ -361,7 +374,7 @@ function ApprovalsPage() {
                         </DialogHeader>
                         <div className="py-4 space-y-2">
                             <Label htmlFor="motivo">
-                                {action === 'deny' ? 'Motivo de Denegación' : 'Comentario (Opcional)'}
+                                {action === 'deny' ? 'Motivo de Denegación (Obligatorio)' : 'Comentario (Opcional)'}
                             </Label>
                             <Textarea
                                 id="motivo"
@@ -372,7 +385,7 @@ function ApprovalsPage() {
                                 className="resize-y"
                             />
                         </div>
-                        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-0">
+                        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                             <DialogClose asChild>
                                 <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={handleCloseDialog}>Cancelar</Button>
                             </DialogClose>

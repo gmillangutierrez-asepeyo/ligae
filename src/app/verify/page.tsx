@@ -88,27 +88,44 @@ function VerifyForm({
       
       await saveToFirestore({ ...dataForApi, photoUrl, fileName }, token);
 
-      toast({ title: '¡Éxito!', description: 'Tu recibo ha sido guardado.' });
+      toast({ title: '¡Éxito!', description: 'Su nota de gastos ha sido registrada y enviada para su aprobación.' });
 
       // Notify managers in a separate try-catch block
       try {
         const managerEmails = await getManagersForUser(data.usuario, token);
         if (managerEmails.length > 0) {
-          const emailPromises = managerEmails.map(managerEmail => 
-            sendEmail({
-              to: managerEmail,
-              subject: `Nuevo recibo de ${data.usuario} pendiente de validación`,
-              text: `El usuario ${data.usuario} ha subido un nuevo recibo de ${data.importe.toFixed(2)}€ con fecha ${data.fecha} que requiere tu aprobación.`,
-              html: `<p>Hola,</p><p>El usuario <strong>${data.usuario}</strong> ha subido un nuevo recibo de <strong>${data.importe.toFixed(2)}€</strong> con fecha ${data.fecha} que requiere tu aprobación.</p><p>Puedes revisarlo en la <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals">plataforma de LIGAE</a>.</p><p>Gracias.</p><div>{{EMAIL_FOOTER}}</div>`,
-            })
-          );
+            const subject = `Nueva nota de gastos de ${data.usuario} para su validación`;
+            const htmlBody = `
+                <p>Estimado/a gestor/a,</p>
+                <p>Le informamos que el usuario <strong>${data.usuario}</strong> ha registrado una nueva nota de gastos que requiere su atención.</p>
+                <p><strong>Detalles del gasto:</strong></p>
+                <ul>
+                    <li><strong>Importe:</strong> ${data.importe.toFixed(2)} €</li>
+                    <li><strong>Fecha:</strong> ${data.fecha}</li>
+                    <li><strong>Sector:</strong> ${data.sector}</li>
+                </ul>
+                <p>Por favor, acceda a la plataforma para revisar y aprobar la solicitud.</p>
+                <p style="text-align: center; margin-top: 24px;">
+                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Revisar Solicitud</a>
+                </p>
+                <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
+            `;
+            const plainText = `Estimado/a gestor/a,\n\nLe informamos que el usuario ${data.usuario} ha registrado una nueva nota de gastos que requiere su atención.\n\nDetalles del gasto:\n- Importe: ${data.importe.toFixed(2)} €\n- Fecha: ${data.fecha}\n- Sector: ${data.sector}\n\nPor favor, acceda a la plataforma para revisar y aprobar la solicitud: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
+
+            const emailPromises = managerEmails.map(managerEmail => 
+              sendEmail({
+                to: managerEmail,
+                subject,
+                htmlBody,
+                plainText,
+              })
+            );
           await Promise.all(emailPromises);
         } else {
-            // This toast helps debug hierarchy issues.
              toast({
               variant: 'destructive',
-              title: 'Manager no encontrado',
-              description: `No se pudo encontrar un manager para notificar sobre el recibo de ${data.usuario}.`,
+              title: 'Gestor no encontrado',
+              description: `No se ha podido notificar a ningún gestor para el usuario ${data.usuario}. El recibo ha sido guardado igualmente.`,
             });
         }
       } catch (emailError: any) {
