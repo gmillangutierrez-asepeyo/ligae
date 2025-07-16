@@ -175,9 +175,9 @@ function ExportPage() {
             <ExporterAuthGuard>
                 <div className="flex h-screen w-full bg-background">
                     <AppSidebar />
-                    <div className="flex flex-1 flex-col min-w-0 h-screen">
+                    <div className="flex flex-1 flex-col min-w-0 h-screen overflow-y-auto">
                         <Header />
-                        <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto">
+                        <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
                                 <div>
                                     <h1 className="font-headline text-3xl font-bold">Exportar Recibos Aprobados</h1>
