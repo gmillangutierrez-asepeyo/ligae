@@ -153,7 +153,8 @@ function ExportPage() {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
             const date = format(new Date(), 'yyyy-MM-dd');
-            link.setAttribute('download', `export_recibos_${date}.csv`);
+            const uniqueId = Date.now();
+            link.setAttribute('download', `export_recibos_${date}-${uniqueId}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
