@@ -138,22 +138,7 @@ function VerifyForm({
   
   return (
       <div className="grid md:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Imagen del Recibo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative aspect-[9/16] w-full max-w-sm mx-auto rounded-lg overflow-hidden border">
-              <Image
-                src={croppedPhotoDataUri}
-                alt="Recibo capturado"
-                layout="fill"
-                objectFit="contain"
-              />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
+        <Card className="order-last md:order-first">
           <CardHeader>
             <CardTitle>Datos Extraídos</CardTitle>
             <CardDescription>Edita los campos si es necesario.</CardDescription>
@@ -288,6 +273,21 @@ function VerifyForm({
             </form>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Imagen del Recibo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative aspect-[9/16] w-full max-w-sm mx-auto rounded-lg overflow-hidden border">
+              <Image
+                src={croppedPhotoDataUri}
+                alt="Recibo capturado"
+                layout="fill"
+                objectFit="contain"
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
   )
 }
@@ -325,7 +325,7 @@ function VerifyPage() {
   if (!initialFormData || !croppedPhotoDataUri) {
     return (
         <AuthGuard>
-            <div className="flex min-h-screen w-full bg-background">
+            <div className="flex h-screen w-full bg-background">
                 <AppSidebar />
                 <div className="flex flex-col flex-1">
                     <Header />
@@ -340,11 +340,11 @@ function VerifyPage() {
 
   return (
     <AuthGuard>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 h-screen">
             <Header />
-            <main className="flex-1 p-4 sm:p-6 md:p-8">
+            <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
             <div className="mb-8">
                 <h1 className="font-headline text-3xl font-bold">Verificar Recibo</h1>
                 <p className="text-muted-foreground">Por favor, comprueba los datos extraídos y corrígelos si es necesario.</p>

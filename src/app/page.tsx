@@ -60,9 +60,9 @@ function SelectionView({ setMode }: { setMode: (mode: 'camera' | 'selection') =>
   };
 
   return (
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col h-screen">
           <Header />
           <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
               <div className="text-center">
