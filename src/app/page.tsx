@@ -106,7 +106,7 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
-          facingMode: { exact: 'environment' },
+          facingMode: 'environment',
           width: { ideal: 1920 },
           height: { ideal: 1080 }
         },
