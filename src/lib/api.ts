@@ -190,19 +190,9 @@ export async function fetchTickets(userEmail: string, token: string): Promise<Cl
 }
 
 export async function fetchAllPendingTickets(token: string, userEmails?: string[]): Promise<CleanReceipt[]> {
-  // If userEmails is provided and is empty, it means the manager has no assigned users.
-  // Return early to avoid an invalid Firestore query.
   if (userEmails && userEmails.length === 0) {
     return [];
   }
-
-  const structuredQuery: any = {
-    from: [{ collectionId: 'tickets' }],
-    orderBy: [{
-      field: { fieldPath: 'fechaSubida' },
-      direction: 'DESCENDING'
-    }]
-  };
 
   const filters: any[] = [
     {
@@ -214,7 +204,6 @@ export async function fetchAllPendingTickets(token: string, userEmails?: string[
     }
   ];
 
-  // If userEmails are provided, add the 'IN' filter.
   if (userEmails) {
     filters.push({
       fieldFilter: {
@@ -224,19 +213,20 @@ export async function fetchAllPendingTickets(token: string, userEmails?: string[
       },
     });
   }
-
-  // If there's more than one filter, wrap them in a compositeFilter.
-  if (filters.length > 1) {
-    structuredQuery.where = {
+  
+  const structuredQuery: any = {
+    from: [{ collectionId: 'tickets' }],
+    orderBy: [{
+      field: { fieldPath: 'fechaSubida' },
+      direction: 'DESCENDING'
+    }],
+    where: {
       compositeFilter: {
         op: 'AND',
         filters: filters,
       },
-    };
-  } else {
-    // Otherwise, just use the single 'pendiente' filter.
-    structuredQuery.where = filters[0];
-  }
+    },
+  };
   
   const queryPayload = { structuredQuery };
 
