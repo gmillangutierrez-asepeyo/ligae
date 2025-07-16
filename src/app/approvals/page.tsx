@@ -223,10 +223,10 @@ function ApprovalsPage() {
             
             // Notify user
             try {
-              const subject = `Resolución sobre su nota de gastos: ${newState.charAt(0).toUpperCase() + newState.slice(1)}`;
+              const subject = `Resolución sobre su recibo: ${newState.charAt(0).toUpperCase() + newState.slice(1)}`;
               const htmlBody = `
                 <p>Estimado/a usuario/a,</p>
-                <p>Le informamos que su nota de gastos con un importe de <strong>${currentReceipt.importe.toFixed(2)} €</strong>, correspondiente a la fecha <strong>${currentReceipt.fecha}</strong>, ha sido resuelta con el siguiente estado: <strong>${newState.toUpperCase()}</strong>.</p>
+                <p>Le informamos que su recibo con un importe de <strong>${currentReceipt.importe.toFixed(2)} €</strong>, correspondiente a la fecha <strong>${currentReceipt.fecha}</strong>, ha sido resuelto con el siguiente estado: <strong>${newState.toUpperCase()}</strong>.</p>
                 ${approvalReason ? `<p><strong>Comentarios del gestor:</strong><br>${approvalReason.replace(/\n/g, '<br>')}</p>` : ''}
                 <p>Puede consultar el estado de todos sus recibos en el portal de LIGAE.</p>
                 <p style="text-align: center; margin: 24px 0;">
@@ -234,7 +234,7 @@ function ApprovalsPage() {
                 </p>
                 <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
               `;
-              const plainText = `Estimado/a usuario/a,\n\nLe informamos que su nota de gastos con un importe de ${currentReceipt.importe.toFixed(2)} €, correspondiente a la fecha ${currentReceipt.fecha}, ha sido resuelta con el siguiente estado: ${newState.toUpperCase()}.\n\n${approvalReason ? `Comentarios del gestor: ${approvalReason}\n\n` : ''}Puede consultar el estado de todos sus recibos en el portal de LIGAE: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
+              const plainText = `Estimado/a usuario/a,\n\nLe informamos que su recibo con un importe de ${currentReceipt.importe.toFixed(2)} €, correspondiente a la fecha ${currentReceipt.fecha}, ha sido resuelto con el siguiente estado: ${newState.toUpperCase()}.\n\n${approvalReason ? `Comentarios del gestor: ${approvalReason}\n\n` : ''}Puede consultar el estado de todos sus recibos en el portal de LIGAE: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
 
               await sendEmail({
                   to: currentReceipt.usuario,

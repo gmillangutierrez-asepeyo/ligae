@@ -88,7 +88,7 @@ const sendEmailFlow = ai.defineFlow(
           <div class="container">
               <div class="header">
                   <h1>LIGAE Asepeyo</h1>
-                  <p>Gestión de Notas de Gastos</p>
+                  <p>Gestión de Recibos</p>
               </div>
               <div class="content">
                   ${input.htmlBody}

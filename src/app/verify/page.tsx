@@ -88,17 +88,17 @@ function VerifyForm({
       
       await saveToFirestore({ ...dataForApi, photoUrl, fileName }, token);
 
-      toast({ title: '¡Éxito!', description: 'Su nota de gastos ha sido registrada y enviada para su aprobación.' });
+      toast({ title: '¡Éxito!', description: 'Su recibo ha sido registrado y enviado para su aprobación.' });
 
       // Notify managers in a separate try-catch block
       try {
         const managerEmails = await getManagersForUser(data.usuario, token);
         if (managerEmails.length > 0) {
-            const subject = `Nueva nota de gastos de ${data.usuario} para su validación`;
+            const subject = `Nuevo recibo de ${data.usuario} para su validación`;
             const htmlBody = `
                 <p>Estimado/a gestor/a,</p>
-                <p>Le informamos que el usuario <strong>${data.usuario}</strong> ha registrado una nueva nota de gastos que requiere su atención.</p>
-                <p><strong>Detalles del gasto:</strong></p>
+                <p>Le informamos que el usuario <strong>${data.usuario}</strong> ha registrado un nuevo recibo que requiere su atención.</p>
+                <p><strong>Detalles del recibo:</strong></p>
                 <ul>
                     <li><strong>Importe:</strong> ${data.importe.toFixed(2)} €</li>
                     <li><strong>Fecha:</strong> ${data.fecha}</li>
@@ -110,7 +110,7 @@ function VerifyForm({
                 </p>
                 <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
             `;
-            const plainText = `Estimado/a gestor/a,\n\nLe informamos que el usuario ${data.usuario} ha registrado una nueva nota de gastos que requiere su atención.\n\nDetalles del gasto:\n- Importe: ${data.importe.toFixed(2)} €\n- Fecha: ${data.fecha}\n- Sector: ${data.sector}\n\nPor favor, acceda a la plataforma para revisar y aprobar la solicitud: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
+            const plainText = `Estimado/a gestor/a,\n\nLe informamos que el usuario ${data.usuario} ha registrado un nuevo recibo que requiere su atención.\n\nDetalles del recibo:\n- Importe: ${data.importe.toFixed(2)} €\n- Fecha: ${data.fecha}\n- Sector: ${data.sector}\n\nPor favor, acceda a la plataforma para revisar y aprobar la solicitud: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
 
             const emailPromises = managerEmails.map(managerEmail => 
               sendEmail({
