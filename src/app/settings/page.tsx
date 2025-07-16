@@ -8,12 +8,12 @@ import AppSidebar from '@/components/app-sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToken } from '@/contexts/token-context';
-import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck, FileDown } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '@/components/ui/badge';
 
 function SettingsPage() {
-  const { user, isManager, managedUsers, myManagers } = useAuth();
+  const { user, isManager, isExporter, managedUsers, myManagers } = useAuth();
   const { token, isTokenLoading, fetchToken } = useToken();
 
   return (
@@ -66,6 +66,15 @@ function SettingsPage() {
                         ) : (
                             <p className="text-sm text-muted-foreground pl-7">No tienes un manager asignado en la jerarquía.</p>
                         )}
+                    </div>
+                     <div className="space-y-2">
+                        <div className='flex items-center justify-between gap-2'>
+                           <div className="flex items-center gap-2">
+                             <FileDown className="h-5 w-5 text-primary" />
+                             <h4 className="font-medium">Permisos de Exportación</h4>
+                           </div>
+                           <Badge variant={isExporter ? "default" : "secondary"}>{isExporter ? "Activo" : "Inactivo"}</Badge>
+                        </div>
                     </div>
                   </div>
                 
