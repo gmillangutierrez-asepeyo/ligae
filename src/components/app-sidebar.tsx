@@ -37,13 +37,16 @@ export default function AppSidebar() {
             <SidebarMenu>
                 {navLinks.filter(link => link.visible).map(link => (
                     <SidebarMenuItem key={link.href}>
-                        <Link href={link.href} legacyBehavior passHref>
+                        <Link href={link.href} passHref>
                             <SidebarMenuButton
+                                asChild
                                 isActive={pathname === link.href}
                                 tooltip={link.label}
                             >
-                                <link.icon/>
-                                <span>{link.label}</span>
+                                <div>
+                                    <link.icon/>
+                                    <span>{link.label}</span>
+                                </div>
                             </SidebarMenuButton>
                         </Link>
                     </SidebarMenuItem>
