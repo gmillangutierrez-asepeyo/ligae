@@ -227,7 +227,7 @@ function ApprovalsPage() {
                   to: currentReceipt.usuario,
                   subject: `Tu recibo ha sido ${newState}`,
                   text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${currentReceipt.fecha} ha sido ${newState}. ${approvalReason ? `Razón: ${approvalReason}` : ''}`,
-                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${currentReceipt.fecha} ha sido <strong>${newState}</strong>.</p>${approvalReason ? `<p><strong>Razón:</strong> ${approvalReason}</p>` : ''}<p>Puedes ver los detalles en el <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">historial de recibos</a>.</p>`,
+                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${currentReceipt.fecha} ha sido <strong>${newState}</strong>.</p>${approvalReason ? `<p><strong>Razón:</strong> ${approvalReason}</p>` : ''}<p>Puedes ver los detalles en el <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">historial de recibos</a>.</p><div>{{EMAIL_FOOTER}}</div>`,
               });
             } catch (emailError: any) {
               console.error("Fallo al enviar el email de notificación al usuario:", emailError);
