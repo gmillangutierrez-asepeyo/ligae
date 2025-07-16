@@ -103,7 +103,7 @@ const generateCsvFlow = ai.defineFlow(
         escapeCsvField(receipt.id),
         escapeCsvField(receipt.usuario),
         // Use dot as decimal separator consistently.
-        escapeCsvField(receipt.importe.toFixed(2).replace('.', ',')), 
+        escapeCsvField(receipt.importe.toFixed(2)), 
         escapeCsvField('EUR'),
         escapeCsvField(receipt.fecha), // Already in YYYY-MM-DD
         escapeCsvField(formatUploadDate(receipt.fechaSubida)),
