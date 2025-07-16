@@ -4,7 +4,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Camera, Upload, ArrowLeft } from 'lucide-react';
+import { Loader2, LogIn, Camera, Upload, ArrowLeft, SwitchCamera } from 'lucide-react';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReceiptStore } from '@/lib/store';
@@ -101,12 +101,19 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
 
   const startCamera = useCallback(async () => {
+    // Stop any existing stream before starting a new one
+    if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
-          facingMode: 'environment',
+          facingMode: facingMode,
           width: { ideal: 1920 },
           height: { ideal: 1080 }
         },
@@ -114,11 +121,12 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+      setError(null);
     } catch (err) {
       console.error("Error accessing camera:", err);
       setError("No se pudo acceder a la cámara. Por favor, comprueba los permisos.");
     }
-  }, []);
+  }, [facingMode]);
 
   useEffect(() => {
     startCamera();
@@ -147,6 +155,10 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
     }
   }, [router, setOriginalPhoto]);
 
+  const toggleCamera = () => {
+    setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
+  };
+
   return (
     <div className="h-screen w-full bg-black overflow-hidden">
       <main className="relative h-full w-full">
@@ -163,6 +175,10 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
         <Button variant="ghost" onClick={() => setMode('selection')} className="absolute top-4 left-4 z-20 text-white bg-black/30 hover:bg-black/50">
             <ArrowLeft className="h-4 w-4 md:mr-2" />
             <span className="hidden md:inline">Volver</span>
+        </Button>
+        <Button variant="ghost" onClick={toggleCamera} className="absolute top-4 right-4 z-20 text-white bg-black/30 hover:bg-black/50">
+            <SwitchCamera className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Cambiar Cámara</span>
         </Button>
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-full px-6 flex flex-col items-center gap-4">
