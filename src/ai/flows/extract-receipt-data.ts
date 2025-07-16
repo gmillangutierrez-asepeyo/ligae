@@ -62,7 +62,8 @@ const extractReceiptDataPrompt = ai.definePrompt({
 
 Utilizarás esta información para extraer los datos clave del recibo.
 - Analiza el recibo para determinar la categoría del gasto. Debe ser una de las siguientes: "comida", "transporte", u "otros". Si no puedes determinar la categoría con seguridad a partir de la imagen, DEBES clasificarla como "otros".
-- Extrae el importe total y la fecha. La fecha debe estar en formato YYYY-MM-DD.
+- Extrae el importe total y la fecha.
+- IMPORTANTE: Las fechas en los recibos probablemente estarán en formato español (Día/Mes/Año). Asegúrate de interpretar la fecha correctamente antes de convertirla al formato YYYY-MM-DD.
 
 Utiliza lo siguiente como fuente principal de información sobre el recibo.
 
