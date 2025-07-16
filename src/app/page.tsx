@@ -62,7 +62,7 @@ function SelectionView({ setMode }: { setMode: (mode: 'camera' | 'selection') =>
   return (
       <div className="flex h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col h-screen">
+        <div className="flex flex-1 flex-col h-screen min-w-0">
           <Header />
           <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
               <div className="text-center">
@@ -105,7 +105,11 @@ function CameraView({ setMode }: { setMode: (mode: 'camera' | 'selection') => vo
   const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
