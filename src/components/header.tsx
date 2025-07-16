@@ -19,9 +19,11 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PanelLeft } from 'lucide-react';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
+import { useSidebar } from './ui/sidebar';
 
 export default function Header() {
   const { user, signOut, isManager, isExporter } = useAuth();
+  const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
 
   const navLinks = [
@@ -36,7 +38,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
-           {/* Mobile Menu Trigger */}
+           {/* Mobile/Desktop Menu Trigger */}
           <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="md:hidden">
@@ -67,14 +69,10 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-            {/* Desktop Logo (hidden on mobile) */}
-            <Link href="/" className="hidden md:flex items-center gap-3">
-                <ReceiptEuroIcon className="h-8 w-8 text-primary" />
-                <div className="flex flex-col">
-                    <span className="font-headline text-lg font-bold">LIGAE</span>
-                    <span className="text-xs text-muted-foreground">ASEPEYO</span>
-                </div>
-            </Link>
+            <Button size="icon" variant="outline" className="hidden md:flex" onClick={toggleSidebar}>
+              <PanelLeft className="h-5 w-5" />
+              <span className="sr-only">Toggle Sidebar</span>
+            </Button>
         </div>
 
 
@@ -111,5 +109,3 @@ export default function Header() {
     </header>
   );
 }
-
-    

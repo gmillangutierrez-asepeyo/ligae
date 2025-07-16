@@ -369,5 +369,3 @@ function VerifyPage() {
 }
 
 export default VerifyPage;
-
-    

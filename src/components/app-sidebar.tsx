@@ -8,29 +8,10 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 import { Button } from './ui/button';
-
-// Helper component for sidebar links
-function SidebarLink({ href, label, icon: Icon }: { href: string; label: string; icon: React.ElementType }) {
-  const pathname = usePathname();
-  const isActive = pathname === href;
-
-  return (
-    <li>
-      <Button
-        variant={isActive ? 'secondary' : 'ghost'}
-        asChild
-        className="w-full justify-start"
-      >
-        <Link href={href}>
-          <Icon className="mr-2 h-4 w-4" />
-          {label}
-        </Link>
-      </Button>
-    </li>
-  );
-}
+import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
 
 export default function AppSidebar() {
+  const pathname = usePathname();
   const { isManager, isExporter } = useAuth();
   
   const navLinks = [
@@ -42,23 +23,33 @@ export default function AppSidebar() {
   ];
 
   return (
-    <aside className="hidden md:flex md:flex-col md:w-64 border-r bg-background p-4">
-      <div className="flex items-center gap-3 mb-8">
-        <ReceiptEuroIcon className="h-8 w-8 text-primary" />
-        <div className="flex flex-col">
-          <span className="font-headline text-lg font-bold">LIGAE</span>
-          <span className="text-xs text-muted-foreground">ASEPEYO</span>
-        </div>
-      </div>
-      <nav>
-        <ul className="space-y-2">
-          {navLinks.filter(link => link.visible).map(link => (
-            <SidebarLink key={link.href} {...link} />
-          ))}
-        </ul>
-      </nav>
-    </aside>
+    <Sidebar>
+        <SidebarHeader>
+             <div className="flex items-center gap-3">
+                <ReceiptEuroIcon className="h-8 w-8 text-primary" />
+                <div className="flex flex-col">
+                <span className="font-headline text-lg font-bold">LIGAE</span>
+                <span className="text-xs text-muted-foreground">ASEPEYO</span>
+                </div>
+            </div>
+        </SidebarHeader>
+        <SidebarContent>
+            <SidebarMenu>
+                {navLinks.filter(link => link.visible).map(link => (
+                    <SidebarMenuItem key={link.href}>
+                        <Link href={link.href} legacyBehavior passHref>
+                            <SidebarMenuButton
+                                isActive={pathname === link.href}
+                                tooltip={link.label}
+                            >
+                                <link.icon/>
+                                <span>{link.label}</span>
+                            </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        </SidebarContent>
+    </Sidebar>
   );
 }
-
-    

@@ -199,5 +199,3 @@ function CropPage() {
 }
 
 export default CropPage;
-
-    

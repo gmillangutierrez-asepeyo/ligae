@@ -1,8 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { TokenProvider } from '@/contexts/token-context';
 import { Toaster } from '@/components/ui/toaster';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'LIGAE | ASEPEYO',
@@ -25,7 +27,9 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <TokenProvider>
           <AuthProvider>
-            {children}
+            <SidebarProvider>
+              {children}
+            </SidebarProvider>
             <Toaster />
           </AuthProvider>
         </TokenProvider>
