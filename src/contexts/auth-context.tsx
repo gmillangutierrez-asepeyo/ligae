@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
@@ -14,6 +15,7 @@ interface AuthContextType {
   isManager: boolean;
   managedUsers: string[];
   isExporter: boolean;
+  myManagers: string[];
   signIn: () => void;
   signOut: () => void;
 }
@@ -27,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isManager, setIsManager] = useState(false);
   const [isExporter, setIsExporter] = useState(false);
   const [managedUsers, setManagedUsers] = useState<string[]>([]);
+  const [myManagers, setMyManagers] = useState<string[]>([]);
   const [authLoading, setAuthLoading] = useState(true);
   const [rolesLoading, setRolesLoading] = useState(true);
   const { token, fetchToken, isTokenLoading } = useToken();
@@ -34,18 +37,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUserRoles = useCallback((currentUser: User | null, currentHierarchy: ManagerHierarchy, currentExporterEmails: string[]) => {
     if (currentUser?.email) {
+      const userEmail = currentUser.email;
+      
       // Manager role
-      const userIsManager = currentUser.email in currentHierarchy;
+      const userIsManager = userEmail in currentHierarchy;
       setIsManager(userIsManager);
-      setManagedUsers(userIsManager ? currentHierarchy[currentUser.email] : []);
+      setManagedUsers(userIsManager ? currentHierarchy[userEmail] : []);
 
       // Exporter role
-      const userIsExporter = currentExporterEmails.includes(currentUser.email);
+      const userIsExporter = currentExporterEmails.includes(userEmail);
       setIsExporter(userIsExporter);
+
+      // Find user's managers
+      const managers: string[] = [];
+      for (const managerEmail in currentHierarchy) {
+        if (currentHierarchy[managerEmail].includes(userEmail)) {
+          managers.push(managerEmail);
+        }
+      }
+      setMyManagers(managers);
+
     } else {
       setIsManager(false);
       setIsExporter(false);
       setManagedUsers([]);
+      setMyManagers([]);
     }
   }, []);
 
@@ -155,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isManager,
     managedUsers,
     isExporter,
+    myManagers,
     signIn,
     signOut: handleSignOut,
   };
