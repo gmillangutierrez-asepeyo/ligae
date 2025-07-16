@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
+import AppSidebar from '@/components/app-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -55,11 +56,14 @@ function ExporterAuthGuard({ children }: { children: React.ReactNode }) {
 
     if (loading || !isExporter) {
         return (
-            <div className="flex flex-col min-h-screen bg-background">
-                <Header />
-                <main className="flex-1 flex items-center justify-center">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                </main>
+            <div className="flex h-screen bg-background">
+                <AppSidebar />
+                <div className="flex flex-col flex-1">
+                    <Header />
+                    <main className="flex-1 flex items-center justify-center">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    </main>
+                </div>
             </div>
         );
     }
@@ -175,132 +179,135 @@ function ExportPage() {
     return (
         <AuthGuard>
             <ExporterAuthGuard>
-                <div className="flex flex-col min-h-screen bg-background">
-                    <Header />
-                    <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
-                            <div>
-                                <h1 className="font-headline text-3xl font-bold">Exportar Recibos Aprobados</h1>
-                                <p className="text-muted-foreground">Filtra y exporta los datos a un fichero CSV.</p>
+                <div className="flex min-h-screen w-full bg-background">
+                    <AppSidebar />
+                    <div className="flex flex-1 flex-col">
+                        <Header />
+                        <main className="flex-1 p-4 sm:p-6 md:p-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+                                <div>
+                                    <h1 className="font-headline text-3xl font-bold">Exportar Recibos Aprobados</h1>
+                                    <p className="text-muted-foreground">Filtra y exporta los datos a un fichero CSV.</p>
+                                </div>
+                                <Button onClick={handleExport} disabled={isExporting || loading || receipts.length === 0}>
+                                    {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
+                                    Exportar a CSV
+                                </Button>
                             </div>
-                            <Button onClick={handleExport} disabled={isExporting || loading || receipts.length === 0}>
-                                {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-                                Exportar a CSV
-                            </Button>
-                        </div>
 
-                        {/* Filter Section */}
-                        <Card className="mb-8">
-                            <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
-                                <div className="w-full md:w-1/3">
-                                    <label htmlFor="user-filter" className="text-sm font-medium text-muted-foreground">Usuario</label>
-                                    <Select value={selectedUser} onValueChange={setSelectedUser}>
-                                        <SelectTrigger id="user-filter">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {allUsers.map(email => (
-                                                <SelectItem key={email} value={email}>
-                                                    {email === 'all' ? 'Todos los usuarios' : email}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="w-full md:w-1/3">
-                                     <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas</label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                        <Button
-                                            id="date-filter"
-                                            variant={"outline"}
-                                            className="w-full justify-start text-left font-normal"
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {dateRange?.from ? (
-                                                dateRange.to ? (
-                                                    <>
-                                                    {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}
-                                                    </>
-                                                ) : (
-                                                    format(dateRange.from, "dd/MM/yy")
-                                                )
-                                                ) : (
-                                                <span>Seleccionar rango</span>
-                                            )}
-                                        </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="range"
-                                                selected={dateRange}
-                                                onSelect={setDateRange}
-                                                locale={es}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                                {hasActiveFilters && (
-                                     <div className="w-full md:w-auto md:self-end">
-                                        <Button variant="ghost" onClick={handleClearFilters}>
-                                            <FilterX className="mr-2 h-4 w-4" />
-                                            Limpiar Filtros
-                                        </Button>
+                            {/* Filter Section */}
+                            <Card className="mb-8">
+                                <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
+                                    <div className="w-full md:w-1/3">
+                                        <label htmlFor="user-filter" className="text-sm font-medium text-muted-foreground">Usuario</label>
+                                        <Select value={selectedUser} onValueChange={setSelectedUser}>
+                                            <SelectTrigger id="user-filter">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {allUsers.map(email => (
+                                                    <SelectItem key={email} value={email}>
+                                                        {email === 'all' ? 'Todos los usuarios' : email}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {loading && (
-                            <div className="flex justify-center items-center h-64">
-                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                            </div>
-                        )}
-
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        {!loading && !error && receipts.length === 0 && (
-                            <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                                <Inbox className="mx-auto h-12 w-12 text-gray-400" />
-                                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No hay recibos</h3>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No se encontraron recibos aprobados que coincidan con los filtros seleccionados.</p>
-                            </div>
-                        )}
-
-                        {!loading && !error && receipts.length > 0 && (
-                            <Card>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Usuario</TableHead>
-                                            <TableHead>Importe</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead>Sector</TableHead>
-                                            <TableHead>Observaciones</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {receipts.map((receipt) => (
-                                            <TableRow key={receipt.id}>
-                                                <TableCell className="font-medium">{receipt.usuario}</TableCell>
-                                                <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                                                <TableCell>{formatDate(receipt.fecha)}</TableCell>
-                                                <TableCell className="capitalize">{receipt.sector}</TableCell>
-                                                <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                    <div className="w-full md:w-1/3">
+                                        <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas</label>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                            <Button
+                                                id="date-filter"
+                                                variant={"outline"}
+                                                className="w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {dateRange?.from ? (
+                                                    dateRange.to ? (
+                                                        <>
+                                                        {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}
+                                                        </>
+                                                    ) : (
+                                                        format(dateRange.from, "dd/MM/yy")
+                                                    )
+                                                    ) : (
+                                                    <span>Seleccionar rango</span>
+                                                )}
+                                            </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start">
+                                                <Calendar
+                                                    mode="range"
+                                                    selected={dateRange}
+                                                    onSelect={setDateRange}
+                                                    locale={es}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    {hasActiveFilters && (
+                                        <div className="w-full md:w-auto md:self-end">
+                                            <Button variant="ghost" onClick={handleClearFilters}>
+                                                <FilterX className="mr-2 h-4 w-4" />
+                                                Limpiar Filtros
+                                            </Button>
+                                        </div>
+                                    )}
+                                </CardContent>
                             </Card>
-                        )}
-                    </main>
+
+                            {loading && (
+                                <div className="flex justify-center items-center h-64">
+                                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                                </div>
+                            )}
+
+                            {error && (
+                                <Alert variant="destructive">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertTitle>Error</AlertTitle>
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            )}
+
+                            {!loading && !error && receipts.length === 0 && (
+                                <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                                    <Inbox className="mx-auto h-12 w-12 text-gray-400" />
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No hay recibos</h3>
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No se encontraron recibos aprobados que coincidan con los filtros seleccionados.</p>
+                                </div>
+                            )}
+
+                            {!loading && !error && receipts.length > 0 && (
+                                <Card>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Usuario</TableHead>
+                                                <TableHead>Importe</TableHead>
+                                                <TableHead>Fecha</TableHead>
+                                                <TableHead>Sector</TableHead>
+                                                <TableHead>Observaciones</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {receipts.map((receipt) => (
+                                                <TableRow key={receipt.id}>
+                                                    <TableCell className="font-medium">{receipt.usuario}</TableCell>
+                                                    <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
+                                                    <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                                                    <TableCell className="capitalize">{receipt.sector}</TableCell>
+                                                    <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </Card>
+                            )}
+                        </main>
+                    </div>
                 </div>
             </ExporterAuthGuard>
         </AuthGuard>
@@ -308,3 +315,5 @@ function ExportPage() {
 }
 
 export default ExportPage;
+
+    

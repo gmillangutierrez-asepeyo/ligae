@@ -1,9 +1,9 @@
+
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Camera, GalleryHorizontal, Settings, LogOut, ClipboardCheck, FileDown } from 'lucide-react';
+import { LogOut, Camera, GalleryHorizontal, ClipboardCheck, FileDown, Settings } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { PanelLeft } from 'lucide-react';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 
 export default function Header() {
@@ -32,33 +33,50 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-3">
-          <ReceiptEuroIcon className="h-8 w-8 text-primary" />
-          <div className="flex flex-col">
-            <span className="font-headline text-lg font-bold">LIGAE</span>
-            <span className="text-xs text-muted-foreground">ASEPEYO</span>
-          </div>
-        </Link>
+    <header className="sticky top-0 z-40 w-full border-b bg-background">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4">
+           {/* Mobile Menu Trigger */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="outline" className="md:hidden">
+                <PanelLeft className="h-5 w-5" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="sm:max-w-xs">
+              <nav className="grid gap-6 text-lg font-medium">
+                <Link
+                  href="/"
+                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+                >
+                  <ReceiptEuroIcon className="h-5 w-5 transition-all group-hover:scale-110" />
+                  <span className="sr-only">LIGAE</span>
+                </Link>
+                {navLinks.filter(l => l.visible).map(link => (
+                    <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`flex items-center gap-4 px-2.5 ${pathname === link.href ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <link.icon className="h-5 w-5" />
+                        {link.label}
+                    </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
 
-        <nav className="hidden md:flex items-center gap-2">
-          {navLinks.filter(link => link.visible).map((link) => (
-            <Button
-              key={link.href}
-              variant="ghost"
-              asChild
-              className={cn(
-                pathname === link.href ? 'bg-accent text-accent-foreground' : ''
-              )}
-            >
-              <Link href={link.href}>
-                <link.icon className="mr-2 h-4 w-4" />
-                {link.label}
-              </Link>
-            </Button>
-          ))}
-        </nav>
+            {/* Desktop Logo (hidden on mobile) */}
+            <Link href="/" className="hidden md:flex items-center gap-3">
+                <ReceiptEuroIcon className="h-8 w-8 text-primary" />
+                <div className="flex flex-col">
+                    <span className="font-headline text-lg font-bold">LIGAE</span>
+                    <span className="text-xs text-muted-foreground">ASEPEYO</span>
+                </div>
+            </Link>
+        </div>
+
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -83,17 +101,6 @@ export default function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <div className="md:hidden">
-              {navLinks.filter(link => link.visible).map((link) => (
-                <DropdownMenuItem key={link.href} asChild>
-                  <Link href={link.href}>
-                    <link.icon className="mr-2 h-4 w-4" />
-                    <span>{link.label}</span>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-            </div>
             <DropdownMenuItem onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Cerrar sesión</span>
@@ -104,3 +111,5 @@ export default function Header() {
     </header>
   );
 }
+
+    

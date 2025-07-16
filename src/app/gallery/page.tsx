@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { format, isValid, parseISO } from 'date-fns';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
+import AppSidebar from '@/components/app-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -249,11 +250,14 @@ function GalleryPage() {
   if (!isMounted) {
     return (
        <AuthGuard>
-        <div className="flex flex-col min-h-screen bg-background">
-          <Header />
-          <main className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </main>
+        <div className="flex h-screen bg-background">
+          <AppSidebar />
+          <div className="flex flex-col flex-1">
+            <Header />
+            <main className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </main>
+          </div>
         </div>
       </AuthGuard>
     );
@@ -261,81 +265,84 @@ function GalleryPage() {
 
   return (
     <AuthGuard>
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
-            <div>
-              <h1 className="font-headline text-3xl font-bold">Mis Recibos</h1>
-              <p className="text-muted-foreground">Un historial de todos tus recibos enviados.</p>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <div className="flex flex-col flex-1">
+            <Header />
+            <main className="flex-1 p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+                <div>
+                <h1 className="font-headline text-3xl font-bold">Mis Recibos</h1>
+                <p className="text-muted-foreground">Un historial de todos tus recibos enviados.</p>
+                </div>
+                <Button onClick={() => loadReceipts()} disabled={loading || isTokenLoading}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    Refrescar
+                </Button>
             </div>
-             <Button onClick={() => loadReceipts()} disabled={loading || isTokenLoading}>
-                 <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Refrescar
-            </Button>
-          </div>
 
-          {(loading || isTokenLoading) && (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-               {isTokenLoading && <p className="ml-4 text-muted-foreground">Autenticando...</p>}
-            </div>
-          )}
+            {(loading || isTokenLoading) && (
+                <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                {isTokenLoading && <p className="ml-4 text-muted-foreground">Autenticando...</p>}
+                </div>
+            )}
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+            {error && (
+                <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
 
-          {!loading && !isTokenLoading && !error && receipts.length === 0 && (
-            <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                <Inbox className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No hay recibos</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Empieza capturando un nuevo recibo.</p>
-            </div>
-          )}
+            {!loading && !isTokenLoading && !error && receipts.length === 0 && (
+                <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                    <Inbox className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">No hay recibos</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Empieza capturando un nuevo recibo.</p>
+                </div>
+            )}
 
-          {!loading && !isTokenLoading && !error && receipts.length > 0 && (
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Sector</TableHead>
-                    <TableHead>Importe</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Observaciones</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {receipts.map((receipt) => (
-                    <TableRow key={receipt.id}>
-                      <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
-                      <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                      <TableCell>{formatDate(receipt.fecha)}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={receipt.estado} />
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                           <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
-                             <Eye className="h-4 w-4" />
-                           </Button>
-                          <DeleteButton receipt={receipt} onDelete={handleDelete} />
-                        </div>
-                      </TableCell>
+            {!loading && !isTokenLoading && !error && receipts.length > 0 && (
+                <Card>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Sector</TableHead>
+                        <TableHead>Importe</TableHead>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Observaciones</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
-        </main>
+                    </TableHeader>
+                    <TableBody>
+                    {receipts.map((receipt) => (
+                        <TableRow key={receipt.id}>
+                        <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
+                        <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
+                        <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                        <TableCell>
+                            <StatusBadge status={receipt.estado} />
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
+                        <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                            <DeleteButton receipt={receipt} onDelete={handleDelete} />
+                            </div>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </Card>
+            )}
+            </main>
+        </div>
         
         {viewingReceipt && token && (
             <Dialog open={!!viewingReceipt} onOpenChange={(open) => !open && setViewingReceipt(null)}>
@@ -401,3 +408,5 @@ function GalleryPage() {
 }
 
 export default GalleryPage;
+
+    

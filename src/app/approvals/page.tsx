@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { format, isValid, parseISO } from 'date-fns';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
+import AppSidebar from '@/components/app-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -257,14 +258,17 @@ function ApprovalsPage() {
     };
     
     // Show a loading spinner until authentication and role checks are complete.
-    if (authLoading) {
+    if (authLoading || !isManager) {
         return (
             <AuthGuard>
-                <div className="flex flex-col min-h-screen bg-background">
-                    <Header />
-                    <main className="flex-1 flex items-center justify-center">
-                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                    </main>
+                <div className="flex h-screen bg-background">
+                    <AppSidebar />
+                    <div className="flex flex-col flex-1">
+                        <Header />
+                        <main className="flex-1 flex items-center justify-center">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                        </main>
+                    </div>
                 </div>
             </AuthGuard>
         );
@@ -272,83 +276,86 @@ function ApprovalsPage() {
 
     return (
         <AuthGuard>
-            <div className="flex flex-col min-h-screen bg-background">
-                <Header />
-                <main className="flex-1 container mx-auto p-4 sm:p-6 md:p-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
-                        <div>
-                            <h1 className="font-headline text-3xl font-bold">Aprobación de Recibos</h1>
-                            <p className="text-muted-foreground">Recibos pendientes de revisión.</p>
+            <div className="flex min-h-screen w-full bg-background">
+                <AppSidebar />
+                <div className="flex flex-col flex-1">
+                    <Header />
+                    <main className="flex-1 p-4 sm:p-6 md:p-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+                            <div>
+                                <h1 className="font-headline text-3xl font-bold">Aprobación de Recibos</h1>
+                                <p className="text-muted-foreground">Recibos pendientes de revisión.</p>
+                            </div>
+                            <Button onClick={() => loadPendingReceipts()} disabled={loading || isTokenLoading}>
+                                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                                Refrescar
+                            </Button>
                         </div>
-                        <Button onClick={() => loadPendingReceipts()} disabled={loading || isTokenLoading}>
-                             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                            Refrescar
-                        </Button>
-                    </div>
 
-                    {loading && (
-                        <div className="flex justify-center items-center h-64">
-                            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                        </div>
-                    )}
+                        {loading && (
+                            <div className="flex justify-center items-center h-64">
+                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                            </div>
+                        )}
 
-                    {error && (
-                        <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Error</AlertTitle>
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    )}
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>Error</AlertTitle>
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
 
-                    {!loading && !error && receipts.length === 0 && (
-                        <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                            <Inbox className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">Bandeja de entrada vacía</h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No hay recibos pendientes de aprobación de tus usuarios.</p>
-                        </div>
-                    )}
+                        {!loading && !error && receipts.length === 0 && (
+                            <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                                <Inbox className="mx-auto h-12 w-12 text-gray-400" />
+                                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">Bandeja de entrada vacía</h3>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No hay recibos pendientes de aprobación de tus usuarios.</p>
+                            </div>
+                        )}
 
-                    {!loading && !error && receipts.length > 0 && (
-                        <Card>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Usuario</TableHead>
-                                        <TableHead>Sector</TableHead>
-                                        <TableHead>Importe</TableHead>
-                                        <TableHead>Fecha</TableHead>
-                                        <TableHead>Observaciones</TableHead>
-                                        <TableHead className="text-right">Acciones</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {receipts.map((receipt) => (
-                                        <TableRow key={receipt.id}>
-                                            <TableCell className="font-medium">{receipt.usuario}</TableCell>
-                                            <TableCell className="capitalize">{receipt.sector}</TableCell>
-                                            <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
-                                            <TableCell>{formatDate(receipt.fecha)}</TableCell>
-                                            <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleOpenDialog(receipt, 'approve')}>
-                                                        <ThumbsUp className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleOpenDialog(receipt, 'deny')}>
-                                                        <ThumbsDown className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                        {!loading && !error && receipts.length > 0 && (
+                            <Card>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Usuario</TableHead>
+                                            <TableHead>Sector</TableHead>
+                                            <TableHead>Importe</TableHead>
+                                            <TableHead>Fecha</TableHead>
+                                            <TableHead>Observaciones</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </Card>
-                    )}
-                </main>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {receipts.map((receipt) => (
+                                            <TableRow key={receipt.id}>
+                                                <TableCell className="font-medium">{receipt.usuario}</TableCell>
+                                                <TableCell className="capitalize">{receipt.sector}</TableCell>
+                                                <TableCell>€{receipt.importe.toFixed(2)}</TableCell>
+                                                <TableCell>{formatDate(receipt.fecha)}</TableCell>
+                                                <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700" onClick={() => handleOpenDialog(receipt, 'approve')}>
+                                                            <ThumbsUp className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleOpenDialog(receipt, 'deny')}>
+                                                            <ThumbsDown className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Card>
+                        )}
+                    </main>
+                </div>
                 
                 {/* Approval/Denial Dialog */}
                 <Dialog open={!!action} onOpenChange={(open) => !open && handleCloseDialog()}>
@@ -445,3 +452,5 @@ function ApprovalsPage() {
 }
 
 export default ApprovalsPage;
+
+    

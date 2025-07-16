@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { extractReceiptData } from '@/ai/flows/extract-receipt-data';
 
 import Header from '@/components/header';
+import AppSidebar from '@/components/app-sidebar';
 import { Button } from '@/components/ui/button';
 import { Loader2, Scissors, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -133,65 +134,70 @@ function CropPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100svh] w-full bg-background">
-      <Header />
-      <main className="flex-1 flex flex-col p-4 overflow-hidden">
-        <div className="w-full text-center shrink-0">
-            <h1 className="font-headline text-2xl">Recortar Recibo</h1>
-            <p className="text-muted-foreground">
-              Ajusta el marco al recibo y confirma.
-            </p>
-        </div>
-        
-        <div className="h-6 shrink-0" />
-
-        <div className="flex-1 flex justify-center items-center min-h-0">
-            <ReactCrop
-              crop={crop}
-              onChange={(_, percentCrop) => setCrop(percentCrop)}
-              onComplete={(c) => setCompletedCrop(c)}
-            >
-              <Image
-                ref={imgRef}
-                alt="Recibo a recortar"
-                src={originalPhotoDataUri}
-                width={0}
-                height={0}
-                sizes="100vw"
-                style={{ maxHeight: '65svh', width: 'auto', height: 'auto' }}
-                onLoad={onImageLoad}
-              />
-            </ReactCrop>
-        </div>
-      
-        <div className="h-6 shrink-0" />
-
-        <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
-            <Button variant="outline" onClick={handleRetake} className="flex-1">
-                <Camera className="mr-2 h-4 w-4" />
-                Hacer otra foto
-            </Button>
-            <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} className="flex-1">
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Scissors className="mr-2 h-4 w-4" />
-              )}
-              Confirmar
-            </Button>
-        </div>
-
-        {isLoading && (
-          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white z-10">
-            <Loader2 className="h-12 w-12 animate-spin mb-4" />
-            <p className="font-headline">Analizando recibo...</p>
+    <div className="flex h-screen w-full bg-background">
+      <AppSidebar />
+      <div className="flex flex-col flex-1 h-[100svh]">
+        <Header />
+        <main className="flex-1 flex flex-col p-4 overflow-hidden">
+          <div className="w-full text-center shrink-0">
+              <h1 className="font-headline text-2xl">Recortar Recibo</h1>
+              <p className="text-muted-foreground">
+                Ajusta el marco al recibo y confirma.
+              </p>
           </div>
-        )}
+          
+          <div className="h-6 shrink-0" />
 
-        <canvas ref={canvasRef} className="hidden" />
-      </main>
+          <div className="flex-1 flex justify-center items-center min-h-0">
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+              >
+                <Image
+                  ref={imgRef}
+                  alt="Recibo a recortar"
+                  src={originalPhotoDataUri}
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  style={{ maxHeight: '65svh', width: 'auto', height: 'auto' }}
+                  onLoad={onImageLoad}
+                />
+              </ReactCrop>
+          </div>
+        
+          <div className="h-6 shrink-0" />
+
+          <div className="w-full max-w-md flex items-center gap-4 shrink-0 pb-2 self-center">
+              <Button variant="outline" onClick={handleRetake} className="flex-1">
+                  <Camera className="mr-2 h-4 w-4" />
+                  Hacer otra foto
+              </Button>
+              <Button onClick={handleConfirmCrop} disabled={isLoading || !completedCrop} className="flex-1">
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Scissors className="mr-2 h-4 w-4" />
+                )}
+                Confirmar
+              </Button>
+          </div>
+
+          {isLoading && (
+            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white z-10">
+              <Loader2 className="h-12 w-12 animate-spin mb-4" />
+              <p className="font-headline">Analizando recibo...</p>
+            </div>
+          )}
+
+          <canvas ref={canvasRef} className="hidden" />
+        </main>
+      </div>
     </div>
   );
 }
 
 export default CropPage;
+
+    
