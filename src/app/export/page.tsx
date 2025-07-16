@@ -168,14 +168,6 @@ function ExportPage() {
         }
     };
     
-    const formatDate = (dateString: string) => {
-        try {
-            return format(new Date(dateString), 'dd/MM/yyyy');
-        } catch (e) {
-            return dateString;
-        }
-    };
-    
     const hasActiveFilters = selectedUser !== 'all' || dateRange !== undefined;
 
     return (
@@ -301,7 +293,7 @@ function ExportPage() {
                                                 )}>
                                                     <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
                                                     <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
-                                                    <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">{receipt.fecha}</TableCell>
                                                     <TableCell className="capitalize">{receipt.sector}</TableCell>
                                                     <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                                                 </TableRow>

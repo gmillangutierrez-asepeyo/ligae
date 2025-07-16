@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { format, isValid, parseISO } from 'date-fns';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import AppSidebar from '@/components/app-sidebar';
@@ -237,17 +236,6 @@ function GalleryPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      if (dateString && isValid(parseISO(dateString))) {
-        return format(parseISO(dateString), 'dd/MM/yyyy');
-      }
-      return dateString;
-    } catch (e) {
-      return dateString;
-    }
-  };
-
   if (!isMounted) {
     return (
        <AuthGuard>
@@ -321,11 +309,11 @@ function GalleryPage() {
                     <TableBody>
                     {receipts.map((receipt) => (
                         <TableRow key={receipt.id} className={cn(
-                            receipt.estado !== 'pendiente' && 'bg-muted/50'
+                            (receipt.estado === 'aprobado' || receipt.estado === 'denegado') && 'bg-muted/50'
                         )}>
                         <TableCell className="font-medium capitalize">{receipt.sector}</TableCell>
                         <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
-                        <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{receipt.fecha}</TableCell>
                         <TableCell>
                             <StatusBadge status={receipt.estado} />
                         </TableCell>
@@ -378,7 +366,7 @@ function GalleryPage() {
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Fecha:</span>
-                                        <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
+                                        <span className="font-medium">{viewingReceipt.fecha}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Sector:</span>

@@ -81,8 +81,8 @@ function VerifyForm({
     setIsSubmitting(true);
     try {
       const fileName = `${generateUniqueId(data.usuario)}.jpg`;
-      const dateForDb = format(parse(data.fecha, 'dd/MM/yyyy', new Date()), 'yyyy-MM-dd');
-      const dataForApi = { ...data, fecha: dateForDb };
+      // No date conversion needed, it's already in dd/MM/yyyy
+      const dataForApi = { ...data };
       
       const photoUrl = await uploadToStorage(croppedPhotoDataUri, fileName, token);
       
@@ -306,17 +306,9 @@ function VerifyPage() {
 
     if (extractedData) {
       // This logic now runs only on the client, avoiding hydration errors.
-      let initialDate: Date;
-      try {
-        const parsedDate = extractedData.fecha ? parse(extractedData.fecha, 'yyyy-MM-dd', new Date()) : new Date();
-        initialDate = isValid(parsedDate) ? parsedDate : new Date();
-      } catch {
-        initialDate = new Date();
-      }
-
       setInitialFormData({
         ...extractedData,
-        fecha: format(initialDate, 'dd/MM/yyyy'),
+        fecha: extractedData.fecha, // Already in dd/MM/yyyy
         observaciones: '',
       });
     }

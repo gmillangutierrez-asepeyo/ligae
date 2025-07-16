@@ -75,7 +75,7 @@ export async function saveToFirestore(data: any, token: string): Promise<{ id: s
     fields: {
       sector: { stringValue: data.sector },
       importe: { doubleValue: Number(data.importe) },
-      fecha: { stringValue: data.fecha },
+      fecha: { stringValue: data.fecha }, // Storing as DD/MM/YYYY
       usuario: { stringValue: data.usuario },
       photoUrl: { stringValue: data.photoUrl },
       fileName: { stringValue: data.fileName },
@@ -425,21 +425,23 @@ export async function fetchAllApprovedTickets(token: string, filters: ApprovedTi
     }
 
     if (filters.startDate) {
+        const [day, month, year] = filters.startDate.toLocaleDateString('es-ES').split('/');
         queryFilters.push({
             fieldFilter: {
                 field: { fieldPath: 'fecha' },
                 op: 'GREATER_THAN_OR_EQUAL',
-                value: { stringValue: filters.startDate.toISOString().split('T')[0] },
+                value: { stringValue: `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}` },
             },
         });
     }
 
     if (filters.endDate) {
+        const [day, month, year] = filters.endDate.toLocaleDateString('es-ES').split('/');
         queryFilters.push({
             fieldFilter: {
                 field: { fieldPath: 'fecha' },
                 op: 'LESS_THAN_OR_EQUAL',
-                value: { stringValue: filters.endDate.toISOString().split('T')[0] },
+                value: { stringValue: `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}` },
             },
         });
     }

@@ -11,13 +11,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-// Helper function to get date in YYYY-MM-DD format, robust for server environments.
+// Helper function to get date in DD/MM/YYYY format, robust for server environments.
 function getSafeDateString() {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
 const ExtractReceiptDataInputSchema = z.object({
@@ -36,7 +36,7 @@ const ExtractReceiptDataOutputSchema = z.object({
   sector: validSectors.describe('El tipo de gasto. Debe ser uno de: "comida", "transporte" u "otros".'),
   importe: z.number().describe('El coste total en euros (€), como valor numérico.'),
   usuario: z.string().describe('El email del usuario que ha iniciado sesión.'),
-  fecha: z.string().describe('La fecha del recibo.'),
+  fecha: z.string().describe('La fecha del recibo en formato DD/MM/YYYY.'),
 });
 export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSchema>;
 
@@ -46,7 +46,7 @@ export type ExtractReceiptDataOutput = z.infer<typeof ExtractReceiptDataOutputSc
 const ModelOutputSchema = z.object({
   sector: validSectors.describe('El tipo de gasto. DEBE ser uno de: "comida", "transporte" u "otros". En caso de duda, DEBES usar "otros".'),
   importe: z.union([z.string(), z.number()]).optional().describe('El coste total en euros (€), como valor numérico o una cadena de texto que lo represente.'),
-  fecha: z.string().optional().describe('La fecha del recibo en formato YYYY-MM-DD.'),
+  fecha: z.string().optional().describe('La fecha del recibo en formato DD/MM/YYYY.'),
 });
 
 
@@ -63,7 +63,7 @@ const extractReceiptDataPrompt = ai.definePrompt({
 Utilizarás esta información para extraer los datos clave del recibo.
 - Analiza el recibo para determinar la categoría del gasto. Debe ser una de las siguientes: "comida", "transporte", u "otros". Si no puedes determinar la categoría con seguridad a partir de la imagen, DEBES clasificarla como "otros".
 - Extrae el importe total y la fecha.
-- IMPORTANTE: Las fechas en los recibos probablemente estarán en formato español (Día/Mes/Año). Asegúrate de interpretar la fecha correctamente antes de convertirla al formato YYYY-MM-DD.
+- IMPORTANTE: Las fechas en los recibos probablemente estarán en formato español (Día/Mes/Año). Tu objetivo es devolver la fecha tal como está en el recibo, pero asegurándote de que sigue el formato DD/MM/YYYY. NO la conviertas a ningún otro formato.
 
 Utiliza lo siguiente como fuente principal de información sobre el recibo.
 

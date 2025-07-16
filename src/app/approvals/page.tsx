@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { format, isValid, parseISO } from 'date-fns';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import AppSidebar from '@/components/app-sidebar';
@@ -36,6 +35,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { sendEmail } from '@/ai/flows/send-email-flow';
+import { cn } from '@/lib/utils';
 
 
 type Receipt = CleanReceipt;
@@ -226,8 +226,8 @@ function ApprovalsPage() {
               await sendEmail({
                   to: currentReceipt.usuario,
                   subject: `Tu recibo ha sido ${newState}`,
-                  text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${formatDate(currentReceipt.fecha)} ha sido ${newState}. ${approvalReason ? `Razón: ${approvalReason}` : ''}`,
-                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${formatDate(currentReceipt.fecha)} ha sido <strong>${newState}</strong>.</p>${approvalReason ? `<p><strong>Razón:</strong> ${approvalReason}</p>` : ''}<p>Puedes ver los detalles en el <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">historial de recibos</a>.</p>`,
+                  text: `Hola, tu recibo de ${currentReceipt.importe.toFixed(2)}€ con fecha ${currentReceipt.fecha} ha sido ${newState}. ${approvalReason ? `Razón: ${approvalReason}` : ''}`,
+                  html: `<p>Hola,</p><p>Tu recibo de <strong>${currentReceipt.importe.toFixed(2)}€</strong> con fecha ${currentReceipt.fecha} ha sido <strong>${newState}</strong>.</p>${approvalReason ? `<p><strong>Razón:</strong> ${approvalReason}</p>` : ''}<p>Puedes ver los detalles en el <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery">historial de recibos</a>.</p>`,
               });
             } catch (emailError: any) {
               console.error("Fallo al enviar el email de notificación al usuario:", emailError);
@@ -243,17 +243,6 @@ function ApprovalsPage() {
             toast({ variant: 'destructive', title: 'Fallo al Actualizar', description: e.message });
         } finally {
             setIsSubmitting(false);
-        }
-    };
-    
-    const formatDate = (dateString: string) => {
-        try {
-            if (dateString && isValid(parseISO(dateString))) {
-                return format(parseISO(dateString), 'dd/MM/yyyy');
-            }
-            return dateString;
-        } catch (e) {
-            return dateString;
         }
     };
     
@@ -329,11 +318,13 @@ function ApprovalsPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {receipts.map((receipt) => (
-                                            <TableRow key={receipt.id}>
+                                            <TableRow key={receipt.id} className={cn(
+                                                (receipt.estado === 'aprobado' || receipt.estado === 'denegado') && 'bg-muted/50'
+                                            )}>
                                                 <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
                                                 <TableCell className="capitalize">{receipt.sector}</TableCell>
                                                 <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
-                                                <TableCell className="whitespace-nowrap">{formatDate(receipt.fecha)}</TableCell>
+                                                <TableCell className="whitespace-nowrap">{receipt.fecha}</TableCell>
                                                 <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-2">
@@ -425,7 +416,7 @@ function ApprovalsPage() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">Fecha:</span>
-                                                <span className="font-medium">{formatDate(viewingReceipt.fecha)}</span>
+                                                <span className="font-medium">{viewingReceipt.fecha}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">Sector:</span>
