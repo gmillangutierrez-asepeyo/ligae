@@ -56,7 +56,7 @@ const generateCsvFlow = ai.defineFlow(
     ];
 
     /**
-     * Escapes a field for CSV format. If the field contains a comma, double quote, or newline,
+     * Escapes a field for CSV format. If the field contains a semicolon, double quote, or newline,
      * it will be enclosed in double quotes. Existing double quotes within the field will be escaped
      * by doubling them (e.g., " becomes "").
      * @param field The data to escape.
@@ -68,7 +68,7 @@ const generateCsvFlow = ai.defineFlow(
         }
         const str = String(field);
         // Check if the string needs to be quoted
-        if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
             // Escape any double quotes inside the string by replacing them with two double quotes
             const escapedStr = str.replace(/"/g, '""');
             return `"${escapedStr}"`;
@@ -102,8 +102,8 @@ const generateCsvFlow = ai.defineFlow(
     const csvRows = receipts.map(receipt => [
         escapeCsvField(receipt.id),
         escapeCsvField(receipt.usuario),
-        // Use dot as decimal separator consistently.
-        escapeCsvField(receipt.importe.toFixed(2)), 
+        // Format number with comma for decimal separator, for Spanish Excel.
+        escapeCsvField(receipt.importe.toFixed(2).replace('.', ',')), 
         escapeCsvField('EUR'),
         escapeCsvField(receipt.fecha), // Already in YYYY-MM-DD
         escapeCsvField(formatUploadDate(receipt.fechaSubida)),
@@ -113,9 +113,11 @@ const generateCsvFlow = ai.defineFlow(
         escapeCsvField(receipt.motivo),
         escapeCsvField(receipt.photoUrl),
         escapeCsvField(receipt.fileName),
-    ].join(','));
+    ].join(';'));
 
-    // Combine headers and rows, separated by newlines
-    return [headers.join(','), ...csvRows].join('\n');
+    // Combine headers and rows, separated by newlines.
+    // Add BOM at the start to ensure Excel opens it with UTF-8 encoding correctly.
+    const csvString = [headers.join(';'), ...csvRows].join('\n');
+    return '\uFEFF' + csvString;
   }
 );
