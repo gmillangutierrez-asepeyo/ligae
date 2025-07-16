@@ -25,13 +25,6 @@ export default function AppSidebar() {
   return (
     <Sidebar>
         <SidebarHeader>
-             <div className="flex items-center gap-3">
-                <ReceiptEuroIcon className="h-8 w-8 text-primary" />
-                <div className="flex flex-col">
-                <span className="font-headline text-lg font-bold">LIGAE</span>
-                <span className="text-xs text-muted-foreground">ASEPEYO</span>
-                </div>
-            </div>
         </SidebarHeader>
         <SidebarContent>
             <SidebarMenu>

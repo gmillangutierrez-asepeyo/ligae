@@ -38,7 +38,6 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
-           {/* Mobile/Desktop Menu Trigger */}
           <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="md:hidden">
@@ -50,7 +49,7 @@ export default function Header() {
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
                   href="/"
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+                  className="group flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
                   <ReceiptEuroIcon className="h-5 w-5 transition-all group-hover:scale-110" />
                   <span className="sr-only">LIGAE</span>
@@ -73,6 +72,14 @@ export default function Header() {
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
+
+            <div className="flex items-center gap-3">
+                <ReceiptEuroIcon className="h-8 w-8 text-primary" />
+                <div className="hidden flex-col sm:flex">
+                    <span className="font-headline text-lg font-bold">LIGAE</span>
+                    <span className="text-xs text-muted-foreground">ASEPEYO</span>
+                </div>
+            </div>
         </div>
 
 
