@@ -45,7 +45,7 @@ export default function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs p-0">
+            <SheetContent side="left" className="sm:max-w-xs p-0 bg-sidebar">
                 <SheetHeader>
                   <SheetTitle className="sr-only">Menú Principal</SheetTitle>
                 </SheetHeader>
@@ -69,7 +69,7 @@ export default function Header() {
                     <Link
                         key={link.href}
                         href={link.href}
-                        className={`flex items-center gap-4 px-2.5 py-2 rounded-md ${pathname === link.href ? 'text-foreground bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
+                        className={`flex items-center gap-4 px-2.5 py-2 rounded-md ${pathname === link.href ? 'text-accent-foreground bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
                     >
                         <link.icon className="h-5 w-5" />
                         {link.label}
