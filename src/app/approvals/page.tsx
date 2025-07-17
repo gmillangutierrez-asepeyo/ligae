@@ -278,11 +278,11 @@ function ApprovalsPage() {
 
     return (
         <AuthGuard>
-            <div className="flex flex-col h-screen w-full bg-background">
+            <div className="flex flex-col h-screen w-full">
                 <Header />
                 <div className="flex flex-1 overflow-hidden">
                     <AppSidebar />
-                    <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto">
+                    <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto bg-background">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
                             <div>
                                 <h1 className="font-headline text-3xl font-bold">Aprobación de Recibos</h1>
@@ -456,5 +456,3 @@ function ApprovalsPage() {
 }
 
 export default ApprovalsPage;
-
-    

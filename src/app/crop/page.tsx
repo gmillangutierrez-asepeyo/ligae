@@ -134,11 +134,11 @@ function CropPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background">
+    <div className="flex flex-col h-screen w-full">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <AppSidebar />
-        <main className="flex-1 flex flex-col p-4 overflow-hidden">
+        <main className="flex-1 flex flex-col p-4 overflow-hidden bg-background">
           <div className="w-full text-center shrink-0">
               <h1 className="font-headline text-2xl">Recortar Recibo</h1>
               <p className="text-muted-foreground">
@@ -199,5 +199,3 @@ function CropPage() {
 }
 
 export default CropPage;
-
-    

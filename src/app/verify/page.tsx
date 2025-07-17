@@ -349,11 +349,11 @@ function VerifyPage() {
 
   return (
     <AuthGuard>
-      <div className="flex flex-col h-screen w-full bg-background">
+      <div className="flex flex-col h-screen w-full">
         <Header />
         <div className="flex flex-1 overflow-hidden">
             <AppSidebar />
-            <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+            <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto bg-background">
             <div className="mb-8">
                 <h1 className="font-headline text-3xl font-bold">Verificar Recibo</h1>
                 <p className="text-muted-foreground">Por favor, comprueba los datos extraídos y corrígelos si es necesario.</p>
@@ -378,5 +378,3 @@ function VerifyPage() {
 }
 
 export default VerifyPage;
-
-    

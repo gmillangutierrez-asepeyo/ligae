@@ -60,11 +60,11 @@ function SelectionView({ setMode }: { setMode: (mode: 'camera' | 'selection') =>
   };
 
   return (
-      <div className="flex flex-col h-screen w-full bg-background">
+      <div className="flex flex-col h-screen w-full">
         <Header />
         <div className="flex flex-1 overflow-hidden">
             <AppSidebar />
-            <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6 overflow-y-auto">
+            <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6 overflow-y-auto bg-background">
                 <div className="text-center">
                     <h1 className="font-headline text-3xl">Enviar un Recibo</h1>
                     <p className="text-muted-foreground mt-2">Elige cómo quieres enviar tu recibo.</p>
@@ -207,5 +207,3 @@ export default function HomePage() {
 
   return <CameraView setMode={setMode} />;
 }
-
-    
