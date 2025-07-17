@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PanelLeft } from 'lucide-react';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
@@ -46,7 +46,7 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs bg-sidebar">
-               <SheetHeader>
+               <SheetHeader className="flex flex-row items-center justify-between">
                   <SheetTitle>
                     <div className="flex items-center gap-3">
                         <ReceiptEuroIcon className="h-8 w-8 text-primary" />
@@ -56,17 +56,24 @@ export default function Header() {
                         </div>
                     </div>
                   </SheetTitle>
+                   <SheetClose asChild>
+                      <Button size="icon" variant="outline">
+                        <PanelLeft className="h-5 w-5" />
+                        <span className="sr-only">Cerrar Menú</span>
+                      </Button>
+                    </SheetClose>
                 </SheetHeader>
               <nav className="grid gap-2 text-lg font-medium p-4 mt-4">
                 {navLinks.filter(l => l.visible).map(link => (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        className={`flex items-center gap-4 px-2.5 py-2 rounded-md ${pathname === link.href ? 'text-accent-foreground bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
-                    >
-                        <link.icon className="h-5 w-5" />
-                        {link.label}
-                    </Link>
+                    <SheetClose asChild key={link.href}>
+                        <Link
+                            href={link.href}
+                            className={`flex items-center gap-4 px-2.5 py-2 rounded-md ${pathname === link.href ? 'text-accent-foreground bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
+                        >
+                            <link.icon className="h-5 w-5" />
+                            {link.label}
+                        </Link>
+                    </SheetClose>
                 ))}
               </nav>
             </SheetContent>
