@@ -334,10 +334,10 @@ function VerifyPage() {
   if (!initialFormData || !croppedPhotoDataUri) {
     return (
         <AuthGuard>
-            <div className="flex h-screen w-full bg-background">
-                <AppSidebar />
-                <div className="flex flex-col flex-1">
-                    <Header />
+            <div className="flex flex-col h-screen w-full bg-background">
+                <Header />
+                <div className="flex flex-1 overflow-hidden">
+                    <AppSidebar />
                     <main className="flex-1 flex items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </main>
@@ -349,10 +349,10 @@ function VerifyPage() {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen w-full bg-background">
-        <AppSidebar />
-        <div className="flex flex-col flex-1 h-screen min-w-0">
-            <Header />
+      <div className="flex flex-col h-screen w-full bg-background">
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+            <AppSidebar />
             <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
             <div className="mb-8">
                 <h1 className="font-headline text-3xl font-bold">Verificar Recibo</h1>
@@ -378,3 +378,5 @@ function VerifyPage() {
 }
 
 export default VerifyPage;
+
+    

@@ -57,11 +57,11 @@ function ExporterAuthGuard({ children }: { children: React.ReactNode }) {
 
     if (loading || !isExporter) {
         return (
-            <div className="flex h-screen bg-background">
-                <AppSidebar />
-                <div className="flex flex-col flex-1 min-w-0">
-                    <Header />
-                    <main className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col h-screen bg-background">
+                <Header />
+                <div className="flex flex-1 overflow-hidden">
+                    <AppSidebar />
+                    <main className="flex-1 flex items-center justify-center overflow-y-auto">
                         <Loader2 className="h-12 w-12 animate-spin text-primary" />
                     </main>
                 </div>
@@ -173,11 +173,11 @@ function ExportPage() {
     return (
         <AuthGuard>
             <ExporterAuthGuard>
-                <div className="flex h-screen w-full bg-background">
-                    <AppSidebar />
-                    <div className="flex flex-1 flex-col min-w-0 h-screen overflow-y-auto">
-                        <Header />
-                        <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col h-screen w-full bg-background">
+                    <Header />
+                    <div className="flex flex-1 overflow-hidden">
+                        <AppSidebar />
+                        <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
                                 <div>
                                     <h1 className="font-headline text-3xl font-bold">Exportar Recibos Aprobados</h1>
@@ -311,3 +311,5 @@ function ExportPage() {
 }
 
 export default ExportPage;
+
+    

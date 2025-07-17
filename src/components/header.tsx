@@ -35,7 +35,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b bg-sidebar">
+    <header className="sticky top-0 z-30 w-full border-b bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           <Sheet>
@@ -45,7 +45,7 @@ export default function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs p-0 bg-sidebar">
+            <SheetContent side="left" className="sm:max-w-xs p-0 bg-background">
                 <SheetHeader>
                   <SheetTitle className="sr-only">Menú Principal</SheetTitle>
                 </SheetHeader>
@@ -127,3 +127,5 @@ export default function Header() {
     </header>
   );
 }
+
+    

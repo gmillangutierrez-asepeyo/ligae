@@ -18,11 +18,11 @@ function SettingsPage() {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen w-full bg-background">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col min-w-0 h-screen overflow-y-auto">
-            <Header />
-            <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col h-screen w-full bg-background">
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+            <AppSidebar />
+            <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto">
             <Card className="w-full max-w-2xl">
                 <CardHeader>
                 <CardTitle className="font-headline text-2xl">Perfil y Estado</CardTitle>
@@ -116,3 +116,5 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
+
+    

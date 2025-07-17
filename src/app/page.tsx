@@ -60,35 +60,35 @@ function SelectionView({ setMode }: { setMode: (mode: 'camera' | 'selection') =>
   };
 
   return (
-      <div className="flex h-screen w-full bg-background">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col h-screen min-w-0">
-          <Header />
-          <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
-              <div className="text-center">
-                  <h1 className="font-headline text-3xl">Enviar un Recibo</h1>
-                  <p className="text-muted-foreground mt-2">Elige cómo quieres enviar tu recibo.</p>
-              </div>
-              <div className="w-full max-w-md grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setMode('camera')}>
-                      <Camera className="h-12 w-12 text-primary mb-4" />
-                      <CardTitle className="font-headline text-xl">Hacer Foto</CardTitle>
-                      <CardDescription>Usa la cámara de tu dispositivo.</CardDescription>
-                  </Card>
-                  <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={handleUploadClick}>
-                      <Upload className="h-12 w-12 text-primary mb-4" />
-                      <CardTitle className="font-headline text-xl">Subir Imagen</CardTitle>
-                      <CardDescription>Selecciona un archivo de tu dispositivo.</CardDescription>
-                      <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleFileChange}
-                          className="hidden"
-                          accept="image/*"
-                      />
-                  </Card>
-              </div>
-          </main>
+      <div className="flex flex-col h-screen w-full bg-background">
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+            <AppSidebar />
+            <main className="flex-1 flex flex-col items-center justify-center p-4 gap-6 overflow-y-auto">
+                <div className="text-center">
+                    <h1 className="font-headline text-3xl">Enviar un Recibo</h1>
+                    <p className="text-muted-foreground mt-2">Elige cómo quieres enviar tu recibo.</p>
+                </div>
+                <div className="w-full max-w-md grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setMode('camera')}>
+                        <Camera className="h-12 w-12 text-primary mb-4" />
+                        <CardTitle className="font-headline text-xl">Hacer Foto</CardTitle>
+                        <CardDescription>Usa la cámara de tu dispositivo.</CardDescription>
+                    </Card>
+                    <Card className="flex flex-col items-center justify-center p-6 text-center hover:bg-accent/50 transition-colors cursor-pointer" onClick={handleUploadClick}>
+                        <Upload className="h-12 w-12 text-primary mb-4" />
+                        <CardTitle className="font-headline text-xl">Subir Imagen</CardTitle>
+                        <CardDescription>Selecciona un archivo de tu dispositivo.</CardDescription>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept="image/*"
+                        />
+                    </Card>
+                </div>
+            </main>
         </div>
       </div>
   );
@@ -207,3 +207,5 @@ export default function HomePage() {
 
   return <CameraView setMode={setMode} />;
 }
+
+    
