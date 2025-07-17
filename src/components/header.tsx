@@ -45,7 +45,7 @@ export default function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs p-0 bg-sidebar mt-16 h-[calc(100%-4rem)]">
+            <SheetContent side="left" className="sm:max-w-xs bg-sidebar">
               <nav className="grid gap-2 text-lg font-medium p-4">
                 {navLinks.filter(l => l.visible).map(link => (
                     <Link
