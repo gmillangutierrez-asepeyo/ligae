@@ -18,12 +18,12 @@ function SettingsPage() {
 
   return (
     <AuthGuard>
-      <div className="flex flex-col h-screen w-full">
+      <div className="flex flex-col h-screen w-full bg-background">
         <Header />
         <div className="flex flex-1 overflow-hidden">
             <AppSidebar />
-            <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto bg-background">
-            <Card className="w-full max-w-2xl">
+            <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+            <Card className="w-full max-w-2xl mx-auto">
                 <CardHeader>
                 <CardTitle className="font-headline text-2xl">Perfil y Estado</CardTitle>
                 <CardDescription>
@@ -31,7 +31,7 @@ function SettingsPage() {
                 </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-4 p-4 rounded-lg border bg-muted/50">
+                  <div className="space-y-4 p-4 rounded-lg border">
                     <h3 className="font-semibold text-lg">Información del Usuario</h3>
                     <p className="text-sm text-muted-foreground">Nombre: {user?.displayName}</p>
                     <p className="text-sm text-muted-foreground">Email: {user?.email}</p>
