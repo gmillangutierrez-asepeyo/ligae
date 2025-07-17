@@ -36,7 +36,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-sidebar h-16">
-      <div className="container mx-auto flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
