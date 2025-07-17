@@ -40,13 +40,13 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="md:hidden">
+              <Button size="icon" variant="outline" className="md:hidden bg-transparent">
                 <PanelLeft className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs bg-sidebar">
-               <SheetHeader className="flex flex-row items-center justify-between">
+            <SheetContent side="left" className="sm:max-w-xs bg-sidebar p-0">
+               <SheetHeader className="flex flex-row items-center justify-between border-b p-4">
                   <SheetTitle>
                     <div className="flex items-center gap-3">
                         <ReceiptEuroIcon className="h-8 w-8 text-primary" />
@@ -57,13 +57,13 @@ export default function Header() {
                     </div>
                   </SheetTitle>
                    <SheetClose asChild>
-                      <Button size="icon" variant="outline">
+                      <Button size="icon" variant="outline" className="bg-transparent">
                         <PanelLeft className="h-5 w-5" />
                         <span className="sr-only">Cerrar Menú</span>
                       </Button>
                     </SheetClose>
                 </SheetHeader>
-              <nav className="grid gap-2 text-lg font-medium p-4 mt-4">
+              <nav className="grid gap-2 text-lg font-medium p-4">
                 {navLinks.filter(l => l.visible).map(link => (
                     <SheetClose asChild key={link.href}>
                         <Link
@@ -79,7 +79,7 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-            <Button size="icon" variant="outline" className="hidden md:flex" onClick={toggleSidebar}>
+            <Button size="icon" variant="outline" className="hidden md:flex bg-transparent" onClick={toggleSidebar}>
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
