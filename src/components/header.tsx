@@ -46,10 +46,18 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs bg-sidebar">
-               <SheetHeader className="sr-only">
-                  <SheetTitle>Navegación Principal</SheetTitle>
+               <SheetHeader>
+                  <SheetTitle>
+                    <div className="flex items-center gap-3">
+                        <ReceiptEuroIcon className="h-8 w-8 text-primary" />
+                        <div className="flex flex-col items-start">
+                            <span className="font-headline text-lg font-bold">LIGAE</span>
+                            <span className="text-xs text-muted-foreground">ASEPEYO</span>
+                        </div>
+                    </div>
+                  </SheetTitle>
                 </SheetHeader>
-              <nav className="grid gap-2 text-lg font-medium p-4">
+              <nav className="grid gap-2 text-lg font-medium p-4 mt-4">
                 {navLinks.filter(l => l.visible).map(link => (
                     <Link
                         key={link.href}
