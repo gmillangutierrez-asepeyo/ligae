@@ -6,6 +6,8 @@
   :root {
     --background: 197 71% 94%;
     --foreground: 224 71% 4%;
+    --sidebar: 197 70% 90%;
+    --sidebar-foreground: 224 71% 4%;
     --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
@@ -33,6 +35,8 @@
   .dark {
     --background: 224 71% 4%;
     --foreground: 0 0% 98%;
+    --sidebar: 224 71% 6%;
+    --sidebar-foreground: 0 0% 98%;
     --card: 224 71% 4%;
     --card-foreground: 0 0% 98%;
     --popover: 224 71% 4%;
