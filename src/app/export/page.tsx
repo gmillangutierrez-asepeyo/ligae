@@ -19,16 +19,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Loader2, AlertCircle, Inbox, FileDown, CalendarIcon, FilterX } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Loader2, AlertCircle, Inbox, FileDown, CalendarIcon, FilterX, Check, ChevronsUpDown } from 'lucide-react';
 import { fetchAllApprovedTickets, fetchAllUsers, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useToken } from '@/contexts/token-context';
@@ -86,6 +80,7 @@ function ExportPage() {
     // Filters
     const [selectedUser, setSelectedUser] = useState<string>('all');
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+    const [isUserPopoverOpen, setIsUserPopoverOpen] = useState(false);
 
     const loadInitialData = useCallback(async () => {
         if (!token) return;
@@ -97,7 +92,9 @@ function ExportPage() {
                 fetchAllUsers(token),
             ]);
             setReceipts(fetchedReceipts);
-            setAllUsers(['all', ...fetchedUsers]);
+            // Ensure 'all' is always an option and appears first.
+            const uniqueUsers = Array.from(new Set(fetchedUsers));
+            setAllUsers(['all', ...uniqueUsers]);
         } catch (e: any) {
             setError(e.message || "Error al cargar los datos.");
         } finally {
@@ -194,18 +191,49 @@ function ExportPage() {
                                 <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
                                     <div className="w-full md:w-1/3">
                                         <label htmlFor="user-filter" className="text-sm font-medium text-muted-foreground">Usuario</label>
-                                        <Select value={selectedUser} onValueChange={setSelectedUser}>
-                                            <SelectTrigger id="user-filter">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {allUsers.map(email => (
-                                                    <SelectItem key={email} value={email}>
-                                                        {email === 'all' ? 'Todos los usuarios' : email}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                         <Popover open={isUserPopoverOpen} onOpenChange={setIsUserPopoverOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={isUserPopoverOpen}
+                                                    className="w-full justify-between"
+                                                >
+                                                    {selectedUser === 'all'
+                                                        ? 'Todos los usuarios'
+                                                        : selectedUser}
+                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-full min-w-[300px] p-0">
+                                                <Command>
+                                                    <CommandInput placeholder="Buscar usuario..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>No se encontró el usuario.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {allUsers.map((email) => (
+                                                                <CommandItem
+                                                                    key={email}
+                                                                    value={email}
+                                                                    onSelect={(currentValue) => {
+                                                                        setSelectedUser(currentValue === selectedUser ? "" : currentValue)
+                                                                        setIsUserPopoverOpen(false)
+                                                                    }}
+                                                                >
+                                                                    <Check
+                                                                        className={cn(
+                                                                            "mr-2 h-4 w-4",
+                                                                            selectedUser === email ? "opacity-100" : "opacity-0"
+                                                                        )}
+                                                                    />
+                                                                    {email === 'all' ? 'Todos los usuarios' : email}
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                     <div className="w-full md:w-1/3">
                                         <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas</label>
@@ -311,3 +339,5 @@ function ExportPage() {
 }
 
 export default ExportPage;
+
+    
