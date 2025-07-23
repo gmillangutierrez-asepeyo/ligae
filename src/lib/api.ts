@@ -399,6 +399,7 @@ export async function getManagersForUser(userEmail: string, token: string): Prom
 
 interface ApprovedTicketsFilters {
     userEmail?: string;
+    sector?: string;
     startDate?: Date;
     endDate?: Date;
 }
@@ -420,6 +421,16 @@ export async function fetchAllApprovedTickets(token: string, filters: ApprovedTi
                 field: { fieldPath: 'usuario' },
                 op: 'EQUAL',
                 value: { stringValue: filters.userEmail },
+            },
+        });
+    }
+
+    if (filters.sector) {
+        queryFilters.push({
+            fieldFilter: {
+                field: { fieldPath: 'sector' },
+                op: 'EQUAL',
+                value: { stringValue: filters.sector },
             },
         });
     }
@@ -524,3 +535,5 @@ export async function fetchAllUsers(token: string): Promise<string[]> {
 
     return Array.from(new Set(emails)); // Return unique emails
 }
+
+    

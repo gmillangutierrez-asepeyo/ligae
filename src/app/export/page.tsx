@@ -22,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, AlertCircle, Inbox, FileDown, CalendarIcon, FilterX, Check, ChevronsUpDown } from 'lucide-react';
 import { fetchAllApprovedTickets, fetchAllUsers, type CleanReceipt } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
@@ -79,6 +80,7 @@ function ExportPage() {
     
     // Filters
     const [selectedUser, setSelectedUser] = useState<string>('all');
+    const [selectedSector, setSelectedSector] = useState<string>('all');
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
     const [isUserPopoverOpen, setIsUserPopoverOpen] = useState(false);
 
@@ -115,6 +117,7 @@ function ExportPage() {
         try {
             const filters = {
                 userEmail: selectedUser === 'all' ? undefined : selectedUser,
+                sector: selectedSector === 'all' ? undefined : selectedSector,
                 startDate: dateRange?.from,
                 endDate: dateRange?.to,
             };
@@ -125,7 +128,7 @@ function ExportPage() {
         } finally {
             setLoading(false);
         }
-    }, [token, selectedUser, dateRange]);
+    }, [token, selectedUser, selectedSector, dateRange]);
     
     useEffect(() => {
         // Automatically apply filters when they change
@@ -134,6 +137,7 @@ function ExportPage() {
     
     const handleClearFilters = () => {
         setSelectedUser('all');
+        setSelectedSector('all');
         setDateRange(undefined);
         // The useEffect on handleFilterChange will re-fetch the data
     };
@@ -165,7 +169,7 @@ function ExportPage() {
         }
     };
     
-    const hasActiveFilters = selectedUser !== 'all' || dateRange !== undefined;
+    const hasActiveFilters = selectedUser !== 'all' || selectedSector !== 'all' || dateRange !== undefined;
 
     return (
         <AuthGuard>
@@ -188,8 +192,8 @@ function ExportPage() {
 
                             {/* Filter Section */}
                             <Card className="mb-8">
-                                <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
-                                    <div className="w-full md:w-1/3">
+                                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-4 items-center gap-4">
+                                    <div className="w-full">
                                         <label htmlFor="user-filter" className="text-sm font-medium text-muted-foreground">Usuario</label>
                                          <Popover open={isUserPopoverOpen} onOpenChange={setIsUserPopoverOpen}>
                                             <PopoverTrigger asChild>
@@ -235,7 +239,21 @@ function ExportPage() {
                                             </PopoverContent>
                                         </Popover>
                                     </div>
-                                    <div className="w-full md:w-1/3">
+                                    <div className="w-full">
+                                        <label htmlFor="sector-filter" className="text-sm font-medium text-muted-foreground">Sector</label>
+                                        <Select value={selectedSector} onValueChange={setSelectedSector}>
+                                            <SelectTrigger id="sector-filter">
+                                                <SelectValue placeholder="Seleccionar sector" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todos los sectores</SelectItem>
+                                                <SelectItem value="comida">Comida</SelectItem>
+                                                <SelectItem value="transporte">Transporte</SelectItem>
+                                                <SelectItem value="otros">Otros</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="w-full">
                                         <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas</label>
                                         <Popover>
                                             <PopoverTrigger asChild>
@@ -270,7 +288,7 @@ function ExportPage() {
                                         </Popover>
                                     </div>
                                     {hasActiveFilters && (
-                                        <div className="w-full md:w-auto md:self-end">
+                                        <div className="w-full md:self-end">
                                             <Button variant="ghost" onClick={handleClearFilters}>
                                                 <FilterX className="mr-2 h-4 w-4" />
                                                 Limpiar Filtros
