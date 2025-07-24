@@ -93,7 +93,9 @@ function VerifyForm({
       // Notify managers in a separate try-catch block
       try {
         const managerEmails = await getManagersForUser(data.usuario, token);
-        if (managerEmails.length > 0) {
+        const managersToNotify = managerEmails.filter(email => email !== data.usuario);
+
+        if (managersToNotify.length > 0) {
             const subject = `Nuevo recibo de ${data.usuario} para su validación`;
             const htmlBody = `
                 <p>Estimado/a gestor/a,</p>
@@ -112,7 +114,7 @@ function VerifyForm({
             `;
             const plainText = `Estimado/a gestor/a,\n\nLe informamos que el usuario ${data.usuario} ha registrado un nuevo recibo que requiere su atención.\n\nDetalles del recibo:\n- Importe: ${data.importe.toFixed(2)} €\n- Fecha: ${data.fecha}\n- Sector: ${data.sector}\n\nPor favor, acceda a la plataforma para revisar y aprobar la solicitud: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
 
-            const emailPromises = managerEmails.map(managerEmail => 
+            const emailPromises = managersToNotify.map(managerEmail => 
               sendEmail({
                 to: managerEmail,
                 subject,

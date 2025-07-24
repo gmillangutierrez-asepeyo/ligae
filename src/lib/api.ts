@@ -379,19 +379,15 @@ export async function fetchExporterEmails(token: string): Promise<string[]> {
 export async function getManagersForUser(userEmail: string, token: string): Promise<string[]> {
     const hierarchy = await fetchHierarchy(token);
     const managers: string[] = [];
-    
-    if (hierarchy[userEmail]) {
-        managers.push(userEmail);
-    }
 
+    // Find who manages the user by checking all manager lists.
     for (const manager in hierarchy) {
         if (hierarchy[manager].includes(userEmail)) {
-            if (!managers.includes(manager)) {
-                managers.push(manager);
-            }
+            managers.push(manager);
         }
     }
     
+    // Return a unique list of managers.
     return Array.from(new Set(managers));
 }
 
@@ -535,5 +531,3 @@ export async function fetchAllUsers(token: string): Promise<string[]> {
 
     return Array.from(new Set(emails)); // Return unique emails
 }
-
-    
