@@ -92,9 +92,8 @@ function VerifyForm({
 
       // Notify managers in a separate try-catch block
       try {
-        const managerEmails = await getManagersForUser(data.usuario, token);
-        const managersToNotify = managerEmails.filter(email => email !== data.usuario);
-
+        const managersToNotify = await getManagersForUser(data.usuario, token);
+        
         if (managersToNotify.length > 0) {
             const subject = `Nuevo recibo de ${data.usuario} para su validación`;
             const htmlBody = `
@@ -355,7 +354,7 @@ function VerifyPage() {
         <Header />
         <div className="flex flex-1">
             <AppSidebar />
-            <main className="flex-1 p-4 sm:p-6 md:p-8 bg-background">
+            <main className="flex-1 p-4 sm:p-6 md:p-8">
             <div className="mb-8">
                 <h1 className="font-headline text-3xl font-bold">Verificar Recibo</h1>
                 <p className="text-muted-foreground">Por favor, comprueba los datos extraídos y corrígelos si es necesario.</p>
