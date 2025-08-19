@@ -1,0 +1,27 @@
+
+# Para subir este fichero a Firestore usando curl y que se guarde con el ID "exporters",
+# debes usar el método PATCH y apuntar la URL directamente al documento.
+#
+# Ejemplo de comando:
+# curl -X PATCH \
+#   -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+#   -H "Content-Type: application/json" \
+#   -d "@exporters.json" \
+#   "https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/(default)/documents/manager_hierarchy/exporters"
+#
+# IMPORTANTE:
+# - Cualquier correo en esta lista tendrá acceso a la pestaña de "Exportación"
+#   para ver todos los recibos aprobados y descargarlos en CSV.
+
+{
+  "fields": {
+    "emails": {
+      "arrayValue": {
+        "values": [
+          { "stringValue": "gmillangutierrez@asepeyo.es" },
+          { "stringValue": "admin.contabilidad@asepeyo.es" }
+        ]
+      }
+    }
+  }
+}
