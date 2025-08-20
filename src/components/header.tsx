@@ -41,7 +41,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="md:hidden hover:bg-white/20 text-sidebar-foreground hover:text-sidebar-foreground">
+              <Button size="icon" variant="ghost" className="md:hidden text-sidebar-foreground hover:bg-accent hover:text-accent-foreground">
                 <PanelLeft className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
@@ -58,7 +58,7 @@ export default function Header() {
                     </div>
                   </SheetTitle>
                    <SheetClose asChild>
-                      <Button size="icon" variant="ghost" className="hover:bg-white/20">
+                      <Button size="icon" variant="ghost" className="hover:bg-accent hover:text-accent-foreground">
                         <PanelLeft className="h-5 w-5" />
                         <span className="sr-only">Cerrar Menú</span>
                       </Button>
@@ -85,7 +85,7 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-            <Button size="icon" variant="ghost" className="hidden md:flex hover:bg-white/20 text-sidebar-foreground hover:text-sidebar-foreground" onClick={toggleSidebar}>
+            <Button size="icon" variant="ghost" className="hidden md:flex text-sidebar-foreground hover:bg-accent hover:text-accent-foreground" onClick={toggleSidebar}>
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
