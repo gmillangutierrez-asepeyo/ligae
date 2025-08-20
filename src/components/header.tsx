@@ -36,7 +36,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b bg-sidebar text-sidebar-foreground h-16">
+    <header className="sticky top-0 z-30 w-full border-b text-sidebar-foreground h-16 bg-gradient-to-r from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))]">
       <div className="w-full mx-auto flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Sheet>
@@ -46,11 +46,11 @@ export default function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs bg-sidebar p-0 text-sidebar-foreground">
-               <SheetHeader className="flex flex-row items-center justify-between border-b p-4">
+            <SheetContent side="left" className="sm:max-w-xs bg-gradient-to-b from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))] p-0 text-sidebar-foreground">
+               <SheetHeader className="flex flex-row items-center justify-between border-b border-white/20 p-4">
                   <SheetTitle>
                     <div className="flex items-center gap-3">
-                        <ReceiptEuroIcon className="h-8 w-8" />
+                        <ReceiptEuroIcon className="h-8 w-8 text-sidebar-foreground" />
                         <div className="flex flex-col items-start">
                             <span className="font-headline text-lg font-bold">LIGAE</span>
                             <span className="text-xs opacity-80">ASEPEYO</span>
@@ -90,7 +90,7 @@ export default function Header() {
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-sidebar-foreground">
                 <ReceiptEuroIcon className="h-8 w-8" />
                 <div className="flex flex-col">
                     <span className="font-headline text-lg font-bold">LIGAE</span>

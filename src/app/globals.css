@@ -6,7 +6,9 @@
   :root {
     --background: 197 80% 96%;
     --foreground: 224 71% 4%;
-    --sidebar: 199 99% 43%;
+    --gradient-from: 210 100% 45%;
+    --gradient-to: 195 90% 35%;
+    --sidebar: 199 99% 43%; /* Fallback */
     --sidebar-foreground: 0 0% 100%;
     --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
@@ -18,8 +20,8 @@
     --secondary-foreground: 224 71% 4%;
     --muted: 197 60% 88%;
     --muted-foreground: 224 71% 25%;
-    --accent: 47 100% 69%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 199 99% 43%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 197 50% 80%;
@@ -35,7 +37,9 @@
   .dark {
     --background: 224 71% 8%;
     --foreground: 0 0% 98%;
-    --sidebar: 199 99% 43%;
+    --gradient-from: 210 100% 45%;
+    --gradient-to: 195 90% 35%;
+    --sidebar: 199 99% 43%; /* Fallback */
     --sidebar-foreground: 0 0% 100%;
     --card: 224 71% 4%;
     --card-foreground: 0 0% 98%;
@@ -47,9 +51,9 @@
     --secondary-foreground: 0 0% 98%;
     --muted: 224 71% 10%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 47 100% 69%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 199 99% 43%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     --border: 224 71% 15%;
     --input: 224 71% 15%;

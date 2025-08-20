@@ -202,7 +202,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-background p-0 text-foreground [&>button]:hidden"
+            className="w-[--sidebar-width] bg-gradient-to-b from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))] p-0 text-foreground [&>button]:hidden"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -219,7 +219,7 @@ const Sidebar = React.forwardRef<
     return (
       <aside
         ref={ref}
-        className={cn("group hidden md:block text-foreground bg-sidebar", className)}
+        className={cn("group hidden md:block text-foreground bg-transparent", className)}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -247,7 +247,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-border group-data-[variant=floating]:shadow"
+            className="flex h-full w-full flex-col bg-gradient-to-b from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))] group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-border group-data-[variant=floating]:shadow"
           >
             {children}
           </div>
