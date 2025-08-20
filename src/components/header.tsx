@@ -41,7 +41,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="md:hidden hover:bg-white/20">
+              <Button size="icon" variant="ghost" className="md:hidden hover:bg-white/20 text-sidebar-foreground hover:text-sidebar-foreground">
                 <PanelLeft className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
@@ -73,7 +73,7 @@ export default function Header() {
                               'flex items-center gap-4 px-2.5 py-2 rounded-md transition-colors',
                                pathname === link.href 
                                ? 'bg-accent text-accent-foreground' 
-                               : 'hover:bg-white/20'
+                               : 'hover:bg-accent hover:text-accent-foreground'
                             )}
                         >
                             <link.icon className="h-5 w-5" />
@@ -85,7 +85,7 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-            <Button size="icon" variant="ghost" className="hidden md:flex hover:bg-white/20" onClick={toggleSidebar}>
+            <Button size="icon" variant="ghost" className="hidden md:flex hover:bg-white/20 text-sidebar-foreground hover:text-sidebar-foreground" onClick={toggleSidebar}>
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
