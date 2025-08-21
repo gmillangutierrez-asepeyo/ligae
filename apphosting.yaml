@@ -27,5 +27,4 @@ MAIL_USER: 'ligae.asepeyo@gmail.com'
 # IMPORTANTE: Si usas Gmail con verificación en dos pasos, debes generar una "Contraseña de Aplicación"
 # de 16 caracteres desde la configuración de seguridad de tu cuenta de Google y ponerla aquí.
 # NO uses tu contraseña habitual.
-# Ejemplo: 'abcdefghijklmnop'
-MAIL_PASS: 'bmtwyseakzppwylj'
+# Ejemplo: 'abcdefghijklmnop'l
