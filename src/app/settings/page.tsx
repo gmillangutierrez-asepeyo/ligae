@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -21,12 +20,12 @@ function SettingsPage() {
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleFetchProfile = async () => {
-      if (!user?.email || profile) return; // Fetch only once
+      if (!user?.email) return;
 
       setProfileLoading(true);
       setProfileError(null);
@@ -49,10 +48,10 @@ function SettingsPage() {
     };
     
     handleFetchProfile();
-  }, [user, profile, toast]);
+  }, [user, toast]);
 
   const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
-  const organization = profile?.organizations?.find(org => org.primary === true);
+  const organization = profile?.organizations?.[0]; // Get the first organization from the array
 
   return (
     <AuthGuard>
@@ -87,6 +86,7 @@ function SettingsPage() {
                           {organization?.costCenter && <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization.costCenter}</p>}
                         </>
                       )}
+                      {!profile && !profileLoading && !profileError && <p className="text-muted-foreground text-xs">No se encontró información adicional del perfil.</p>}
                     </div>
                      {profileError && (
                        <Alert variant="destructive">
