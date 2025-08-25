@@ -1,7 +1,7 @@
 'use server';
 
 import { google } from 'googleapis';
-import { getAccessToken } from './getToken';
+import { getWorkspaceAccessToken } from './getToken';
 
 // Define the structure of the user profile data we want to return.
 // This is based on the fields available in the Admin SDK Directory API response.
@@ -37,11 +37,10 @@ export async function getUserProfile(userEmail: string): Promise<{ profile?: Use
         // 1. Define the necessary scope for the Admin SDK.
         const scopes = ['https://www.googleapis.com/auth/admin.directory.user.readonly'];
 
-        // 2. Get an access token with the required scopes.
-        // Our modified getAccessToken function handles the domain-wide delegation.
-        const tokenResult = await getAccessToken(scopes);
+        // 2. Get a Workspace-specific access token with the required scopes and delegation.
+        const tokenResult = await getWorkspaceAccessToken(scopes);
         if (tokenResult.error || !tokenResult.token) {
-            throw new Error(tokenResult.error || 'No se pudo obtener el token de acceso.');
+            throw new Error(tokenResult.error || 'No se pudo obtener el token de acceso para Workspace.');
         }
 
         // 3. Initialize the Admin SDK client.
