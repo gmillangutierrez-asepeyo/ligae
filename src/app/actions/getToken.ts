@@ -1,12 +1,24 @@
 'use server';
 
 import { GoogleAuth } from 'google-auth-library';
+import { JWT } from 'google-auth-library';
+
+// --- CONFIGURACIÓN ---
+// El email de un administrador de Google Workspace.
+// La cuenta de servicio actuará "en nombre de" este usuario para acceder a la API de Admin.
+const ADMIN_USER_EMAIL = 'gmillangutierrez@asepeyo.es';
+
 
 /**
  * Generates a short-lived OAuth2 access token using a service account.
  * The service account key is stored securely in an environment variable.
+ * 
+ * This function now supports requesting specific scopes, which is necessary for
+ * domain-wide delegation with the Google Workspace Admin SDK.
+ * 
+ * @param scopes - An array of scope strings required for the token.
  */
-export async function getAccessToken(): Promise<{ token?: string, error?: string }> {
+export async function getAccessToken(scopes?: string[]): Promise<{ token?: string, error?: string }> {
     try {
         const serviceAccountJsonString = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
         if (!serviceAccountJsonString) {
@@ -24,16 +36,21 @@ export async function getAccessToken(): Promise<{ token?: string, error?: string
             throw new Error('Fallo al interpretar GOOGLE_SERVICE_ACCOUNT_JSON. Asegúrate de que es una cadena JSON válida y que la clave privada está correctamente formateada.');
         }
 
-        const auth = new GoogleAuth({
-            credentials: serviceAccountCredentials,
-            scopes: 'https://www.googleapis.com/auth/cloud-platform',
+        const requestedScopes = scopes || ['https://www.googleapis.com/auth/cloud-platform'];
+
+        const auth = new JWT({
+            email: serviceAccountCredentials.client_email,
+            key: serviceAccountCredentials.private_key,
+            scopes: requestedScopes,
+            // This is the key part for domain-wide delegation.
+            // The service account impersonates this user to access the Admin SDK.
+            subject: ADMIN_USER_EMAIL,
         });
 
-        const client = await auth.getClient();
-        const accessToken = await client.getAccessToken();
-
+        const accessToken = await auth.getAccessToken();
+        
         if (!accessToken.token) {
-             throw new Error('Fallo al obtener el token de acceso de Google. Revisa las credenciales de la cuenta de servicio.');
+             throw new Error('Fallo al obtener el token de acceso de Google. Revisa las credenciales de la cuenta de servicio y la configuración de delegación de dominio en Google Workspace.');
         }
 
         return { token: accessToken.token };
