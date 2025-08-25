@@ -25,7 +25,10 @@ function SettingsPage() {
 
   useEffect(() => {
     const handleFetchProfile = async () => {
-      if (!user?.email) return;
+      if (!user?.email) {
+          setProfileLoading(false);
+          return;
+      }
 
       setProfileLoading(true);
       setProfileError(null);
@@ -51,7 +54,7 @@ function SettingsPage() {
   }, [user, toast]);
 
   const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
-  const organization = profile?.organizations?.[0]; // Get the first organization from the array
+  const organization = profile?.organizations?.[0];
 
   return (
     <AuthGuard>
@@ -80,10 +83,10 @@ function SettingsPage() {
                       {profile && (
                         <>
                           {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
-                          {organization?.name && <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization.name}</p>}
-                          {organization?.title && <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization.title}</p>}
-                          {organization?.department && <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization.department}</p>}
-                          {organization?.costCenter && <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization.costCenter}</p>}
+                          <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization?.name || 'No disponible'}</p>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization?.title || 'No disponible'}</p>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization?.department || 'No disponible'}</p>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization?.costCenter || 'No disponible'}</p>
                         </>
                       )}
                       {!profile && !profileLoading && !profileError && <p className="text-muted-foreground text-xs">No se encontró información adicional del perfil.</p>}
