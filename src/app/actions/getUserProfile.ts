@@ -1,3 +1,4 @@
+
 'use server';
 
 import { google } from 'googleapis';
@@ -13,11 +14,11 @@ export interface UserProfile {
         fullName: string;
     };
     organizations?: Array<{
-        name?: string;
-        title?: string;
-        department?: string;
-        costCenter?: string;
-        location?: string;
+        name?: string | null;
+        title?: string | null;
+        department?: string | null;
+        costCenter?: string | null;
+        location?: string | null;
         primary?: boolean;
     }>;
     phones?: Array<{

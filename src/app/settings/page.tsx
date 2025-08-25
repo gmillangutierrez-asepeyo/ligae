@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -53,8 +54,8 @@ function SettingsPage() {
     handleFetchProfile();
   }, [user, toast]);
 
-  const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
   const organization = profile?.organizations?.[0];
+  const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
 
   return (
     <AuthGuard>
@@ -82,9 +83,9 @@ function SettingsPage() {
                       <p><strong className="text-muted-foreground w-28 inline-block">Email:</strong> {user?.email}</p>
                       {profile && (
                         <>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Organización:</strong> {organization?.name || 'Asepeyo'}</p>
                           {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
                           <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization?.location || 'No disponible'}</p>
-                          <p><strong className="text-muted-foreground w-28 inline-block">Organización:</strong> {organization?.name || 'No disponible'}</p>
                           <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization?.title || 'No disponible'}</p>
                           <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization?.department || 'No disponible'}</p>
                           <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization?.costCenter || 'No disponible'}</p>
