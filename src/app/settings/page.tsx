@@ -83,7 +83,8 @@ function SettingsPage() {
                       {profile && (
                         <>
                           {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
-                          <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization?.name || 'No disponible'}</p>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization?.location || 'No disponible'}</p>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Organización:</strong> {organization?.name || 'No disponible'}</p>
                           <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization?.title || 'No disponible'}</p>
                           <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization?.department || 'No disponible'}</p>
                           <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization?.costCenter || 'No disponible'}</p>

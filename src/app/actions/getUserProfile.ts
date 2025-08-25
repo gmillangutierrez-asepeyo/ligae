@@ -17,6 +17,7 @@ export interface UserProfile {
         title?: string;
         department?: string;
         costCenter?: string;
+        location?: string;
         primary?: boolean;
     }>;
     phones?: Array<{
