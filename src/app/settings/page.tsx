@@ -1,20 +1,19 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
 import AppSidebar from '@/components/app-sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToken } from '@/contexts/token-context';
-import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck, FileDown, UserSearch } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck, FileDown } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '@/components/ui/badge';
 import { getUserProfile, type UserProfile } from '../actions/getUserProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 
 function SettingsPage() {
   const { user, isManager, isExporter, managedUsers, myManagers } = useAuth();
@@ -25,30 +24,35 @@ function SettingsPage() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  const handleFetchProfile = async () => {
-    if (!user?.email) return;
+  useEffect(() => {
+    const handleFetchProfile = async () => {
+      if (!user?.email || profile) return; // Fetch only once
 
-    setProfileLoading(true);
-    setProfileError(null);
-    try {
-      const result = await getUserProfile(user.email);
-      if (result.error) {
-        throw new Error(result.error);
+      setProfileLoading(true);
+      setProfileError(null);
+      try {
+        const result = await getUserProfile(user.email);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        setProfile(result.profile ?? null);
+      } catch (e: any) {
+        setProfileError(e.message);
+        toast({
+          variant: 'destructive',
+          title: 'Error al Cargar Perfil',
+          description: e.message || 'No se pudo obtener la información del perfil de Workspace.',
+        });
+      } finally {
+        setProfileLoading(false);
       }
-      setProfile(result.profile ?? null);
-    } catch (e: any) {
-      setProfileError(e.message);
-      toast({
-        variant: 'destructive',
-        title: 'Error al Cargar Perfil',
-        description: e.message || 'No se pudo obtener la información del perfil de Workspace.',
-      });
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-  
+    };
+    
+    handleFetchProfile();
+  }, [user, profile, toast]);
+
   const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
+  const organization = profile?.organizations?.find(org => org.primary === true);
 
   return (
     <AuthGuard>
@@ -67,16 +71,20 @@ function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4 p-4 rounded-lg border">
-                    <h3 className="font-semibold text-lg">Información del Usuario</h3>
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Información del Usuario</h3>
+                        {profileLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+                    </div>
                     <div className="text-sm space-y-1">
                       <p><strong className="text-muted-foreground w-28 inline-block">Nombre:</strong> {user?.displayName}</p>
                       <p><strong className="text-muted-foreground w-28 inline-block">Email:</strong> {user?.email}</p>
                       {profile && (
                         <>
                           {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
-                          {profile.organizations?.[0]?.title && <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {profile.organizations[0].title}</p>}
-                          {profile.organizations?.[0]?.department && <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {profile.organizations[0].department}</p>}
-                          {profile.organizations?.[0]?.costCenter && <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {profile.organizations[0].costCenter}</p>}
+                          {organization?.name && <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization.name}</p>}
+                          {organization?.title && <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization.title}</p>}
+                          {organization?.department && <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization.department}</p>}
+                          {organization?.costCenter && <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization.costCenter}</p>}
                         </>
                       )}
                     </div>
@@ -87,10 +95,6 @@ function SettingsPage() {
                           <AlertDescription>{profileError}</AlertDescription>
                       </Alert>
                     )}
-                    <Button onClick={handleFetchProfile} className="w-full sm:w-auto" variant="secondary" size="sm" disabled={profileLoading}>
-                      <UserSearch className={`mr-2 h-4 w-4 ${profileLoading ? 'animate-spin' : ''}`} />
-                      {profile ? 'Recargar Datos del Perfil' : 'Cargar Datos del Perfil'}
-                    </Button>
                   </div>
                   
 

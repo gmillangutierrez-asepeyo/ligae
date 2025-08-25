@@ -13,6 +13,7 @@ export interface UserProfile {
         fullName: string;
     };
     organizations?: Array<{
+        name?: string;
         title?: string;
         department?: string;
         costCenter?: string;
@@ -56,11 +57,10 @@ export async function getUserProfile(userEmail: string): Promise<{ profile?: Use
         });
 
         // 4. Call the Admin SDK API to get the user's profile.
-        // viewType: 'domain_public' gets basic info without needing full admin read rights.
-        // For custom fields, you might need 'admin_view' or 'full_view'. We will use domain_public for now.
+        // projection: 'full' gets all available fields, including custom schemas.
         const res = await admin.users.get({
             userKey: userEmail,
-            projection: 'full', // Request all public and custom fields
+            projection: 'full', 
             viewType: 'domain_public',
         });
 
