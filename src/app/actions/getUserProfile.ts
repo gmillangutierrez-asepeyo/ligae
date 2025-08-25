@@ -22,6 +22,10 @@ export interface UserProfile {
         value: string;
         type: string;
     }>;
+    externalIds?: Array<{
+        value: string;
+        type: string;
+    }>
     [key: string]: any; // Allow other properties
 }
 
@@ -53,8 +57,10 @@ export async function getUserProfile(userEmail: string): Promise<{ profile?: Use
 
         // 4. Call the Admin SDK API to get the user's profile.
         // viewType: 'domain_public' gets basic info without needing full admin read rights.
+        // For custom fields, you might need 'admin_view' or 'full_view'. We will use domain_public for now.
         const res = await admin.users.get({
             userKey: userEmail,
+            projection: 'full', // Request all public and custom fields
             viewType: 'domain_public',
         });
 

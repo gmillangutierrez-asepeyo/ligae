@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { getUserProfile, type UserProfile } from '../actions/getUserProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 function SettingsPage() {
   const { user, isManager, isExporter, managedUsers, myManagers } = useAuth();
@@ -29,7 +30,6 @@ function SettingsPage() {
 
     setProfileLoading(true);
     setProfileError(null);
-    setProfile(null);
     try {
       const result = await getUserProfile(user.email);
       if (result.error) {
@@ -47,6 +47,8 @@ function SettingsPage() {
       setProfileLoading(false);
     }
   };
+  
+  const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
 
   return (
     <AuthGuard>
@@ -66,9 +68,31 @@ function SettingsPage() {
                 <CardContent className="space-y-6">
                   <div className="space-y-4 p-4 rounded-lg border">
                     <h3 className="font-semibold text-lg">Información del Usuario</h3>
-                    <p className="text-sm text-muted-foreground">Nombre: {user?.displayName}</p>
-                    <p className="text-sm text-muted-foreground">Email: {user?.email}</p>
+                    <div className="text-sm space-y-1">
+                      <p><strong className="text-muted-foreground w-28 inline-block">Nombre:</strong> {user?.displayName}</p>
+                      <p><strong className="text-muted-foreground w-28 inline-block">Email:</strong> {user?.email}</p>
+                      {profile && (
+                        <>
+                          {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
+                          {profile.organizations?.[0]?.title && <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {profile.organizations[0].title}</p>}
+                          {profile.organizations?.[0]?.department && <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {profile.organizations[0].department}</p>}
+                          {profile.organizations?.[0]?.costCenter && <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {profile.organizations[0].costCenter}</p>}
+                        </>
+                      )}
+                    </div>
+                     {profileError && (
+                       <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Error de Perfil de Workspace</AlertTitle>
+                          <AlertDescription>{profileError}</AlertDescription>
+                      </Alert>
+                    )}
+                    <Button onClick={handleFetchProfile} className="w-full sm:w-auto" variant="secondary" size="sm" disabled={profileLoading}>
+                      <UserSearch className={`mr-2 h-4 w-4 ${profileLoading ? 'animate-spin' : ''}`} />
+                      {profile ? 'Recargar Datos del Perfil' : 'Cargar Datos del Perfil'}
+                    </Button>
                   </div>
+                  
 
                   <div className="space-y-4 p-4 rounded-lg border">
                     <h3 className="font-semibold text-lg">Roles y Jerarquía</h3>
@@ -137,49 +161,6 @@ function SettingsPage() {
                   <Button onClick={() => fetchToken()} className="w-full" disabled={isTokenLoading}>
                     <RefreshCw className={`mr-2 h-4 w-4 ${isTokenLoading ? 'animate-spin' : ''}`} />
                     Refrescar Token de Acceso
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline text-2xl">Perfil de Google Workspace</CardTitle>
-                  <CardDescription>
-                    Información adicional obtenida de tu perfil de empresa.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {profileLoading && (
-                    <div className="flex justify-center items-center h-24">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                  )}
-                  {profileError && (
-                     <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error de Permisos</AlertTitle>
-                        <AlertDescription>{profileError}</AlertDescription>
-                    </Alert>
-                  )}
-                  {profile && (
-                    <div className="space-y-2 text-sm p-4 border rounded-lg">
-                      {profile.organizations && profile.organizations.length > 0 && (
-                         <>
-                            {profile.organizations[0].title && <p><strong className="text-muted-foreground">Puesto:</strong> {profile.organizations[0].title}</p>}
-                            {profile.organizations[0].department && <p><strong className="text-muted-foreground">Departamento:</strong> {profile.organizations[0].department}</p>}
-                            {profile.organizations[0].costCenter && <p><strong className="text-muted-foreground">Centro de Coste:</strong> {profile.organizations[0].costCenter}</p>}
-                         </>
-                      )}
-                      {profile.phones && profile.phones.map((phone, index) => (
-                          <p key={index}><strong className="text-muted-foreground capitalize">{phone.type || 'Teléfono'}:</strong> {phone.value}</p>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={handleFetchProfile} className="w-full" disabled={profileLoading}>
-                    <UserSearch className={`mr-2 h-4 w-4 ${profileLoading ? 'animate-spin' : ''}`} />
-                    {profile ? 'Recargar Datos del Perfil' : 'Cargar Datos del Perfil'}
                   </Button>
                 </CardFooter>
               </Card>
