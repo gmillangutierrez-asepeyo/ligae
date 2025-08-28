@@ -56,7 +56,11 @@ async function getJWTAuth(): Promise<JWT> {
     if (!credentialsString || !adminUserEmail) {
       throw new Error("Service account credentials or admin email not configured.");
     }
-    const credentials = JSON.parse(credentialsString.replace(/\\n/g, '\n'));
+    const credentials = JSON.parse(credentialsString);
+    // The private key from the .env file has its newlines escaped.
+    // We need to un-escape them for the crypto library to parse the PEM key correctly.
+    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+
 
     return new JWT({
         email: credentials.client_email,
@@ -309,5 +313,3 @@ export async function getManagedUsers(managerEmail: string): Promise<{ users: Me
         return { users: null, error: errorMessage };
     }
 }
-
-    
