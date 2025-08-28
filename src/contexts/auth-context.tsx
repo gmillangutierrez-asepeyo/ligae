@@ -8,9 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useToken } from './token-context';
 import { fetchExporterEmails } from '@/lib/api';
 import { getMyManagers, getManagedUsers } from '@/app/actions/hierarchy';
+import { getUserProfile, type UserProfile } from '@/app/actions/getUserProfile';
 
 interface AuthContextType {
   user: User | null;
+  workspaceProfile: UserProfile | null;
   loading: boolean;
   isManager: boolean;
   managedUsers: string[];
@@ -24,6 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [workspaceProfile, setWorkspaceProfile] = useState<UserProfile | null>(null);
   const [isManager, setIsManager] = useState(false);
   const [isExporter, setIsExporter] = useState(false);
   const [managedUsers, setManagedUsers] = useState<string[]>([]);
@@ -38,9 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
 
-      // Handle user being logged out or accessing with wrong domain
       if (!currentUser || !currentUser.email || !currentUser.email.endsWith('@asepeyo.es')) {
-        if (currentUser) { // If logged in but wrong domain
+        if (currentUser) { 
           await signOut(auth);
           toast({
             variant: 'destructive',
@@ -49,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
         setUser(null);
+        setWorkspaceProfile(null);
         setIsManager(false);
         setIsExporter(false);
         setManagedUsers([]);
@@ -57,26 +60,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // User is authenticated correctly
       setUser(currentUser);
       
-      // Now, fetch all roles and hierarchy data before finishing loading
       try {
         const userEmail = currentUser.email;
-        // Ensure token is available before fetching roles
         const apiToken = token || await fetchToken();
 
         if (!apiToken) {
           throw new Error("No se pudo obtener el token de la API para cargar los roles.");
         }
 
-        const [myManagersResult, managedUsersResult, fetchedExporters] = await Promise.all([
+        const [myManagersResult, managedUsersResult, fetchedExporters, profileResult] = await Promise.all([
           getMyManagers(userEmail),
           getManagedUsers(userEmail),
-          fetchExporterEmails(apiToken)
+          fetchExporterEmails(apiToken),
+          getUserProfile(userEmail)
         ]);
 
-        // Handle user's managers
+        if (profileResult.error) {
+            console.warn(`Could not get workspace profile for ${userEmail}: ${profileResult.error}`);
+            setWorkspaceProfile(null);
+        } else {
+            setWorkspaceProfile(profileResult.profile ?? null);
+        }
+
         if (myManagersResult.error) {
            console.error(`Could not get managers for ${userEmail}: ${myManagersResult.error}`);
            setMyManagers([]);
@@ -84,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setMyManagers(myManagersResult.managers?.map(m => m.email) ?? []);
         }
 
-        // Handle users managed by current user
         if (managedUsersResult.error) {
             console.error(`Could not get managed users for ${userEmail}: ${managedUsersResult.error}`);
             setIsManager(false);
@@ -95,7 +101,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setManagedUsers(managedUserEmails);
         }
 
-        // Handle exporter role
         setIsExporter(fetchedExporters.includes(userEmail));
         
       } catch (error: any) {
@@ -104,27 +109,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           title: 'Error al Cargar Roles',
           description: error.message || 'No se pudo cargar la configuración de roles y jerarquía.',
         });
-        // Reset roles on error
         setIsManager(false);
         setIsExporter(false);
         setManagedUsers([]);
         setMyManagers([]);
       } finally {
-        // All auth and role fetching is complete
         setLoading(false);
       }
     });
 
     return () => unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []);
 
   const signIn = async () => {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      // The onAuthStateChanged listener will handle the post-login logic
     } catch (error) {
       console.error("Error al iniciar sesión", error);
       toast({
@@ -139,11 +141,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSignOut = async () => {
     setLoading(true);
     await signOut(auth);
-    // The onAuthStateChanged listener will handle the post-signout logic
   };
 
   const value = {
     user,
+    workspaceProfile,
     loading,
     isManager,
     managedUsers,

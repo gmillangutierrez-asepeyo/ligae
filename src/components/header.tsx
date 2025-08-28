@@ -23,7 +23,7 @@ import { useSidebar } from './ui/sidebar';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
-  const { user, signOut, isManager, isExporter } = useAuth();
+  const { user, workspaceProfile, signOut, isManager, isExporter } = useAuth();
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
 
@@ -104,7 +104,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.photoURL ?? ''} alt={user?.displayName ?? 'Usuario'} />
+                <AvatarImage src={workspaceProfile?.thumbnailPhotoUrl ?? user?.photoURL ?? ''} alt={user?.displayName ?? 'Usuario'} />
                 <AvatarFallback>
                   {user?.displayName?.charAt(0) ?? user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>

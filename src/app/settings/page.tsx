@@ -11,48 +11,28 @@ import { useToken } from '@/contexts/token-context';
 import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck, FileDown } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '@/components/ui/badge';
-import { getUserProfile, type UserProfile } from '../actions/getUserProfile';
+import { type UserProfile } from '../actions/getUserProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function SettingsPage() {
-  const { user, isManager, isExporter, managedUsers, myManagers } = useAuth();
+  const { user, workspaceProfile, loading, isManager, isExporter, managedUsers, myManagers } = useAuth();
   const { token, isTokenLoading, fetchToken } = useToken();
   const { toast } = useToast();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(workspaceProfile);
+  const [profileLoading, setProfileLoading] = useState(loading);
   const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleFetchProfile = async () => {
-      if (!user?.email) {
-          setProfileLoading(false);
-          return;
-      }
-
-      setProfileLoading(true);
-      setProfileError(null);
-      try {
-        const result = await getUserProfile(user.email);
-        if (result.error) {
-          throw new Error(result.error);
-        }
-        setProfile(result.profile ?? null);
-      } catch (e: any) {
-        setProfileError(e.message);
-        toast({
-          variant: 'destructive',
-          title: 'Error al Cargar Perfil',
-          description: e.message || 'No se pudo obtener la información del perfil de Workspace.',
-        });
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-    
-    handleFetchProfile();
-  }, [user, toast]);
+    setProfile(workspaceProfile);
+    setProfileLoading(loading);
+     if (!loading && !workspaceProfile) {
+      setProfileError("No se pudo cargar el perfil de Workspace. Puede que los permisos de la API no estén configurados.");
+    } else {
+       setProfileError(null);
+    }
+  }, [workspaceProfile, loading]);
 
   const organization = profile?.organizations?.[0];
   const employeeId = profile?.externalIds?.find(id => id.type === 'organization')?.value;
