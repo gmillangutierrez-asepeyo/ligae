@@ -76,11 +76,8 @@ async function getJWTAuth(): Promise<JWT> {
 
 export async function getMyManagers(userEmail: string): Promise<{ managers: Manager[] | null; error:string | null; }> {
     try {
-        const domain = process.env.NEXT_PUBLIC_ALLOWED_DOMAIN;
+        const domain = 'asepeyo.es';
 
-        if (!domain) {
-            throw new Error("Domain not configured.");
-        }
         if (!userEmail) {
             throw new Error("Email not found or could not be verified.");
         }

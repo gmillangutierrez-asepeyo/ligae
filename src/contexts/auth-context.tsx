@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -39,13 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
 
       // Handle user being logged out or accessing with wrong domain
-      if (!currentUser || !currentUser.email || !currentUser.email.endsWith(process.env.NEXT_PUBLIC_ALLOWED_DOMAIN!)) {
+      if (!currentUser || !currentUser.email || !currentUser.email.endsWith('@asepeyo.es')) {
         if (currentUser) { // If logged in but wrong domain
           await signOut(auth);
           toast({
             variant: 'destructive',
             title: 'Acceso Denegado',
-            description: `Solo se permiten cuentas de @${process.env.NEXT_PUBLIC_ALLOWED_DOMAIN!}.`,
+            description: `Solo se permiten cuentas de @asepeyo.es.`,
           });
         }
         setUser(null);
@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Now, fetch all roles and hierarchy data before finishing loading
       try {
         const userEmail = currentUser.email;
+        // Ensure token is available before fetching roles
         const apiToken = token || await fetchToken();
 
         if (!apiToken) {
