@@ -315,6 +315,37 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
 // --- Role & Hierarchy Management ---
 export type ManagerHierarchy = Record<string, string[]>;
 
+export async function getManagersForUser(userEmail: string, token: string): Promise<string[]> {
+  const mainDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/main';
+  
+  const response = await fetch(mainDocPath, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      console.warn('El documento "main" de jerarquías no se encontró. Nadie tendrá un manager asignado.');
+      return [];
+    }
+    await handleResponseError(response, 'cargar las jerarquías');
+  }
+
+  const doc = await response.json();
+  const hierarchyMap = doc.fields?.hierarchy?.mapValue?.fields || {};
+  
+  const managers: string[] = [];
+  for (const manager in hierarchyMap) {
+    const managedUsers = hierarchyMap[manager]?.arrayValue?.values || [];
+    const isManaged = managedUsers.some((v: any) => v.stringValue === userEmail);
+    if (isManaged) {
+      managers.push(manager);
+    }
+  }
+  
+  return managers;
+}
+
+
 export async function fetchExporterEmails(token: string): Promise<string[]> {
   const exportersDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/exporters';
   
