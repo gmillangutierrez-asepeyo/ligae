@@ -162,7 +162,7 @@ function VerifyForm({
   };
   
   return (
-      <div class="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-8">
         <Card className="order-last md:order-first">
           <CardHeader>
             <CardTitle>Datos Extraídos</CardTitle>
