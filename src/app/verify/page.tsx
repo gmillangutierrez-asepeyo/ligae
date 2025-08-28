@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useReceiptStore } from '@/lib/store';
-import { uploadToStorage, saveToFirestore, getManagersForUser } from '@/lib/api';
+import { uploadToStorage, saveToFirestore } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from '@/contexts/token-context';
 import { Calendar as CalendarIcon, Loader2, Send } from 'lucide-react';
@@ -27,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { sendEmail } from '@/ai/flows/send-email-flow';
 import { useAuth } from '@/contexts/auth-context';
+import { getMyManagers } from '../actions/hierarchy';
 
 
 const FormSchema = z.object({
@@ -92,7 +93,13 @@ function VerifyForm({
 
       // Notify managers in a separate try-catch block
       try {
-        const managersToNotify = await getManagersForUser(data.usuario, token);
+        const managersResult = await getMyManagers(data.usuario);
+        
+        if (managersResult.error) {
+          throw new Error(managersResult.error);
+        }
+
+        const managersToNotify = managersResult.managers?.map(m => m.email) ?? [];
         
         if (managersToNotify.length > 0) {
             const subject = `Nuevo recibo de ${data.usuario} para su validación`;
@@ -155,7 +162,7 @@ function VerifyForm({
   };
   
   return (
-      <div className="grid md:grid-cols-2 gap-8">
+      <div class="grid md:grid-cols-2 gap-8">
         <Card className="order-last md:order-first">
           <CardHeader>
             <CardTitle>Datos Extraídos</CardTitle>
