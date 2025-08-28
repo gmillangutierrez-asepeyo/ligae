@@ -9,12 +9,6 @@ import { useToken } from './token-context';
 import { fetchExporterEmails } from '@/lib/api';
 import { getMyManagers, getManagedUsers } from '@/app/actions/hierarchy';
 
-interface Manager {
-  displayName: string;
-  email: string;
-  photoUrl?: string;
-}
-
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -35,108 +29,101 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isExporter, setIsExporter] = useState(false);
   const [managedUsers, setManagedUsers] = useState<string[]>([]);
   const [myManagers, setMyManagers] = useState<string[]>([]);
+  
   const [authLoading, setAuthLoading] = useState(true);
   const [rolesLoading, setRolesLoading] = useState(true);
-  const { token, fetchToken, isTokenLoading } = useToken();
+
+  const { token, fetchToken } = useToken();
   const { toast } = useToast();
 
   const updateUserRoles = useCallback(async (currentUser: User | null) => {
     if (currentUser?.email) {
       const userEmail = currentUser.email;
-      setRolesLoading(true);
       
-      try {
-        // Fetch all roles concurrently
-        const [managedUsersResult, myManagersResult, fetchedExporters] = await Promise.all([
-          getManagedUsers(userEmail),
-          getMyManagers(userEmail),
-          fetchExporterEmails(token!)
-        ]);
-
-        // Handle managed users
-        if (managedUsersResult.error) {
-           // It's a common case that a user is not a manager, so we don't show an error toast.
-           console.log(`Could not get managed users for ${userEmail}: ${managedUsersResult.error}`);
-           setIsManager(false);
-           setManagedUsers([]);
-        } else {
-           const users = managedUsersResult.users?.map(u => u.email) ?? [];
-           setManagedUsers(users);
-           setIsManager(users.length > 0);
-        }
-
-        // Handle user's managers
-        if (myManagersResult.error) {
-           console.error(`Could not get managers for ${userEmail}: ${myManagersResult.error}`);
-           setMyManagers([]);
-        } else {
-          setMyManagers(myManagersResult.managers?.map(m => m.email) ?? []);
-        }
-
-        // Handle exporter role
-        setExporterEmails(fetchedExporters);
-        setIsExporter(fetchedExporters.includes(userEmail));
-        
-      } catch (error: any) {
-        toast({
-          variant: 'destructive',
-          title: 'Error de Configuración',
-          description: 'No se pudo cargar la configuración de roles y jerarquía desde Google Workspace.',
-        });
-        setIsManager(false);
-        setManagedUsers([]);
-        setMyManagers([]);
-        setIsExporter(false);
-      } finally {
-        setRolesLoading(false);
+      const [myManagersResult, managedUsersResult, fetchedExporters] = await Promise.all([
+        getMyManagers(userEmail),
+        getManagedUsers(userEmail),
+        fetchExporterEmails(token!)
+      ]);
+      
+      // Handle user's managers
+      if (myManagersResult.error) {
+         console.error(`Could not get managers for ${userEmail}: ${myManagersResult.error}`);
+         setMyManagers([]);
+      } else {
+        setMyManagers(myManagersResult.managers?.map(m => m.email) ?? []);
       }
 
-    } else {
-      // No user, reset all roles
-      setIsManager(false);
-      setIsExporter(false);
-      setManagedUsers([]);
-      setMyManagers([]);
-      setRolesLoading(false);
-    }
-  }, [toast, token]);
+      // Handle users managed by current user
+      if (managedUsersResult.error) {
+          console.error(`Could not get managed users for ${userEmail}: ${managedUsersResult.error}`);
+          setIsManager(false);
+          setManagedUsers([]);
+      } else {
+          const managedUserEmails = managedUsersResult.users?.map(u => u.email) ?? [];
+          if (managedUserEmails.length > 0) {
+            setIsManager(true);
+            setManagedUsers(managedUserEmails);
+          } else {
+            setIsManager(false);
+            setManagedUsers([]);
+          }
+      }
 
+      // Handle exporter role
+      setExporterEmails(fetchedExporters);
+      setIsExporter(fetchedExporters.includes(userEmail));
+    }
+  }, [token]);
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && currentUser.email && !currentUser.email.endsWith('@asepeyo.es')) {
+      setAuthLoading(true);
+      if (currentUser && currentUser.email && !currentUser.email.endsWith(process.env.NEXT_PUBLIC_ALLOWED_DOMAIN!)) {
         signOut(auth);
         toast({
           variant: 'destructive',
           title: 'Acceso Denegado',
-          description: 'Solo se permiten cuentas de @asepeyo.es.',
+          description: `Solo se permiten cuentas de @${process.env.NEXT_PUBLIC_ALLOWED_DOMAIN!}.`,
         });
         setUser(null);
+        setAuthLoading(false);
+        setRolesLoading(false);
       } else {
         setUser(currentUser);
+        // Auth check is complete here, now we can check for roles.
+        setAuthLoading(false); 
       }
-      setAuthLoading(false);
     });
 
     return () => unsubscribe();
   }, [toast]);
   
-  // Effect to fetch token when user logs in
   useEffect(() => {
-    if(user && !token && !authLoading) {
-      fetchToken();
+    const loadData = async () => {
+      if (!authLoading && user && !token) {
+        await fetchToken();
+      }
+      if (!authLoading && user && token) {
+        setRolesLoading(true);
+        try {
+          await updateUserRoles(user);
+        } catch (error: any) {
+           toast({
+            variant: 'destructive',
+            title: 'Error de Configuración',
+            description: 'No se pudo cargar la configuración de roles y jerarquía.',
+          });
+        } finally {
+          setRolesLoading(false);
+        }
+      }
+      if (!user) {
+        setRolesLoading(false);
+      }
     }
-  }, [user, token, fetchToken, authLoading]);
-
-
-  // Effect to load roles when token is available
-  useEffect(() => {
-    if (token && user) {
-        updateUserRoles(user);
-    } else if (!user) {
-      // If there's no user, we are not loading roles.
-      updateUserRoles(null);
-    }
-  }, [user, token, updateUserRoles]);
+    loadData();
+  }, [user, token, authLoading, fetchToken, toast, updateUserRoles]);
 
   const signIn = async () => {
     setAuthLoading(true);
@@ -155,25 +142,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const handleSignOut = async () => {
-    setAuthLoading(true);
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error al cerrar sesión", error);
-      toast({
-        variant: 'destructive',
-        title: 'Fallo al Cerrar Sesión',
-        description: 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
-      });
-    } finally {
-        setAuthLoading(false);
-        setRolesLoading(true); // Reset for next login
-    }
+    await signOut(auth);
   };
 
   const value = {
     user,
-    // The overall loading state now includes role loading.
     loading: authLoading || rolesLoading,
     isManager,
     managedUsers,
