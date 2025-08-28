@@ -14,6 +14,19 @@ export interface Manager {
     photoUrl?: string;
 }
 
+function isDirectorGroup(group: { name?: string | null; email?: string | null }): boolean {
+    const combinedStr = `${group.name || ''} ${group.email || ''}`;
+    const words = combinedStr.toLowerCase().replace(/[-_@.]/g, ' ').split(/\s+/);
+    return words.includes('director');
+}
+
+function isPersonalGroup(group: { name?: string | null; email?: string | null }): boolean {
+    const combinedStr = `${group.name || ''} ${group.email || ''}`;
+    const words = combinedStr.toLowerCase().replace(/[-_@.]/g, ' ').split(/\s+/);
+    return words.includes('personal');
+}
+
+
 async function getGroupMembers(groupEmail: string, auth: JWT): Promise<{ members: Member[] | null; error: string | null; }> {
   try {
       const admin = google.admin({ version: 'directory_v1', auth });
@@ -30,7 +43,7 @@ async function getGroupMembers(groupEmail: string, auth: JWT): Promise<{ members
       }
 
       const members: Member[] = memberList
-          .filter(member => member.email)
+          .filter(member => member.email && member.type === 'USER')
           .map(member => ({
               email: member.email!,
           }));
@@ -95,49 +108,48 @@ export async function getMyManagers(userEmail: string): Promise<{ managers: Mana
         }
 
         // 1. Find direct managers
-        const personalGroups = userGroups.filter(g => g.name?.endsWith('_Personal'));
+        const personalGroups = userGroups.filter(isPersonalGroup);
         for (const personalGroup of personalGroups) {
             if (!personalGroup.email) continue;
             
             try {
                 // Get members of the personal group, which can include other groups (subgroups)
-                const personalGroupMembersRes = await getGroupMembers(personalGroup.email, auth);
+                const personalGroupMembersRes = await admin.members.list({ groupKey: personalGroup.email, includeDerivedMembership: true });
+                const members = personalGroupMembersRes.data.members ?? [];
                 
-                if (personalGroupMembersRes.members) {
-                    // Find the subgroup that is the director group
-                    const directorSubgroup = personalGroupMembersRes.members.find(m => {
-                        if (!m.email) return false;
-                        const words = m.email.toLowerCase().replace(/[-_@.]/g, ' ').split(/\s+/);
-                        return words.includes('director');
-                    });
-
-                    if (directorSubgroup && directorSubgroup.email) {
-                        // Get the members of that director subgroup, these are the direct managers
-                        const directorGroupMembersRes = await getGroupMembers(directorSubgroup.email, auth);
-                        if(directorGroupMembersRes.members) {
-                            for (const managerMember of directorGroupMembersRes.members) {
-                                // Ensure we only add actual users, not other groups
-                                if (managerMember.email && managerMember.email !== userEmail) {
-                                    try {
-                                        const userRes = await admin.users.get({ userKey: managerMember.email });
-                                        const managerUser = userRes.data;
-                                        allManagers.push({
-                                            displayName: managerUser.name?.fullName ?? 'No Name',
-                                            email: managerUser.primaryEmail ?? 'No email',
-                                            photoUrl: managerUser.thumbnailPhotoUrl ?? undefined,
-                                        });
-                                    } catch (userError: any) {
-                                        if (userError.code === 404) {
-                                            console.warn(`Could not find user details for manager email: ${managerMember.email}`);
-                                        } else {
-                                            throw userError;
+                // Find the director subgroup within the personal group's members
+                for (const member of members) {
+                     if (member.type === 'GROUP' && member.email) {
+                         const groupDetails = await admin.groups.get({ groupKey: member.email });
+                         if(isDirectorGroup(groupDetails.data)) {
+                             // Get the members of that director subgroup, these are the direct managers
+                            const directorGroupMembersRes = await getGroupMembers(member.email, auth);
+                            if(directorGroupMembersRes.members) {
+                                for (const managerMember of directorGroupMembersRes.members) {
+                                    // Ensure we only add actual users, not other groups
+                                    if (managerMember.email && managerMember.email !== userEmail) {
+                                        try {
+                                            const userRes = await admin.users.get({ userKey: managerMember.email });
+                                            const managerUser = userRes.data;
+                                            allManagers.push({
+                                                displayName: managerUser.name?.fullName ?? 'No Name',
+                                                email: managerUser.primaryEmail ?? 'No email',
+                                                photoUrl: managerUser.thumbnailPhotoUrl ?? undefined,
+                                            });
+                                        } catch (userError: any) {
+                                            if (userError.code === 404) {
+                                                console.warn(`Could not find user details for manager email: ${managerMember.email}`);
+                                            } else {
+                                                throw userError;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    }
+                         }
+                     }
                 }
+
             } catch (groupError: any) {
                  if (groupError.code !== 404) {
                      console.error(`Error processing personal group ${personalGroup.email}:`, groupError);
@@ -146,13 +158,7 @@ export async function getMyManagers(userEmail: string): Promise<{ managers: Mana
         }
         
         // 2. Find superior manager
-        const referenceGroup = userGroups.find(g => {
-            const nameStr = g.name || '';
-            const emailStr = g.email || '';
-            const combinedStr = `${nameStr} ${emailStr}`;
-            const words = combinedStr.toLowerCase().replace(/[-_@.]/g, ' ').split(/\s+/);
-            return words.includes('director');
-        }) || userGroups.find(g => g.name?.endsWith('_Personal'));
+        const referenceGroup = userGroups.find(isDirectorGroup) || userGroups.find(isPersonalGroup);
        
         if (referenceGroup && referenceGroup.name) {
             const prefix = referenceGroup.name.split(/[\s_-]/)[0];
@@ -228,68 +234,34 @@ export async function getManagedUsers(managerEmail: string): Promise<{ users: Me
         const admin = google.admin({ version: 'directory_v1', auth });
         const managerGroupsRes = await admin.groups.list({ userKey: managerEmail });
         
-        const directorGroups = managerGroupsRes.data.groups?.filter(g => {
-            const nameStr = g.name || '';
-            const emailStr = g.email || '';
-            const combinedStr = `${nameStr} ${emailStr}`;
-            const words = combinedStr.toLowerCase().replace(/[-_@.]/g, ' ').split(/\s+/);
-            return words.includes('director');
-        });
+        const directorGroups = managerGroupsRes.data.groups?.filter(isDirectorGroup);
         
         if (!directorGroups || directorGroups.length === 0) {
             return { users: [], error: null }; // Return empty array, not an error, as a user might not be a manager
         }
         
         let allManagedUsers: Member[] = [];
-        const MAX_DEPTH = 10; 
-
+        
         for (const directorGroup of directorGroups) {
             if (!directorGroup.email || !directorGroup.name) continue;
 
-            const namePrefix = directorGroup.name.split(/[\s_-]/)[0];
-            
-            let currentGroupEmail = directorGroup.email;
-            let personalGroupFound = false;
+             try {
+                const parentGroupsRes = await admin.groups.list({ userKey: directorGroup.email, maxResults: 200, });
+                const parentGroups = parentGroupsRes.data.groups;
 
-            for (let depth = 0; depth < MAX_DEPTH; depth++) {
-                try {
-                    const parentGroupsRes = await admin.groups.list({ userKey: currentGroupEmail });
-                    const parentGroups = parentGroupsRes.data.groups;
+                if (!parentGroups) continue;
 
-                    if (!parentGroups || parentGroups.length === 0) {
-                        break;
+                for(const parentGroup of parentGroups) {
+                    if (parentGroup.email && isPersonalGroup(parentGroup)) {
+                         const teamMembersRes = await getGroupMembers(parentGroup.email, auth);
+                         if (teamMembersRes.members) {
+                             allManagedUsers.push(...teamMembersRes.members);
+                         }
                     }
-
-                    const personalParent = parentGroups.find(g => g.name?.toLowerCase().includes('personal'));
-
-                    if (personalParent && personalParent.email) {
-                        const teamMembersRes = await getGroupMembers(personalParent.email, auth);
-                        if (teamMembersRes.members) {
-                            allManagedUsers.push(...teamMembersRes.members);
-                        }
-                        personalGroupFound = true;
-                        break; 
-                    } else {
-                        const nextParent = parentGroups.find(g => g.name?.startsWith(namePrefix));
-                        if (nextParent && nextParent.email) {
-                             currentGroupEmail = nextParent.email;
-                        } else {
-                            break;
-                        }
-                       
-                    }
-                } catch (err: any) {
-                    if (err.code === 404) {
-                         console.log(`Group ${currentGroupEmail} not found or no parents. Stopping search on this branch.`);
-                    } else {
-                        console.warn(`Could not check parent groups for ${currentGroupEmail}: ${err.message}`);
-                    }
-                    break;
                 }
-            }
-             if (!personalGroupFound) {
-                console.log(`Could not find a 'personal' parent group for the chain starting from ${directorGroup.email}`);
-            }
+             } catch(e: any) {
+                console.error(`Could not check parent groups for ${directorGroup.email}: ${e.message}`);
+             }
         }
         
         const uniqueUsers = allManagedUsers
