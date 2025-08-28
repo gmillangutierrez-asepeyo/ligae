@@ -55,7 +55,10 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   
   const uploadResponse = await fetch(uploadUrl, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'image/jpeg'
+    },
     body: blob,
   });
 
