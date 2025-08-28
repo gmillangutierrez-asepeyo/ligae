@@ -315,44 +315,6 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
 // --- Role & Hierarchy Management ---
 export type ManagerHierarchy = Record<string, string[]>;
 
-export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
-  const hierarchyDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/main';
-
-  const response = await fetch(hierarchyDocPath, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      console.warn('El documento de jerarquía "main" no se encontró. Se usará una jerarquía vacía.');
-      return {};
-    }
-    await handleResponseError(response, 'cargar la jerarquía de managers');
-  }
-
-  const doc = await response.json();
-  const hierarchyMap = doc.fields?.hierarchy?.mapValue?.fields;
-
-  if (!hierarchyMap) {
-    console.warn('El documento de jerarquía "main" no contiene un campo "hierarchy" válido. Se usará una jerarquía vacía.');
-    return {};
-  }
-
-  const parsedHierarchy: ManagerHierarchy = {};
-  for (const managerEmail in hierarchyMap) {
-    const managedUsersArray = hierarchyMap[managerEmail]?.arrayValue?.values || [];
-    parsedHierarchy[managerEmail] = managedUsersArray
-      .map((userValue: any) => userValue.stringValue)
-      .filter((email: string | undefined): email is string => !!email);
-  }
-
-  return parsedHierarchy;
-}
-
 export async function fetchExporterEmails(token: string): Promise<string[]> {
   const exportersDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/exporters';
   
@@ -373,22 +335,6 @@ export async function fetchExporterEmails(token: string): Promise<string[]> {
   return emailsArray
     .map((v: any) => v.stringValue)
     .filter((email: string | undefined): email is string => !!email);
-}
-
-
-export async function getManagersForUser(userEmail: string, token: string): Promise<string[]> {
-    const hierarchy = await fetchHierarchy(token);
-    const managers: string[] = [];
-
-    // Find who manages the user by checking all manager lists.
-    for (const manager in hierarchy) {
-        if (hierarchy[manager].includes(userEmail)) {
-            managers.push(manager);
-        }
-    }
-    
-    // Return a unique list of managers.
-    return Array.from(new Set(managers));
 }
 
 // --- Data for Export Page ---

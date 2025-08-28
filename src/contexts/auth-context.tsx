@@ -6,8 +6,14 @@ import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User 
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from './token-context';
-import { fetchHierarchy, fetchExporterEmails, type ManagerHierarchy } from '@/lib/api';
+import { fetchExporterEmails } from '@/lib/api';
+import { getMyManagers, getManagedUsers } from '@/app/actions/hierarchy';
 
+interface Manager {
+  displayName: string;
+  email: string;
+  photoUrl?: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -24,7 +30,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [hierarchy, setHierarchy] = useState<ManagerHierarchy>({});
   const [exporterEmails, setExporterEmails] = useState<string[]>([]);
   const [isManager, setIsManager] = useState(false);
   const [isExporter, setIsExporter] = useState(false);
@@ -35,35 +40,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { token, fetchToken, isTokenLoading } = useToken();
   const { toast } = useToast();
 
-  const updateUserRoles = useCallback((currentUser: User | null, currentHierarchy: ManagerHierarchy, currentExporterEmails: string[]) => {
+  const updateUserRoles = useCallback(async (currentUser: User | null) => {
     if (currentUser?.email) {
       const userEmail = currentUser.email;
+      setRolesLoading(true);
       
-      // Manager role
-      const userIsManager = userEmail in currentHierarchy;
-      setIsManager(userIsManager);
-      setManagedUsers(userIsManager ? currentHierarchy[userEmail] : []);
+      try {
+        // Fetch all roles concurrently
+        const [managedUsersResult, myManagersResult, fetchedExporters] = await Promise.all([
+          getManagedUsers(userEmail),
+          getMyManagers(userEmail),
+          fetchExporterEmails(token!)
+        ]);
 
-      // Exporter role
-      const userIsExporter = currentExporterEmails.includes(userEmail);
-      setIsExporter(userIsExporter);
-
-      // Find user's managers
-      const managers: string[] = [];
-      for (const managerEmail in currentHierarchy) {
-        if (currentHierarchy[managerEmail].includes(userEmail)) {
-          managers.push(managerEmail);
+        // Handle managed users
+        if (managedUsersResult.error) {
+           // It's a common case that a user is not a manager, so we don't show an error toast.
+           console.log(`Could not get managed users for ${userEmail}: ${managedUsersResult.error}`);
+           setIsManager(false);
+           setManagedUsers([]);
+        } else {
+           const users = managedUsersResult.users?.map(u => u.email) ?? [];
+           setManagedUsers(users);
+           setIsManager(users.length > 0);
         }
+
+        // Handle user's managers
+        if (myManagersResult.error) {
+           console.error(`Could not get managers for ${userEmail}: ${myManagersResult.error}`);
+           setMyManagers([]);
+        } else {
+          setMyManagers(myManagersResult.managers?.map(m => m.email) ?? []);
+        }
+
+        // Handle exporter role
+        setExporterEmails(fetchedExporters);
+        setIsExporter(fetchedExporters.includes(userEmail));
+        
+      } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Error de Configuración',
+          description: 'No se pudo cargar la configuración de roles y jerarquía desde Google Workspace.',
+        });
+        setIsManager(false);
+        setManagedUsers([]);
+        setMyManagers([]);
+        setIsExporter(false);
+      } finally {
+        setRolesLoading(false);
       }
-      setMyManagers(managers);
 
     } else {
+      // No user, reset all roles
       setIsManager(false);
       setIsExporter(false);
       setManagedUsers([]);
       setMyManagers([]);
+      setRolesLoading(false);
     }
-  }, []);
+  }, [toast, token]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -94,42 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Effect to load roles when token is available
   useEffect(() => {
-    async function loadRoles() {
-      if (token && user) {
-        setRolesLoading(true);
-        try {
-          const [fetchedHierarchy, fetchedExporters] = await Promise.all([
-             fetchHierarchy(token),
-             fetchExporterEmails(token)
-          ]);
-          setHierarchy(fetchedHierarchy);
-          setExporterEmails(fetchedExporters);
-          updateUserRoles(user, fetchedHierarchy, fetchedExporters);
-        } catch (error: any) {
-          console.error("Error al cargar los roles:", error);
-          toast({
-            variant: 'destructive',
-            title: 'Error de Configuración',
-            description: 'No se pudo cargar la configuración de roles desde Firestore.',
-          });
-          setHierarchy({});
-          setExporterEmails([]);
-          updateUserRoles(user, {}, []);
-        } finally {
-          setRolesLoading(false);
-        }
-      } else if (!user) {
-        // If there's no user, we are not loading roles.
-        setRolesLoading(false);
-        updateUserRoles(null, {}, []);
-      }
+    if (token && user) {
+        updateUserRoles(user);
+    } else if (!user) {
+      // If there's no user, we are not loading roles.
+      updateUserRoles(null);
     }
-    
-    // Only load roles when token is available and auth check is complete.
-    if (!isTokenLoading && !authLoading) {
-        loadRoles();
-    }
-  }, [user, token, isTokenLoading, authLoading, toast, updateUserRoles]);
+  }, [user, token, updateUserRoles]);
 
   const signIn = async () => {
     setAuthLoading(true);
@@ -167,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     // The overall loading state now includes role loading.
-    loading: authLoading || isTokenLoading || rolesLoading,
+    loading: authLoading || rolesLoading,
     isManager,
     managedUsers,
     isExporter,
