@@ -31,19 +31,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [myManagers, setMyManagers] = useState<string[]>([]);
   
   const [authLoading, setAuthLoading] = useState(true);
-  const [rolesLoading, setRolesLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true); // Start as true
 
   const { token, fetchToken } = useToken();
   const { toast } = useToast();
 
   const updateUserRoles = useCallback(async (currentUser: User | null) => {
-    if (currentUser?.email) {
+    if (currentUser?.email && token) {
       const userEmail = currentUser.email;
       
       const [myManagersResult, managedUsersResult, fetchedExporters] = await Promise.all([
         getMyManagers(userEmail),
         getManagedUsers(userEmail),
-        fetchExporterEmails(token!)
+        fetchExporterEmails(token)
       ]);
       
       // Handle user's managers
@@ -91,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRolesLoading(false);
       } else {
         setUser(currentUser);
-        // Auth check is complete here, now we can check for roles.
         setAuthLoading(false); 
       }
     });
@@ -101,24 +100,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   useEffect(() => {
     const loadData = async () => {
-      if (!authLoading && user && !token) {
-        await fetchToken();
-      }
-      if (!authLoading && user && token) {
-        setRolesLoading(true);
-        try {
-          await updateUserRoles(user);
-        } catch (error: any) {
-           toast({
-            variant: 'destructive',
-            title: 'Error de Configuración',
-            description: 'No se pudo cargar la configuración de roles y jerarquía.',
-          });
-        } finally {
-          setRolesLoading(false);
+      // If auth is done, and we have a user, proceed.
+      if (!authLoading && user) {
+        // If there's no token yet, fetch it.
+        const currentToken = token || await fetchToken();
+        
+        // If we have a user and a token, update roles.
+        if (currentToken) {
+          try {
+            await updateUserRoles(user);
+          } catch (error: any) {
+             toast({
+              variant: 'destructive',
+              title: 'Error de Configuración',
+              description: 'No se pudo cargar la configuración de roles y jerarquía.',
+            });
+          } finally {
+            setRolesLoading(false);
+          }
+        } else {
+           // No token, can't load roles.
+           setRolesLoading(false);
         }
-      }
-      if (!user) {
+      } else if (!authLoading && !user) {
+        // If auth is done and there's no user, stop loading roles.
         setRolesLoading(false);
       }
     }
@@ -127,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async () => {
     setAuthLoading(true);
+    setRolesLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -138,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "No se pudo iniciar sesión con Google. Inténtalo de nuevo.",
       });
       setAuthLoading(false);
+      setRolesLoading(false);
     }
   };
 
