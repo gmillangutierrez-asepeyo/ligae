@@ -8,12 +8,15 @@ import AppSidebar from '@/components/app-sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToken } from '@/contexts/token-context';
-import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck, FileDown } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2, RefreshCw, Users, UserCheck, FileDown, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Badge } from '@/components/ui/badge';
 import { type UserProfile } from '../actions/getUserProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from 'next/image';
+
 
 function SettingsPage() {
   const { user, workspaceProfile, loading, isManager, isExporter, managedUsers, myManagers } = useAuth();
@@ -44,116 +47,149 @@ function SettingsPage() {
         <div className="flex flex-1 overflow-hidden">
           <AppSidebar />
           <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
-            <div className="w-full max-w-2xl mx-auto space-y-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline text-2xl">Perfil y Estado</CardTitle>
-                  <CardDescription>
-                    Información de tu perfil y estado de la conexión.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4 p-4 rounded-lg border">
-                    <div className="flex justify-between items-center">
-                        <h3 className="font-semibold text-lg">Información del Usuario</h3>
-                        {profileLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
-                    </div>
-                    <div className="text-sm space-y-1">
-                      <p><strong className="text-muted-foreground w-28 inline-block">Nombre:</strong> {user?.displayName}</p>
-                      <p><strong className="text-muted-foreground w-28 inline-block">Email:</strong> {user?.email}</p>
-                      {profile && (
-                        <>
-                          <p><strong className="text-muted-foreground w-28 inline-block">Organización:</strong> {organization?.name || 'Asepeyo'}</p>
-                          {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
-                          <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization?.location || 'No disponible'}</p>
-                          <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization?.title || 'No disponible'}</p>
-                          <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization?.department || 'No disponible'}</p>
-                          <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization?.costCenter || 'No disponible'}</p>
-                        </>
-                      )}
-                      {!profile && !profileLoading && !profileError && <p className="text-muted-foreground text-xs">No se encontró información adicional del perfil.</p>}
-                    </div>
-                     {profileError && (
-                       <Alert variant="destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertTitle>Error de Perfil de Workspace</AlertTitle>
-                          <AlertDescription>{profileError}</AlertDescription>
-                      </Alert>
-                    )}
-                  </div>
-                  
+            <div className="w-full max-w-4xl mx-auto space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                  <div className="space-y-4 p-4 rounded-lg border">
-                    <h3 className="font-semibold text-lg">Roles y Jerarquía</h3>
-                    {isManager && (
-                      <div className="space-y-2">
-                        <div className='flex items-center gap-2'>
-                          <Users className="h-5 w-5 text-primary" />
-                          <h4 className="font-medium">Usuarios que gestionas</h4>
+                {/* Columna Izquierda */}
+                <div className="space-y-8">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="font-headline text-2xl">Perfil y Estado</CardTitle>
+                      <CardDescription>
+                        Información de tu perfil y estado de la conexión.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4 p-4 rounded-lg border">
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-lg">Información del Usuario</h3>
+                            {profileLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
                         </div>
-                        {managedUsers.length > 0 ? (
-                          <div className="flex flex-wrap gap-2 pl-7">
-                            {managedUsers.map(email => <Badge key={email} variant="secondary">{email}</Badge>)}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground pl-7">No tienes usuarios asignados.</p>
+                        <div className="text-sm space-y-1">
+                          <p><strong className="text-muted-foreground w-28 inline-block">Nombre:</strong> {user?.displayName}</p>
+                          <p><strong className="text-muted-foreground w-28 inline-block">Email:</strong> {user?.email}</p>
+                          {profile && (
+                            <>
+                              <p><strong className="text-muted-foreground w-28 inline-block">Organización:</strong> {organization?.name || 'Asepeyo'}</p>
+                              {employeeId && <p><strong className="text-muted-foreground w-28 inline-block">Nº Empleado:</strong> {employeeId}</p>}
+                              <p><strong className="text-muted-foreground w-28 inline-block">Centro Trabajo:</strong> {organization?.location || 'No disponible'}</p>
+                              <p><strong className="text-muted-foreground w-28 inline-block">Puesto:</strong> {organization?.title || 'No disponible'}</p>
+                              <p><strong className="text-muted-foreground w-28 inline-block">Departamento:</strong> {organization?.department || 'No disponible'}</p>
+                              <p><strong className="text-muted-foreground w-28 inline-block">Centro Coste:</strong> {organization?.costCenter || 'No disponible'}</p>
+                            </>
+                          )}
+                          {!profile && !profileLoading && !profileError && <p className="text-muted-foreground text-xs">No se encontró información adicional del perfil.</p>}
+                        </div>
+                        {profileError && (
+                          <Alert variant="destructive">
+                              <AlertCircle className="h-4 w-4" />
+                              <AlertTitle>Error de Perfil de Workspace</AlertTitle>
+                              <AlertDescription>{profileError}</AlertDescription>
+                          </Alert>
                         )}
                       </div>
-                    )}
-                    <div className="space-y-2">
-                      <div className='flex items-center gap-2'>
-                        <UserCheck className="h-5 w-5 text-primary" />
-                        <h4 className="font-medium">Tus managers (aprueban tus recibos)</h4>
-                      </div>
-                      {myManagers.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 pl-7">
-                          {myManagers.map(email => <Badge key={email} variant="secondary">{email}</Badge>)}
+                      
+                      <div className="space-y-2">
+                        <h3 className="font-semibold">Estado de Conexión de la API</h3>
+                        <div className="flex items-center gap-2 p-3 rounded-md bg-muted">
+                          {isTokenLoading ? (
+                            <>
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                              <span className="text-muted-foreground">Generando nuevo token de acceso...</span>
+                            </>
+                          ) : token ? (
+                            <>
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                              <span className="text-green-700 font-medium">Conexión activa</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-5 w-5 text-destructive" />
+                              <span className="text-destructive font-medium">Conexión inactiva. Por favor, refresca.</span>
+                            </>
+                          )}
                         </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground pl-7">No tienes un manager asignado en la jerarquía.</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <div className='flex items-center justify-between gap-2'>
-                        <div className="flex items-center gap-2">
-                          <FileDown className="h-5 w-5 text-primary" />
-                          <h4 className="font-medium">Permisos de Exportación</h4>
-                        </div>
-                        <Badge variant={isExporter ? "default" : "secondary"}>{isExporter ? "Activo" : "Inactivo"}</Badge>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button onClick={() => fetchToken()} className="w-full" disabled={isTokenLoading}>
+                        <RefreshCw className={`mr-2 h-4 w-4 ${isTokenLoading ? 'animate-spin' : ''}`} />
+                        Refrescar Token de Acceso
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+                
+                {/* Columna Derecha */}
+                <div className="space-y-8">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="font-headline text-2xl">Roles y Jerarquía</CardTitle>
+                      <CardDescription>Tus permisos y relaciones dentro de la aplicación.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4 p-4 rounded-lg border">
+                          <div className='flex items-center gap-2'>
+                            <UserCheck className="h-5 w-5 text-primary" />
+                            <h4 className="font-semibold text-lg">Tus managers</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground">Estas personas aprueban tus recibos.</p>
+                          {myManagers.length > 0 ? (
+                            <div className="space-y-3">
+                              {myManagers.map(manager => (
+                                <div key={manager.email} className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
+                                   <Avatar className="h-10 w-10">
+                                      <AvatarImage src={manager.photoUrl} alt={manager.displayName} />
+                                      <AvatarFallback>
+                                        {manager.displayName.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-grow min-w-0">
+                                      <p className="text-sm font-medium truncate">{manager.displayName}</p>
+                                      <p className="text-xs text-muted-foreground truncate">{manager.email}</p>
+                                    </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground text-center py-2">No tienes un manager asignado en la jerarquía.</p>
+                          )}
+                      </div>
 
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">Estado de Conexión de la API</h3>
-                    <div className="flex items-center gap-2 p-3 rounded-md bg-muted">
-                      {isTokenLoading ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                          <span className="text-muted-foreground">Generando nuevo token de acceso...</span>
-                        </>
-                      ) : token ? (
-                        <>
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                          <span className="text-green-700 font-medium">Conexión activa</span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="h-5 w-5 text-destructive" />
-                          <span className="text-destructive font-medium">Conexión inactiva. Por favor, refresca.</span>
-                        </>
+                       {isManager && (
+                        <div className="space-y-4 p-4 rounded-lg border">
+                          <div className='flex items-center gap-2'>
+                            <Users className="h-5 w-5 text-primary" />
+                            <h4 className="font-semibold text-lg">Usuarios que gestionas</h4>
+                          </div>
+                           <p className="text-sm text-muted-foreground">Puedes aprobar recibos para estas personas.</p>
+                          {managedUsers.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {managedUsers.map(email => <Badge key={email} variant="secondary">{email}</Badge>)}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No tienes usuarios asignados.</p>
+                          )}
+                        </div>
                       )}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={() => fetchToken()} className="w-full" disabled={isTokenLoading}>
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isTokenLoading ? 'animate-spin' : ''}`} />
-                    Refrescar Token de Acceso
-                  </Button>
-                </CardFooter>
-              </Card>
 
+                       <div className="space-y-4 p-4 rounded-lg border">
+                          <div className='flex items-center justify-between gap-2'>
+                            <div className="flex items-center gap-2">
+                              <FileDown className="h-5 w-5 text-primary" />
+                              <h4 className="font-semibold text-lg">Permisos de Exportación</h4>
+                            </div>
+                            <Badge variant={isExporter ? "default" : "secondary"}>{isExporter ? "Activo" : "Inactivo"}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {isExporter ? "Puedes exportar todos los recibos aprobados a CSV." : "No tienes acceso a la página de exportación."}
+                          </p>
+                       </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+              </div>
             </div>
           </main>
         </div>
@@ -163,3 +199,5 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
+
+    

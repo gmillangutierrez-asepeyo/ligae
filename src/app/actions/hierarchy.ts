@@ -3,6 +3,7 @@
 
 import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
+import type { UserProfile } from './getUserProfile';
 
 interface Member {
   email: string;
@@ -130,7 +131,7 @@ export async function getMyManagers(userEmail: string): Promise<{ managers: Mana
                                     if (managerMember.email && managerMember.email !== userEmail) {
                                         try {
                                             const userRes = await admin.users.get({ userKey: managerMember.email });
-                                            const managerUser = userRes.data;
+                                            const managerUser = userRes.data as UserProfile;
                                             allManagers.push({
                                                 displayName: managerUser.name?.fullName ?? 'No Name',
                                                 email: managerUser.primaryEmail ?? 'No email',
@@ -179,7 +180,7 @@ export async function getMyManagers(userEmail: string): Promise<{ managers: Mana
                                 if (managerMember.email) {
                                     try {
                                         const userRes = await admin.users.get({ userKey: managerMember.email });
-                                        const managerUser = userRes.data;
+                                        const managerUser = userRes.data as UserProfile;
                                         allManagers.push({
                                             displayName: managerUser.name?.fullName ?? 'No Name',
                                             email: managerUser.primaryEmail ?? 'No email',
@@ -252,7 +253,7 @@ export async function getManagedUsers(managerEmail: string): Promise<{ users: Me
                 if (!parentGroups) continue;
 
                 for(const parentGroup of parentGroups) {
-                    if (parentGroup.email && isPersonalGroup(parentGroup)) {
+                     if (parentGroup.email && isPersonalGroup(parentGroup)) {
                          const teamMembersRes = await getGroupMembers(parentGroup.email, auth);
                          if (teamMembersRes.members) {
                              allManagedUsers.push(...teamMembersRes.members);
@@ -282,3 +283,5 @@ export async function getManagedUsers(managerEmail: string): Promise<{ users: Me
         return { users: null, error: errorMessage };
     }
 }
+
+    

@@ -7,7 +7,7 @@ import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useToken } from './token-context';
 import { fetchExporterEmails } from '@/lib/api';
-import { getMyManagers, getManagedUsers } from '@/app/actions/hierarchy';
+import { getMyManagers, getManagedUsers, type Manager } from '@/app/actions/hierarchy';
 import { getUserProfile, type UserProfile } from '@/app/actions/getUserProfile';
 
 interface AuthContextType {
@@ -17,7 +17,7 @@ interface AuthContextType {
   isManager: boolean;
   managedUsers: string[];
   isExporter: boolean;
-  myManagers: string[];
+  myManagers: Manager[];
   signIn: () => void;
   signOut: () => void;
 }
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isManager, setIsManager] = useState(false);
   const [isExporter, setIsExporter] = useState(false);
   const [managedUsers, setManagedUsers] = useState<string[]>([]);
-  const [myManagers, setMyManagers] = useState<string[]>([]);
+  const [myManagers, setMyManagers] = useState<Manager[]>([]);
   
   const [loading, setLoading] = useState(true);
 
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
            console.error(`Could not get managers for ${userEmail}: ${myManagersResult.error}`);
            setMyManagers([]);
         } else {
-          setMyManagers(myManagersResult.managers?.map(m => m.email) ?? []);
+          setMyManagers(myManagersResult.managers ?? []);
         }
 
         if (managedUsersResult.error) {
@@ -169,3 +169,5 @@ export function useAuth() {
   }
   return context;
 }
+
+    
