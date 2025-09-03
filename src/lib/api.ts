@@ -1,3 +1,4 @@
+
 // This file is intended for client-side execution. Do NOT add 'use server'.
 // It uses the Fetch API to communicate with Google Cloud REST endpoints.
 
@@ -378,30 +379,26 @@ export async function fetchAllApprovedTickets(token: string, filters: ApprovedTi
         });
     }
     
-    // Convert dates from Date object to DD/MM/YYYY string for querying
-    const formatDateForQuery = (date: Date): string => {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-
+    // As 'fecha' is a string, proper range filtering needs to be done on a timestamp.
+    // We will use 'fechaSubida' for the main query and then filter by 'fecha' on the client if needed.
+    // This is a trade-off: it might fetch more docs than needed but allows some server-side filtering.
     if (filters.startDate) {
         queryFilters.push({
             fieldFilter: {
-                field: { fieldPath: 'fecha' },
+                field: { fieldPath: 'fechaSubida' },
                 op: 'GREATER_THAN_OR_EQUAL',
-                value: { stringValue: formatDateForQuery(filters.startDate) },
+                value: { timestampValue: filters.startDate.toISOString() },
             },
         });
     }
 
     if (filters.endDate) {
+        // To include the whole end day, we could adjust the date, but for 'fechaSubida' it's usually fine.
         queryFilters.push({
             fieldFilter: {
-                field: { fieldPath: 'fecha' },
+                field: { fieldPath: 'fechaSubida' },
                 op: 'LESS_THAN_OR_EQUAL',
-                value: { stringValue: formatDateForQuery(filters.endDate) },
+                value: { timestampValue: filters.endDate.toISOString() },
             },
         });
     }
@@ -478,3 +475,5 @@ export async function fetchAllUsers(token: string): Promise<string[]> {
 
     return Array.from(new Set(emails)); // Return unique emails
 }
+
+    

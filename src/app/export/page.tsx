@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, parse, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
@@ -115,13 +115,35 @@ function ExportPage() {
         setLoading(true);
         setError(null);
         try {
-            const filters = {
+             // Fetch from API with server-side filters where possible
+            const serverFilters = {
                 userEmail: selectedUser === 'all' ? undefined : selectedUser,
                 sector: selectedSector === 'all' ? undefined : selectedSector,
+                // We use upload date for a rough server-side filter, then refine client-side
                 startDate: dateRange?.from,
-                endDate: dateRange?.to,
+                endDate: dateRange?.to
             };
-            const data = await fetchAllApprovedTickets(token, filters);
+
+            let data = await fetchAllApprovedTickets(token, serverFilters);
+
+            // Client-side filtering for receipt date (fecha), as it's a string
+            if (dateRange?.from) {
+                const interval = {
+                    start: startOfDay(dateRange.from),
+                    end: dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from)
+                };
+
+                data = data.filter(receipt => {
+                    try {
+                        const receiptDate = parse(receipt.fecha, 'dd/MM/yyyy', new Date());
+                        return isWithinInterval(receiptDate, interval);
+                    } catch (e) {
+                        console.warn(`Invalid date format for receipt ID ${receipt.id}: ${receipt.fecha}`);
+                        return false; // Exclude receipts with invalid date formats
+                    }
+                });
+            }
+
             setReceipts(data);
         } catch (e: any) {
              setError(e.message || "Error al aplicar los filtros.");
@@ -266,7 +288,7 @@ function ExportPage() {
                                         </Select>
                                     </div>
                                     <div className="w-full">
-                                        <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas</label>
+                                        <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas (Recibo)</label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                             <Button
@@ -371,3 +393,5 @@ function ExportPage() {
 }
 
 export default ExportPage;
+
+    
