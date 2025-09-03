@@ -29,6 +29,7 @@ export interface UserProfile {
         value: string;
         type: string;
     }>
+    thumbnailPhotoUrl?: string; // This field holds the URL for the user's photo.
     [key: string]: any; // Allow other properties
 }
 
