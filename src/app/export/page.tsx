@@ -168,6 +168,18 @@ function ExportPage() {
             setIsExporting(false);
         }
     };
+
+    const formatUploadDate = (dateInput: string | number): string => {
+        try {
+            const date = new Date(dateInput);
+            if (isNaN(date.getTime())) {
+                return 'Fecha inválida';
+            }
+            return format(date, 'dd/MM/yyyy HH:mm');
+        } catch {
+            return 'Fecha inválida';
+        }
+    };
     
     const hasActiveFilters = selectedUser !== 'all' || selectedSector !== 'all' || dateRange !== undefined;
 
@@ -327,7 +339,8 @@ function ExportPage() {
                                             <TableRow>
                                                 <TableHead className="whitespace-nowrap">Usuario</TableHead>
                                                 <TableHead>Importe</TableHead>
-                                                <TableHead className="whitespace-nowrap">Fecha</TableHead>
+                                                <TableHead className="whitespace-nowrap">Fecha Recibo</TableHead>
+                                                <TableHead className="whitespace-nowrap">Fecha Subida</TableHead>
                                                 <TableHead>Sector</TableHead>
                                                 <TableHead>Observaciones</TableHead>
                                             </TableRow>
@@ -340,6 +353,7 @@ function ExportPage() {
                                                     <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
                                                     <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
                                                     <TableCell className="whitespace-nowrap">{receipt.fecha}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">{formatUploadDate(receipt.fechaSubida)}</TableCell>
                                                     <TableCell className="capitalize">{receipt.sector}</TableCell>
                                                     <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                                                 </TableRow>
@@ -357,5 +371,3 @@ function ExportPage() {
 }
 
 export default ExportPage;
-
-    
