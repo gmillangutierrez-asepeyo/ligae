@@ -320,10 +320,14 @@ function GalleryPage() {
                         <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                         <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
-                                <Eye className="h-4 w-4" />
-                            </Button>
-                            <DeleteButton receipt={receipt} onDelete={handleDelete} />
+                                <Button variant="outline" size="icon" onClick={() => setViewingReceipt(receipt)}>
+                                    <Eye className="h-4 w-4" />
+                                </Button>
+                                {receipt.estado !== 'aprobado' ? (
+                                    <DeleteButton receipt={receipt} onDelete={handleDelete} />
+                                ) : (
+                                    <div className="w-10 h-10" /> // Placeholder to keep alignment
+                                )}
                             </div>
                         </TableCell>
                         </TableRow>
