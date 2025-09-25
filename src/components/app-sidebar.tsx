@@ -39,11 +39,11 @@ export default function AppSidebar() {
                             href={link.href}
                             className={cn(
                                 'flex items-center gap-4 py-2 rounded-md transition-colors',
-                                'text-sm font-medium',
+                                'text-sm font-medium text-sidebar-foreground',
                                 sidebarState === 'collapsed' ? 'justify-center px-2.5' : 'px-3',
                                 pathname === link.href 
                                 ? 'bg-accent text-accent-foreground' 
-                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                : 'hover:bg-accent hover:text-accent-foreground'
                             )}
                         >
                             <link.icon className="h-5 w-5" />

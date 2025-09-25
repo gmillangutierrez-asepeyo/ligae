@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, parse, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AuthGuard from '@/components/auth-guard';
 import Header from '@/components/header';
@@ -115,13 +115,35 @@ function ExportPage() {
         setLoading(true);
         setError(null);
         try {
-            const filters = {
+             // Fetch from API with server-side filters where possible
+            const serverFilters = {
                 userEmail: selectedUser === 'all' ? undefined : selectedUser,
                 sector: selectedSector === 'all' ? undefined : selectedSector,
+                // We use upload date for a rough server-side filter, then refine client-side
                 startDate: dateRange?.from,
-                endDate: dateRange?.to,
+                endDate: dateRange?.to
             };
-            const data = await fetchAllApprovedTickets(token, filters);
+
+            let data = await fetchAllApprovedTickets(token, serverFilters);
+
+            // Client-side filtering for receipt date (fecha), as it's a string
+            if (dateRange?.from) {
+                const interval = {
+                    start: startOfDay(dateRange.from),
+                    end: dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from)
+                };
+
+                data = data.filter(receipt => {
+                    try {
+                        const receiptDate = parse(receipt.fecha, 'dd/MM/yyyy', new Date());
+                        return isWithinInterval(receiptDate, interval);
+                    } catch (e) {
+                        console.warn(`Invalid date format for receipt ID ${receipt.id}: ${receipt.fecha}`);
+                        return false; // Exclude receipts with invalid date formats
+                    }
+                });
+            }
+
             setReceipts(data);
         } catch (e: any) {
              setError(e.message || "Error al aplicar los filtros.");
@@ -168,6 +190,18 @@ function ExportPage() {
             setIsExporting(false);
         }
     };
+
+    const formatUploadDate = (dateInput: string | number): string => {
+        try {
+            const date = new Date(dateInput);
+            if (isNaN(date.getTime())) {
+                return 'Fecha inválida';
+            }
+            return format(date, 'dd/MM/yyyy HH:mm');
+        } catch {
+            return 'Fecha inválida';
+        }
+    };
     
     const hasActiveFilters = selectedUser !== 'all' || selectedSector !== 'all' || dateRange !== undefined;
 
@@ -203,9 +237,11 @@ function ExportPage() {
                                                     aria-expanded={isUserPopoverOpen}
                                                     className="w-full justify-between"
                                                 >
-                                                    {selectedUser === 'all'
-                                                        ? 'Todos los usuarios'
-                                                        : selectedUser}
+                                                    <span className="truncate">
+                                                        {selectedUser === 'all'
+                                                            ? 'Todos los usuarios'
+                                                            : selectedUser}
+                                                    </span>
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
@@ -254,7 +290,7 @@ function ExportPage() {
                                         </Select>
                                     </div>
                                     <div className="w-full">
-                                        <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas</label>
+                                        <label htmlFor="date-filter" className="text-sm font-medium text-muted-foreground">Rango de Fechas (Recibo)</label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                             <Button
@@ -327,7 +363,8 @@ function ExportPage() {
                                             <TableRow>
                                                 <TableHead className="whitespace-nowrap">Usuario</TableHead>
                                                 <TableHead>Importe</TableHead>
-                                                <TableHead className="whitespace-nowrap">Fecha</TableHead>
+                                                <TableHead className="whitespace-nowrap">Fecha Recibo</TableHead>
+                                                <TableHead className="whitespace-nowrap">Fecha Subida</TableHead>
                                                 <TableHead>Sector</TableHead>
                                                 <TableHead>Observaciones</TableHead>
                                             </TableRow>
@@ -340,6 +377,7 @@ function ExportPage() {
                                                     <TableCell className="font-medium whitespace-nowrap">{receipt.usuario}</TableCell>
                                                     <TableCell className="whitespace-nowrap">€{receipt.importe.toFixed(2)}</TableCell>
                                                     <TableCell className="whitespace-nowrap">{receipt.fecha}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">{formatUploadDate(receipt.fechaSubida)}</TableCell>
                                                     <TableCell className="capitalize">{receipt.sector}</TableCell>
                                                     <TableCell className="max-w-[200px] truncate">{receipt.observaciones || '-'}</TableCell>
                                                 </TableRow>

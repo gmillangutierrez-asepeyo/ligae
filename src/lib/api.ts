@@ -1,3 +1,4 @@
+
 // This file is intended for client-side execution. Do NOT add 'use server'.
 // It uses the Fetch API to communicate with Google Cloud REST endpoints.
 
@@ -55,7 +56,10 @@ export async function uploadToStorage(photoDataUri: string, fileName: string, to
   
   const uploadResponse = await fetch(uploadUrl, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'image/jpeg'
+    },
     body: blob,
   });
 
@@ -313,46 +317,6 @@ export async function deleteFromFirestore(docId: string, token: string): Promise
 
 
 // --- Role & Hierarchy Management ---
-export type ManagerHierarchy = Record<string, string[]>;
-
-export async function fetchHierarchy(token: string): Promise<ManagerHierarchy> {
-  const hierarchyDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/main';
-
-  const response = await fetch(hierarchyDocPath, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      console.warn('El documento de jerarquía "main" no se encontró. Se usará una jerarquía vacía.');
-      return {};
-    }
-    await handleResponseError(response, 'cargar la jerarquía de managers');
-  }
-
-  const doc = await response.json();
-  const hierarchyMap = doc.fields?.hierarchy?.mapValue?.fields;
-
-  if (!hierarchyMap) {
-    console.warn('El documento de jerarquía "main" no contiene un campo "hierarchy" válido. Se usará una jerarquía vacía.');
-    return {};
-  }
-
-  const parsedHierarchy: ManagerHierarchy = {};
-  for (const managerEmail in hierarchyMap) {
-    const managedUsersArray = hierarchyMap[managerEmail]?.arrayValue?.values || [];
-    parsedHierarchy[managerEmail] = managedUsersArray
-      .map((userValue: any) => userValue.stringValue)
-      .filter((email: string | undefined): email is string => !!email);
-  }
-
-  return parsedHierarchy;
-}
-
 export async function fetchExporterEmails(token: string): Promise<string[]> {
   const exportersDocPath = 'https://firestore.googleapis.com/v1/projects/ligae-asepeyo-463510/databases/ticketsligae/documents/manager_hierarchy/exporters';
   
@@ -373,22 +337,6 @@ export async function fetchExporterEmails(token: string): Promise<string[]> {
   return emailsArray
     .map((v: any) => v.stringValue)
     .filter((email: string | undefined): email is string => !!email);
-}
-
-
-export async function getManagersForUser(userEmail: string, token: string): Promise<string[]> {
-    const hierarchy = await fetchHierarchy(token);
-    const managers: string[] = [];
-
-    // Find who manages the user by checking all manager lists.
-    for (const manager in hierarchy) {
-        if (hierarchy[manager].includes(userEmail)) {
-            managers.push(manager);
-        }
-    }
-    
-    // Return a unique list of managers.
-    return Array.from(new Set(managers));
 }
 
 // --- Data for Export Page ---
@@ -431,30 +379,26 @@ export async function fetchAllApprovedTickets(token: string, filters: ApprovedTi
         });
     }
     
-    // Convert dates from Date object to DD/MM/YYYY string for querying
-    const formatDateForQuery = (date: Date): string => {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-
+    // As 'fecha' is a string, proper range filtering needs to be done on a timestamp.
+    // We will use 'fechaSubida' for the main query and then filter by 'fecha' on the client if needed.
+    // This is a trade-off: it might fetch more docs than needed but allows some server-side filtering.
     if (filters.startDate) {
         queryFilters.push({
             fieldFilter: {
-                field: { fieldPath: 'fecha' },
+                field: { fieldPath: 'fechaSubida' },
                 op: 'GREATER_THAN_OR_EQUAL',
-                value: { stringValue: formatDateForQuery(filters.startDate) },
+                value: { timestampValue: filters.startDate.toISOString() },
             },
         });
     }
 
     if (filters.endDate) {
+        // To include the whole end day, we could adjust the date, but for 'fechaSubida' it's usually fine.
         queryFilters.push({
             fieldFilter: {
-                field: { fieldPath: 'fecha' },
+                field: { fieldPath: 'fechaSubida' },
                 op: 'LESS_THAN_OR_EQUAL',
-                value: { stringValue: formatDateForQuery(filters.endDate) },
+                value: { timestampValue: filters.endDate.toISOString() },
             },
         });
     }
@@ -531,3 +475,5 @@ export async function fetchAllUsers(token: string): Promise<string[]> {
 
     return Array.from(new Set(emails)); // Return unique emails
 }
+
+    

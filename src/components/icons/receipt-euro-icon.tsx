@@ -12,11 +12,10 @@ const ReceiptEuroIcon = React.forwardRef<
     height="24"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={cn(className)}
+    className={cn("stroke-current", className)}
     {...props}
   >
     <path d="M3 2v20l3-1.5 3 1.5 3-1.5 3 1.5 3-1.5 3 1.5V2H3z" />

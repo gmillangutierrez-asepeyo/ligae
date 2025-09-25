@@ -20,9 +20,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PanelLeft } from 'lucide-react';
 import ReceiptEuroIcon from '@/components/icons/receipt-euro-icon';
 import { useSidebar } from './ui/sidebar';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
-  const { user, signOut, isManager, isExporter } = useAuth();
+  const { user, workspaceProfile, signOut, isManager, isExporter } = useAuth();
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
 
@@ -35,29 +36,29 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b bg-sidebar h-16">
+    <header className="sticky top-0 z-30 w-full border-b text-sidebar-foreground h-16 bg-gradient-to-r from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))]">
       <div className="w-full mx-auto flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="md:hidden bg-transparent">
+              <Button size="icon" variant="ghost" className="md:hidden text-sidebar-foreground hover:bg-accent hover:text-accent-foreground">
                 <PanelLeft className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs bg-sidebar p-0">
-               <SheetHeader className="flex flex-row items-center justify-between border-b p-4">
+            <SheetContent side="left" className="sm:max-w-xs bg-gradient-to-b from-[hsl(var(--gradient-from))] to-[hsl(var(--gradient-to))] p-0 text-sidebar-foreground">
+               <SheetHeader className="flex flex-row items-center justify-between border-b border-white/20 p-4">
                   <SheetTitle>
                     <div className="flex items-center gap-3">
-                        <ReceiptEuroIcon className="h-8 w-8 text-primary" />
+                        <ReceiptEuroIcon className="h-8 w-8 text-sidebar-foreground" />
                         <div className="flex flex-col items-start">
                             <span className="font-headline text-lg font-bold">LIGAE</span>
-                            <span className="text-xs text-muted-foreground">ASEPEYO</span>
+                            <span className="text-xs opacity-80">ASEPEYO</span>
                         </div>
                     </div>
                   </SheetTitle>
                    <SheetClose asChild>
-                      <Button size="icon" variant="outline" className="bg-transparent">
+                      <Button size="icon" variant="ghost" className="hover:bg-accent hover:text-accent-foreground">
                         <PanelLeft className="h-5 w-5" />
                         <span className="sr-only">Cerrar Menú</span>
                       </Button>
@@ -68,7 +69,12 @@ export default function Header() {
                     <SheetClose asChild key={link.href}>
                         <Link
                             href={link.href}
-                            className={`flex items-center gap-4 px-2.5 py-2 rounded-md ${pathname === link.href ? 'text-accent-foreground bg-accent' : 'text-muted-foreground hover:bg-accent/50'}`}
+                            className={cn(
+                              'flex items-center gap-4 px-2.5 py-2 rounded-md transition-colors',
+                               pathname === link.href 
+                               ? 'bg-accent text-accent-foreground' 
+                               : 'hover:bg-accent hover:text-accent-foreground'
+                            )}
                         >
                             <link.icon className="h-5 w-5" />
                             {link.label}
@@ -79,16 +85,16 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-            <Button size="icon" variant="outline" className="hidden md:flex bg-transparent" onClick={toggleSidebar}>
+            <Button size="icon" variant="ghost" className="hidden md:flex text-sidebar-foreground hover:bg-accent hover:text-accent-foreground" onClick={toggleSidebar}>
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
 
-            <div className="flex items-center gap-3">
-                <ReceiptEuroIcon className="h-8 w-8 text-primary" />
+            <div className="flex items-center gap-3 text-sidebar-foreground">
+                <ReceiptEuroIcon className="h-8 w-8" />
                 <div className="flex flex-col">
                     <span className="font-headline text-lg font-bold">LIGAE</span>
-                    <span className="text-xs text-muted-foreground">ASEPEYO</span>
+                    <span className="text-xs opacity-80">ASEPEYO</span>
                 </div>
             </div>
         </div>
@@ -96,11 +102,11 @@ export default function Header() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.photoURL ?? ''} alt={user?.displayName ?? 'Usuario'} />
+                <AvatarImage src={workspaceProfile?.thumbnailPhotoUrl ?? user?.photoURL ?? ''} alt={user?.displayName ?? 'Usuario'} />
                 <AvatarFallback>
-                  {user?.email?.[0].toUpperCase()}
+                  {user?.displayName?.charAt(0) ?? user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </Button>
