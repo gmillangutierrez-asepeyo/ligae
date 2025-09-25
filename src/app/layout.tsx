@@ -9,6 +9,9 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 export const metadata: Metadata = {
   title: 'LIGAE | ASEPEYO',
   description: 'Gestiona tus recibos de gastos fácilmente.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
