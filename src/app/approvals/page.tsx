@@ -230,11 +230,11 @@ function ApprovalsPage() {
                 ${approvalReason ? `<p><strong>Comentarios del gestor:</strong><br>${approvalReason.replace(/\n/g, '<br>')}</p>` : ''}
                 <p>Puede consultar el estado de todos sus recibos en el portal de LIGAE.</p>
                 <p style="text-align: center; margin: 24px 0;">
-                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery" style="background-color: #29ABE2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Ver mis recibos</a>
+                  <a href="https://ligae-asepeyo--ligae-asepeyo-463510.europe-west4.hosted.app/gallery" style="background-color: #29ABE2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Ver mis recibos</a>
                 </p>
                 <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
               `;
-              const plainText = `Estimado/a usuario/a,\n\nLe informamos que su recibo con un importe de ${currentReceipt.importe.toFixed(2)} €, correspondiente a la fecha ${currentReceipt.fecha}, ha sido resuelto con el siguiente estado: ${newState.toUpperCase()}.\n\n${approvalReason ? `Comentarios del gestor: ${approvalReason}\n\n` : ''}Puede consultar el estado de todos sus recibos en el portal de LIGAE: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/gallery\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
+              const plainText = `Estimado/a usuario/a,\n\nLe informamos que su recibo con un importe de ${currentReceipt.importe.toFixed(2)} €, correspondiente a la fecha ${currentReceipt.fecha}, ha sido resuelto con el siguiente estado: ${newState.toUpperCase()}.\n\n${approvalReason ? `Comentarios del gestor: ${approvalReason}\n\n` : ''}Puede consultar el estado de todos sus recibos en el portal de LIGAE: https://ligae-asepeyo--ligae-asepeyo-463510.europe-west4.hosted.app/gallery\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
 
               await sendEmail({
                   to: currentReceipt.usuario,
@@ -456,3 +456,5 @@ function ApprovalsPage() {
 }
 
 export default ApprovalsPage;
+
+    

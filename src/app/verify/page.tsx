@@ -114,11 +114,11 @@ function VerifyForm({
                 </ul>
                 <p>Por favor, acceda a la plataforma para revisar y aprobar la solicitud.</p>
                 <p style="text-align: center; margin-top: 24px;">
-                  <a href="https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals" style="background-color: #29ABE2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Revisar Solicitud</a>
+                  <a href="https://ligae-asepeyo--ligae-asepeyo-463510.europe-west4.hosted.app/approvals" style="background-color: #29ABE2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Revisar Solicitud</a>
                 </p>
                 <p>Atentamente,<br>El equipo de LIGAE Asepeyo</p>
             `;
-            const plainText = `Estimado/a gestor/a,\n\nLe informamos que el usuario ${data.usuario} ha registrado un nuevo recibo que requiere su atención.\n\nDetalles del recibo:\n- Importe: ${data.importe.toFixed(2)} €\n- Fecha: ${data.fecha}\n- Sector: ${data.sector}\n\nPor favor, acceda a la plataforma para revisar y aprobar la solicitud: https://ligae-asepeyo-624538650771.europe-southwest1.run.app/approvals\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
+            const plainText = `Estimado/a gestor/a,\n\nLe informamos que el usuario ${data.usuario} ha registrado un nuevo recibo que requiere su atención.\n\nDetalles del recibo:\n- Importe: ${data.importe.toFixed(2)} €\n- Fecha: ${data.fecha}\n- Sector: ${data.sector}\n\nPor favor, acceda a la plataforma para revisar y aprobar la solicitud: https://ligae-asepeyo--ligae-asepeyo-463510.europe-west4.hosted.app/approvals\n\nAtentamente,\nEl equipo de LIGAE Asepeyo`;
 
             const emailPromises = managersToNotify.map(managerEmail => 
               sendEmail({
@@ -386,3 +386,5 @@ function VerifyPage() {
 }
 
 export default VerifyPage;
+
+    
